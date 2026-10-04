@@ -152,7 +152,7 @@
 .mk-spark { position: absolute; pointer-events: none; }
 .mk-arrow { overflow: visible; }
 
-.ring-host { position: relative; display: inline-block; }
+.ring-host { position: relative; display: inline-block; margin-right: 0.16em; }
 .mk-ring { position: absolute; inset: -19% -6%; width: 112%; height: 138%; overflow: visible; pointer-events: none; }
 
 .ul-host { position: relative; display: inline-block; }
