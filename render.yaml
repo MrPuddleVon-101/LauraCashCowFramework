@@ -1,0 +1,13 @@
+# Render blueprint. One web service that builds the interface, installs the API
+# and serves both. Free tier is enough; the first request after an idle period
+# wakes the instance and is slow.
+services:
+  - type: web
+    name: stonky-cashcows
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: PORT
+        value: 8077

@@ -324,3 +324,30 @@ def health() -> dict:
             "registry_as_of": registry_meta().get("as_of"),
         },
     }
+
+
+# --- serving the built interface ------------------------------------------------
+#
+# In development Vite serves the frontend on 5173 and proxies /api here, so this
+# does nothing. In a deployment there is one process: the API also hands out the
+# built single page app, which means one service, one URL and no CORS to arrange.
+# Mounted last so every /api route is matched first.
+_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
+
+if _DIST.is_dir():
+    from fastapi.responses import FileResponse
+    from fastapi.staticfiles import StaticFiles
+
+    app.mount("/assets", StaticFiles(directory=_DIST / "assets"), name="assets")
+    if (_DIST / "brand").is_dir():
+        app.mount("/brand", StaticFiles(directory=_DIST / "brand"), name="brand")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    def spa(full_path: str) -> Any:
+        """Any path that is not an API route is the single page app."""
+        if full_path.startswith("api/"):
+            raise HTTPException(status_code=404, detail="Unknown API route.")
+        asset = _DIST / full_path
+        if full_path and asset.is_file():
+            return FileResponse(asset)
+        return FileResponse(_DIST / "index.html")
