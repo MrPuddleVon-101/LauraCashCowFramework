@@ -1,0 +1,387 @@
+
+STONKY x 
+CASH COWS Laura Cash Cow Framework Product Requirements Document Version: 1.0 Framework name: Laura Cash Cow Framework, abbreviated LCCF Platform name: Stonky x Cash Cows Primary user: Cash Cows investment team Primary client: Laura Gao Primary use case: Wharton Global High School Investment Competition 2026-2027 
+
+1. 
+PRODUCT 
+VISION Stonky x Cash Cows is a client-specific investment research and decision engine built for Laura Gao. The platform must answer a more sophisticated question than: "Is this a good stock, ETF or bond?" It must answer: "Is this a high-quality investment, and does adding it to Laura Gao's portfolio improve her probability of achieving her specific financial goals?" Every candidate investment receives two independent scores: Security Quality Score, SQS 0 to 100 Measures how attractive the security is independently of Laura. Laura Portfolio Fit Score, LPFS 0 to 100 Measures how appropriate that investment is for Laura's goals, liabilities, timeline and existing portfolio. These are then combined into: Cash Cow Composite Score, CCS 0 to 100 This is the final headline score. However, a high composite score can never override: 1. a Red Gate failure; 2. poor client fit; 3. inadequate data quality; 4. a violation of the team's portfolio constraints. The product is therefore a decision-support engine , not a return predictor. 
+
+2. 
+WHY 
+THIS 
+SYSTEM 
+EXISTS The Wharton competition explicitly emphasizes developing and implementing a coherent long-term strategy rather than winning through short-term trading performance. WInS is the implementation environment, while the strategy, research, decisions and articulation are what matter. Wharton Global Youth Program This means Cash Cows should avoid six team members independently finding securities they like and later inventing justifications for them. Instead: Client objectives → portfolio strategy → evaluation framework → security research → score → committee decision → trade → monitoring → review Every security should pass through the same standardized process. The framework must be locked before candidate scores are used for final selection. This prevents "backfitting", where weights are changed simply to make a preferred investment win. Any later change to weights creates a new framework version and automatically triggers rescoring of all previously evaluated candidates. 
+
+3. 
+RESEARCHED 
+CLIENT 
+PROFILE 3.1 Case-study facts These should be treated as the authoritative financial inputs. Laura: ● begins with $300,000 invested at the beginning of 2027 ; ● contributes another $150,000 at the beginning of 2028 ; ● makes no further portfolio contributions or withdrawals before 2033; ● funds normal living expenses outside this portfolio; ● wants to establish a collaborative creative residency in Taiwan in 2033; ● must fund ten annual $50,000 operating payments , beginning at the start of 2033 and ending at the start of 2042; ● therefore has a total nominal operating commitment of $500,000 ; ● requires a high degree of certainty that those operating payments can be funded; ● establishes an operating reserve in 2033 before making a facility contribution; ● may contribute additional money toward the facility, but that amount is flexible; ● wants to preserve financial flexibility rather than commit every remaining dollar; ● begins discussions with potential co-sponsors in 2031; ● needs a credible range in 2031 for how much she may personally contribute in 2033; ● understands investment uncertainty; ● has demonstrated willingness to take thoughtful risks; ● wants growth balanced against protection of the capital required for the residency. The engine must therefore distinguish between: Risk willingness Laura appears reasonably comfortable taking thoughtful risk. Risk capacity Her ability to tolerate risk depends heavily on what the money is intended for. Growth capital several years before 2033 can tolerate significant volatility. Money already dedicated to a specific $50,000 operating payment has extremely little capacity for loss. This distinction between willingness and financial capacity is consistent with standard portfolio-planning principles. CFA Institute 
+
+4. 
+PUBLIC 
+PROFILE 
+CONTEXT Public research should inform qualitative client understanding , but it must not be treated as a substitute for the financial facts in the case. Laura's background combines creative work, entrepreneurship, technology and quantitative/business experience. Her own site describes her as the award-winning creator of Messy Roots and Kirby's Lessons for Falling (In Love) , a comics professor at California College of the Arts and a co-organizer of the Pride in Panels comics festival. Laura Gao Earlier in her career she studied business analytics at Wharton, worked in product and data-related roles, interned at Amazon, and became an associate product manager at Twitter. Global She also founded Draw Street Journal while at Penn. Her site says it developed more than 50 designs, generated roughly $15,000 in sales and $25,000 in total profit, and that outsourcing production increased output threefold. Laura Gao Her creative career also demonstrates an experimental, iterative mindset. In interviews she has explicitly discussed starting small, publishing work before it feels perfect, collecting feedback and improving from iteration. The Honey POP Community, storytelling, belonging, education and collaboration recur throughout her work. Her public comments also show a strong personal connection to Taiwan, where she previously lived and worked on her book. The Maverick Show Important model rule None of these public facts automatically imply an investment preference. The framework must not assume: ● "entrepreneur = wants maximum financial risk"; ● "creative person = should own media companies"; ● "community-oriented = requires ESG investing"; ● "technology background = should own technology stocks." Public profile information may influence the 5% Mission and Reputational Fit component , but the case-study financial objectives must dominate the investment score. 
+
+5. 
+CASH COWS' 
+CURRENT 
+STRATEGY The current team strategy should exist in the system as configurable policy, not as an immutable fact about Laura. Current policy objective: Achieve at least a 95% modeled probability of reaching a fully funded operating reserve by 2033. The current proposal is to use 2027 and 2028 deposits to secure the first eight $50,000 payments, covering 2033 through 2040, subject to actual yields, while investing the remaining approximately $168,000 for growth. The team then reviews the uncovered 2041 and 2042 liabilities annually and moves additional money from growth into liability-matching assets as appropriate. WGHIC Master Doc (4) Current team modeling estimates that securing eight payments by 2028 could produce a 99.8% modeled chance of funding all ten if later yields are 4%, and 99.4% if later yields are 2%. These are team model outputs, not guarantees. WGHIC Master Doc (3) The framework must therefore store two different types of information: Client Facts Facts provided by the case study. Team Policy Assumptions Decisions made by Cash Cows that may later change. These must never be mixed. 
+
+6. 
+PORTFOLIO 
+ARCHITECTURE The system must conceptualize Laura's portfolio using three economic buckets. Bucket A: Operating Liability Portfolio Purpose: Reliably fund the ten $50,000 annual payments from 2033 through 2042. Primary priority: Certainty Typical securities: ● U.S. Treasuries ● high-quality bonds ● Treasury 
+STRIPS if permitted ● target-maturity bond structures ● cash equivalents where appropriate Bucket B: Growth Portfolio Purpose: Grow capital before 2033 to increase Laura's potential facility contribution and long-term remaining wealth. Primary priorities: ● growth; ● diversification; ● quality; ● acceptable valuation; ● long-term capital appreciation. Typical securities: ● broad U.S. equity ETFs; ● international equity ETFs; ● selected individual stocks; ● limited targeted or thematic exposure. Bucket C: Flexibility / Residual Portfolio Purpose: Preserve capital beyond the residency commitment so Laura does not commit her entire financial portfolio to one project. This becomes especially relevant in 2033. 
+
+7. 
+SECURITY ROLES Every candidate must be assigned a Proposed Portfolio Role before it can be scored . Valid roles: Code Role CG Core Growth SG Satellite Growth ID International Diversifier LM Liability Matcher LR Liquidity Reserve LG Long-Term Residual Growth DA Defensive Allocation A security must not receive a Laura Fit Score without a proposed role. This prevents nonsense such as comparing a Treasury and 
+NVIDIA using the same objective. A security can be excellent for one role and terrible for another. Example: A 10-year Treasury might receive a very strong score as a liability-matching instrument but a mediocre score as Laura's main growth asset. 
+
+8. 
+FRAMEWORK 
+OUTPUTS Every evaluation returns: 1. Security Quality Score 0 to 100 2. Laura Portfolio Fit Score 0 to 100 3. Cash Cow Composite Score 0 to 100 4. Data Confidence Score 0 to 100 5. Red Gate Status PASS / FAIL / 
+REVIEW 6. Cash Cow Signal GREEN / AMBER / RED / 
+INSUFFICIENT DATA 7. Proposed role 8. Top three strengths 9. Top three risks 10. Portfolio impact 11. Client rationale 12. Review triggers 13. Evidence and sources 14. Full scoring audit trail 
+
+9. 
+THE 
+RED GATE The Red Gate occurs before numerical scoring. A security that fails a hard Red Gate cannot receive a GREEN signal regardless of its numerical score. Universal hard failures Reject if: ● the security is outside the competition's permitted universe for Competition Mode; ● essential data are missing or unreliable; ● a proposed trade breaches a team-approved hard concentration limit; ● the proposed security uses undisclosed leverage; ● the product is an inverse or leveraged ETF unless explicitly permitted and justified; ● the investment thesis cannot be supported with verifiable evidence; ● the investment would reduce modeled operating-funding probability below the team's required threshold; ● the investment creates a portfolio liquidity problem incompatible with Laura's future obligations. Liability-matching hard failures A security intended to fund a mandatory payment fails if: ● its expected cash flow does not adequately match the liability date; ● material default risk is inconsistent with the team's required certainty; ● the security can mature after the required payment date without another defined liquidity source; ● material call risk can remove the expected cash flow before it is needed; ● it is denominated in an inappropriate currency without an acceptable hedge; ● it is a perpetual bond fund being treated as if it has a fixed maturity. Important rule A normal bond ETF does not automatically guarantee a future $50,000 payment because its NAV at a particular future date is unknown. Defined-maturity bond ETFs and individual bonds require separate treatment. FINRA identifies interest-rate risk, duration risk, call risk, reinvestment risk and credit risk as material considerations in bond analysis. It also distinguishes YTM from coupon rate and recommends considering yield to worst for callable securities. FINRA 
+
+10. 
+DATA 
+CONFIDENCE SCORE The framework must never disguise weak data as precision. The Data Confidence Score, DCS, is independent of the investment scores. Formula Component Weight Data completeness 30% Source authority 25% Data freshness 20% Cross-source consistency 15% Peer-group adequacy 10% Green signal requirement DCS ≥ 85 If DCS < 70: Output = 
+INSUFFICIENT DATA No buy signal may be issued. 
+
+11. 
+SOURCE 
+HIERARCHY The backend should prioritize sources in this order. Tier 1 Primary sources: ● SEC filings; ● company investor relations; ● ETF issuer pages and factsheets; ● official index methodology documents; ● U.S. Treasury data; ● FINRA bond data; ● official exchange data. Tier 2 High-quality professional market databases. Tier 3 Established financial publications and research services. Tier 4 News articles, analyst commentary and interviews. Tier 5 Unverified aggregators and social media. Tier 5 may provide leads but should never be the sole basis for a numerical score . Every metric stored by the app must contain: ● value; ● units; ● as-of date; ● source; ● source URL; ● fetch timestamp; ● confidence flag. 
+
+12. 
+NORMALIZATION 
+ENGINE Raw financial numbers cannot simply be added together. A 25% operating margin may be exceptional in one industry and ordinary in another. Therefore, quantitative security metrics should usually be measured relative to an appropriate peer group . For stocks: Industry + market-cap bucket + geographic market. For ETFs: ETF category and strategy peer group. For bonds: Credit-quality bucket + maturity bucket + currency. Percentile scoring For metrics where higher is better: Metric Score = percentile rank × 100 For metrics where lower is better: Metric Score = (1 - percentile rank) × 100 Values should be winsorized around the 5th and 95th percentiles to reduce distortion from extreme outliers. Score interpretation Score Interpretation 90 to 100 Exceptional 80 to 89 Strong 70 to 79 Above average 50 to 69 Neutral / acceptable 30 to 49 Weak 0 to 29 Serious weakness If peer data are unavailable, use documented threshold bands. 
+
+13. 
+SECURITY 
+QUALITY SCORE: 
+INDIVIDUAL 
+STOCKS The Stock SQS totals exactly 100 points. A. Growth Durability, 18 points 3-year revenue CAGR 5 points Measures whether demand for the company's business is genuinely expanding. Forward revenue growth 4 points Uses consensus estimates where reliable. EPS / operating-profit growth 4 points Checks whether revenue growth converts into earnings. Free cash flow growth 5 points Rewards growth that actually creates cash. CFA materials emphasize the importance of free cash flow analysis in equity valuation and distinguish cash flow from accounting earnings measures. CFA Institute B. Cash Flow Quality, 17 points FCF margin 6 points FCF / Revenue Higher and improving is generally better. Cash conversion 4 points Compare operating cash flow and net income. FCF conversion 4 points Checks whether operating earnings actually become free cash. Dilution / share-based compensation 3 points Penalizes companies creating headline growth while repeatedly diluting shareholders. C. Profitability and Capital Efficiency, 17 points ROIC 7 points Primary capital-efficiency measure. Operating margin 5 points Measures operating economics. ROE / ROA 3 points Peer-relative profitability. Margin trajectory 2 points Rewards improving or stable economics. Quality investing commonly evaluates profitability, earnings stability and leverage. MSCI's quality methodologies explicitly use measures such as ROE, leverage and earnings variability. MSCI D. Balance-Sheet Resilience, 15 points Net debt / 
+EBITDA 6 points Interest coverage 4 points Cash and short-term liquidity 3 points Debt maturity / refinancing risk 2 points FINRA also highlights debt and financial strength as core considerations when evaluating stocks. FINRA 
+
+14. 
+STOCK 
+VALUATION, 15 
+POINTS No single valuation ratio may dominate. Forward P/E vs industry peers 4 points EV/
+EBITDA or EV/EBIT 4 points FCF yield 4 points Valuation vs own historical range 3 points P/E must be compared with comparable firms because appropriate multiples vary substantially by industry. FINRA If a company is not profitable, P/E is marked N/A and the engine substitutes: ● EV/Sales; ● gross-margin quality; ● FCF trajectory; ● cash runway. The engine must not automatically reward an unprofitable company simply because a traditional valuation ratio is unavailable. 
+
+15. 
+BUSINESS 
+QUALITY 
+AND 
+EARNINGS 
+DURABILITY, 10 
+POINTS Competitive advantage / moat 4 points Evidence-based qualitative score. Earnings stability 3 points Customer / revenue concentration 3 points Qualitative scoring must include evidence. Mapping: ● 100 = exceptionally strong; ● 75 = strong; ● 50 = neutral; ● 25 = weak; ● 0 = severe concern. An LLM may summarize the evidence but may not invent the underlying facts. 
+
+16. 
+MARKET 
+RISK 
+AND 
+FORWARD 
+SIGNALS, 8 
+POINTS Maximum drawdown 3 points Beta / downside capture 2 points Earnings-estimate revisions / medium-term momentum 3 points Technical indicators should remain a small part of the score. Do not make RSI, MACD or short moving-average crossovers major decision variables. This is a long-term investment strategy. CFA portfolio-evaluation materials recognize maximum drawdown, drawdown duration, Sortino and downside capture as useful risk measures, while cautioning that they must be interpreted in the context of the investment process and investor horizon. CFA Institute Total: 100 points 
+
+17. 
+STOCK 
+SECTOR 
+OVERLAYS The base model remains constant, but specific sectors require additional contextual metrics. The overlay does not add additional points. It changes the internal submetrics used inside relevant categories. Software Track: ● recurring revenue; ● ARR where available; ● net retention; ● gross margin; ● FCF margin; ● Rule of 40; ● RPO / bookings; ● stock-based compensation; ● customer concentration. Rule of 40 Revenue Growth % + FCF or Operating Margin % Useful as a supporting software-specific measure, not a standalone buy criterion. Digital Infrastructure Track: ● recurring contracts; ● utilization; ● capex intensity; ● customer concentration; ● backlog; ● FCF conversion; ● leverage; ● return on invested capital. Healthcare Track: ● pipeline concentration; ● regulatory exposure; ● patent cliffs; ● reimbursement risk; ● R&D productivity; ● FCF; ● operating margin; ● product diversification. Industrials Track: ● organic revenue growth; ● backlog; ● book-to-bill; ● operating margin; ● ROIC; ● FCF conversion; ● cyclicality; ● leverage. Media / Entertainment Track: ● subscriber or audience trends; ● ARPU; ● churn; ● advertising exposure; ● content spending; ● IP strength; ● FCF; ● margin trajectory. Financial Institutions Normal FCF and debt measures are often inappropriate. Substitute: ● ROE / ROTCE; ● CET1 capital; ● net interest margin; ● nonperforming loans; ● credit-loss provisions; ● price-to-book; ● liquidity ratios. 
+
+18. 
+SECURITY 
+QUALITY SCORE: 
+BROAD 
+EQUITY 
+ETF ETF analysis must not simply ask whether an ETF has "lots of holdings." Morningstar notes that broad market-cap-weighted ETFs can still become heavily concentrated when a few mega-cap securities dominate weights. Morningstar The Broad 
+ETF SQS totals 100. A. Methodology and Exposure Design, 18 ● methodology quality: 8; ● market coverage: 4; ● rebalancing process: 3; ● transparency: 3. Questions: ● What does the ETF actually target? ● How are securities selected? ● How are they weighted? ● Can methodology cause unintended factor or concentration risk? B. Diversification and Concentration, 22 Top-10 concentration 7 Largest single holding 4 Sector concentration 5 Market-cap breadth 3 Geographic breadth 3 Use a concentration measure such as HHI where possible. A fund with 3,000 stocks can still be concentrated if one sector or ten giant companies dominate its economic exposure. C. Underlying Fundamental Quality, 20 Earnings growth 5 Profitability / ROE 5 FCF quality 4 Balance-sheet quality 3 Earnings stability 3 D. Valuation, 10 Forward P/E 4 Earnings / FCF yield 4 Relative valuation against category history 2 E. Cost and Implementation Efficiency, 15 Expense ratio 5 Tracking difference 5 Tracking error 3 Portfolio turnover 2 Vanguard argues ETF cost should be considered more broadly than expense ratio alone, including spreads, premium/discount behavior, tracking error and market impact. Vanguard F. Liquidity and Scale, 10 Bid-ask spread 4 AUM 3 Market depth / trading liquidity 3 Bid-ask spread is both a trading-cost measure and a useful indicator of ETF liquidity. Vanguard G. Historical Risk Efficiency, 5 Maximum drawdown 2 Standard deviation / downside risk 2 Beta 1 Total: 100 
+
+19. 
+INTERNATIONAL 
+EQUITY 
+ETF SQS International ETFs require different treatment. Weights Category Weight Country diversification 12 Sector diversification 8 Holdings concentration 8 Developed / emerging composition 5 Underlying fundamental quality 15 Growth 10 Valuation 10 Currency risk structure 8 Political / regulatory diversification 5 Expense and tracking 8 Liquidity and scale 6 Historical risk 5 Total: 100 Currency risk must be explicitly shown rather than hidden inside volatility. 
+
+20. 
+SECTOR 
+OR 
+THEMATIC 
+ETF SQS A thematic ETF cannot receive the same diversification score as a total-market ETF simply because it holds 50 securities. Weights: Metric Weight Theme purity and methodology 20 Underlying company quality 20 Growth runway 15 Valuation 15 Stock concentration 10 Sector concentration 5 Expense ratio 5 Liquidity 5 Historical risk 5 Total: 100 Thematic ETFs should also receive a much stronger portfolio-overlap test. 
+
+21. 
+INDIVIDUAL BOND / 
+TREASURY SQS The bond model prioritizes payment certainty , not maximum yield. A. Credit and Payment Quality, 30 ● credit quality: 15; ● issuer financial strength: 5; ● seniority / structural protection: 5; ● rating outlook / deterioration risk: 5. U.S. Treasury instruments receive the model's highest sovereign credit quality treatment. B. Yield and Relative Value, 18 Yield to maturity 8 Spread versus similar maturity government security 6 Yield to worst 4 C. Structural Certainty, 18 Maturity structure 8 Call risk 5 Prepayment / sinking-fund features 3 Currency 2 D. Interest-Rate Risk, 12 Duration 8 Convexity 2 Rate sensitivity 2 E. Liquidity, 10 Bid-ask spread 6 Issue size / trading activity 4 F. Reinvestment and Inflation Risk, 7 Reinvestment risk 4 Real-return exposure 3 G. Issuer Diversification, 5 Total: 100 
+
+22. 
+DEFINED-
+MATURITY 
+BOND ETF Treat separately from perpetual bond ETFs. Metrics: ● maturity-date certainty; ● portfolio credit quality; ● expected terminal distribution; ● duration; ● yield to maturity; ● fees; ● underlying bond diversification; ● default-loss assumptions; ● bid-ask spread; ● tracking; ● reinvestment of coupons. A defined-maturity ETF may qualify for liability matching if expected liquidation timing and amount are sufficiently reliable. 
+
+23. 
+PERPETUAL 
+BOND ETF A normal bond ETF has no guaranteed future liquidation value. Therefore: If proposed role = Liability Matcher Automatic: Red Gate 
+REVIEW or FAIL unless another explicit mechanism demonstrates payment matching. If proposed role = Defensive Allocation Score normally. 
+
+24. CASH / 
+TREASURY 
+BILL 
+MODEL SQS: Category Weight Capital preservation 35 Yield 25 Liquidity 20 Maturity certainty 10 Counterparty / issuer quality 5 Transaction friction 5 Total: 100 
+
+25. 
+LAURA 
+PORTFOLIO 
+FIT SCORE This is the heart of the system. Security Quality asks: Is this objectively attractive? Laura Fit asks: Should Laura own it? The weighting depends on portfolio role . 
+
+26. LPFS: 
+CORE 
+GROWTH For broad equity ETFs and diversified core holdings: Component Weight Contribution to long-term growth 20 Compatibility with liability strategy 15 Time-horizon fit 15 Incremental diversification 25 Liquidity / flexibility 10 Downside compatibility 10 Mission / reputational fit 5 Total: 100 
+
+27. LPFS: 
+SATELLITE 
+GROWTH STOCK Component Weight Growth contribution 25 Compatibility with liability strategy 10 Time-horizon fit 15 Incremental diversification 20 Liquidity 10 Downside compatibility 15 Mission / reputational fit 5 Total: 100 High-growth individual securities receive a larger downside penalty than broad ETFs. 
+
+28. LPFS: 
+INTERNATIONAL 
+DIVERSIFIER Component Weight Growth contribution 15 Liability compatibility 10 Time horizon 10 Geographic diversification improvement 35 Liquidity 10 Currency / downside compatibility 15 Mission / reputational fit 5 Total: 100 
+
+29. LPFS: 
+LIABILITY 
+MATCHER This is intentionally very different. Component Weight Liability-date match 30 Payment certainty 25 Improvement to 2033 funding probability 20 Liquidity / flexibility 10 Yield efficiency 10 Mission / reputational fit 5 Total: 100 An investment offering a huge yield but poor certainty should score badly. 
+
+30. LPFS: 
+LIQUIDITY 
+RESERVE Component Weight Capital preservation 25 Liquidity 30 Timing match 20 Funding-probability impact 10 Opportunity cost 10 Mission / reputational fit 5 Total: 100 
+
+31. 
+MISSION / 
+REPUTATIONAL FIT This category is intentionally only 5% . It should not overwhelm financial logic unless Laura explicitly establishes investment exclusions. Scoring 100 Clear evidence that the investment aligns with stated client priorities and no material conflict. 75 Some positive alignment and no clear conflict. 50 Neutral or insufficient evidence. 25 Material reputational concerns relevant to Laura's stated objectives. 0 Direct conflict with an explicit client exclusion. Critical rule If no evidence exists: Score 50, not 0 and not 100. The model must not hallucinate Laura's political, social or ethical preferences. 
+
+32. 
+PORTFOLIO LOOK-
+THROUGH 
+ENGINE This is one of the features that should make Stonky genuinely distinctive. The engine must analyze a candidate against everything Laura already owns . Morningstar specifically recommends checking underlying fund intersection and overlap because multiple funds can disguise concentrated exposure to the same companies. Morningstar The system should calculate: Look-through issuer exposure If Laura owns: ● an ETF containing NVIDIA; ● another ETF containing NVIDIA; ● 
+NVIDIA directly; combine all three. Calculate Laura's true economic 
+NVIDIA weight . Sector exposure Calculate portfolio weights for: ● technology; ● healthcare; ● financials; ● industrials; ● consumer; ● communication; ● etc. Geographic exposure Calculate: ● United States; ● developed ex-U.S.; ● emerging markets; ● individual country weights. ETF overlap coefficient For two normalized portfolios: Overlap = Σ min(weightA_i, weightB_i) Range: 0% = no common exposure 100% = economically identical Concentration 
+HHI HHI = Σ( weight_i²) Calculate: ● issuer HHI; ● sector HHI; ● country HHI. The app should report before and after the candidate trade . 
+
+33. 
+PORTFOLIO 
+DIVERSIFICATION SCORE The incremental diversification component of LPFS should be: 40% issuer concentration improvement 25% sector concentration improvement 20% historical correlation with current portfolio 15% geographic or factor diversification The result should answer: "Does owning this actually make Laura's portfolio more robust?" rather than: "Does it have a different ticker?" Vanguard similarly emphasizes diversification across asset classes, sectors, geographies and investment styles, and warns that overlapping funds or highly correlated holdings may not provide genuine diversification. Vanguard 
+
+34. 
+LIABILITY 
+ENGINE The application must maintain Laura's full liability calendar. Year Required cash flow 2033 $50,000 2034 $50,000 2035 $50,000 2036 $50,000 2037 $50,000 2038 $50,000 2039 $50,000 2040 $50,000 2041 $50,000 2042 $50,000 Total nominal liability: $500,000 
+
+35. 
+LIABILITY 
+STATUS Each payment must have one state: 
+UNFUNDED No dedicated matching asset. 
+PARTIALLY 
+FUNDED Dedicated cash flow covers less than $50,000. 
+ECONOMICALLY 
+COVERED Portfolio modelling suggests sufficient capital but no dedicated matching asset exists. 
+MATCHED Specific high-certainty cash flow is dedicated to the payment. PAID Obligation completed. The distinction between "economically covered" and "matched" is extremely important. A strong equity portfolio is not the same thing as a Treasury that matures when the payment is due. 
+
+36. 
+PRESENT 
+VALUE 
+ENGINE For an unmatched liability: PV = 50,000 / (1 + matching yield)^years Use a maturity-appropriate market yield. Do not use one universal 4% rate forever. The team's current 4% figure is an illustrative planning assumption, not a permanent market fact. 
+
+37. CASH-
+FLOW 
+MATCHING For individual fixed-income instruments, calculate all: ● coupon dates; ● coupon payments; ● maturity principal; ● call dates; ● expected total cash flows. Map them against Laura's liability calendar. The engine should display: 2037 payment requirement: $50,000 Dedicated security cash flow: $51,420 Surplus: $1,420 Status: 
+MATCHED 
+
+38. 
+FUNDING 
+PROBABILITY 
+ENGINE The platform should calculate: Probability that Laura enters 2033 with all operating commitments fundable. Current Cash Cows policy threshold: ≥95% If a proposed investment causes estimated funding probability to fall below this threshold: Red Gate FAIL The team's strategy explicitly calls for accelerating the shift from growth into the payment ladder if updated downside testing stops supporting the 95% objective. WGHIC Master Doc (4) 
+
+39. 
+MONTE 
+CARLO MODEL Use Monte Carlo as a scenario tool, not as fake precision. CFA materials identify both deterministic forecasting and Monte Carlo analysis as methods for assessing whether capital will be sufficient to meet client objectives. CFA Institute Recommended: 10,000 simulation paths Model: ● equity returns; ● equity volatility; ● bond returns; ● correlations; ● contributions; ● liability purchases; ● liability cash flows; ● annual rebalancing; ● facility contribution; ● retained long-term capital. Do not assume normal returns blindly. Prefer: ● historical block bootstrap; or ● Student-t distributions with fat tails. The output should show: ● median 2033 portfolio; ● 10th percentile; ● 25th percentile; ● 75th percentile; ● 90th percentile; ● probability operating reserve is fully fundable; ● expected facility contribution capacity. 
+
+40. 
+CASH 
+COW 
+RISK STATE Laura's risk capacity is not static. Define three modes. 
+GROWTH MODE Trigger: ● at least 4 years remain until 2033; ● AND funding probability ≥97%. Behavior: ● growth exposure receives less downside penalty; ● incremental growth is valuable; ● diversification remains important. 
+BALANCED MODE Trigger: ● 2 to 4 years remain; ● OR funding probability is 95% to 97%. Behavior: ● liability protection receives greater weight; ● marginal high-risk investments become harder to justify. 
+PROTECTION MODE Trigger: ● fewer than 2 years remain; ● OR funding probability <95%; ● OR the 2031 sponsor commitment cannot be credibly supported. Behavior: ● liabilities, liquidity and downside protection dominate; ● speculative growth investments should rarely receive GREEN. This is much stronger than simply saying: "We'll get safer around 2033." The framework mathematically changes behavior. 
+
+41. 
+CASH 
+COW 
+COMPOSITE SCORE The final score should not use a simple average. Client fit should matter slightly more than standalone quality, and an extremely weak score in either dimension should be difficult to hide. Use a weighted geometric mean: CCS = 100 × (SQS / 100)^0.45 × (LPFS / 100)^0.55 Therefore: ● SQS weight = 45%; ● LPFS weight = 55%. This deliberately makes Laura fit more important than generic attractiveness . The geometric structure also punishes imbalance. Example: SQS = 98 LPFS = 65 A simple average could misleadingly make the investment look attractive. The Cash Cow system should recognize: fantastic security, wrong client. 
+
+42. 
+SIGNAL 
+LOGIC GREEN All conditions required: ● Red Gate = PASS; ● SQS ≥ 90; ● LPFS ≥ 90; ● CCS ≥ 90; ● DCS ≥ 85. Interpretation: High-conviction Cash Cow candidate. GREEN should be rare. 
+AMBER PLUS ● CCS 85 to 89.99; ● both SQS and LPFS ≥80; ● no Red Gate failure. Interpretation: Strong candidate requiring committee review. AMBER ● CCS 75 to 84.99; ● OR one score below 80. Interpretation: Potentially useful but meaningful weaknesses exist. RED Any of: ● Red Gate FAIL; ● SQS <70; ● LPFS <70; ● material portfolio-policy violation. Interpretation: Reject under current conditions. 
+INSUFFICIENT 
+DATA DCS <70 or essential analysis unavailable. Interpretation: No investment conclusion permitted. 
+
+43. 
+WHY 
+BOTH 
+SCORES 
+MUST 
+EXCEED 90 
+FOR GREEN This is intentional. A 96-quality company that scores 72 for Laura should not receive a buy signal. Likewise, an investment that perfectly fits Laura's desired role but is fundamentally weak should not receive a buy signal. The framework's central principle is: A great investment must be both a great security and a great fit. 
+
+44. 
+POSITION-
+SIZING 
+ENGINE 
+A GREEN signal does not automatically mean "buy as much as possible." Position size must consider: ● proposed role; ● confidence; ● look-through concentration; ● remaining risk budget; ● liability funding; ● correlation; ● liquidity. Suggested configurable policy defaults: Broad core ETF Maximum 45% of growth sleeve International diversified ETF Maximum 30% of growth sleeve Individual stock Maximum 8% of growth sleeve Thematic ETF Maximum 12% of growth sleeve Single look-through company exposure Warning above 8% of growth sleeve Single sector Warning when materially exceeding target allocation. These limits are team-policy defaults , not facts from Laura's case, and must be editable. 
+
+45. 
+PORTFOLIO-
+ADJUSTED 
+SCORING Every candidate should receive: Standalone SQS Then: Pre-trade LPFS Then: Post-trade LPFS The user specifies proposed position size. The engine recalculates: ● issuer concentration; ● sector concentration; ● geographic exposure; ● factor exposure; ● liability funding probability; ● liquidity; ● expected volatility. Example: 
+NVIDIA Security Quality: 94 Laura Fit at 1% position: 92 Laura Fit at 8% position: 77 This demonstrates: Position size can turn a good security into a bad portfolio decision. 
+
+46. 
+STRESS 
+TESTING Every proposed trade should run through deterministic stress scenarios. Minimum scenarios: Broad Equity Shock U.S. equities fall 30%. Growth Shock Growth / technology stocks fall 45%. Recession Revenue growth and margins decline. Rate Shock Up Rates rise 200 basis points. Rate Shock Down Rates fall 200 basis points. International Currency Shock USD appreciates 15% against foreign holdings. Concentration Shock Largest underlying portfolio position falls 40%. For each scenario show: ● post-shock portfolio value; ● liability funding probability; ● facility contribution capacity; ● proposed security's loss; ● whether 95% objective survives. 
+
+47. 
+FACILITY 
+CONTRIBUTION 
+ENGINE Operating payments have priority. Therefore: Facility Capacity = max(0, Portfolio Value - Required Operating Reserve - Retained Growth Target) Run this through simulations. Produce: ● pessimistic capacity; ● median capacity; ● optimistic capacity; ● confidence interval. This directly supports Laura's 2031 communication with co-sponsors. The app should eventually be able to output: Based on current portfolio conditions, Laura can communicate a facility contribution range of $X to $Y with approximately Z% modeled confidence while retaining full operating funding. 48. 2031 
+CREDIBILITY 
+TEST A proposed co-sponsor commitment must pass: 1. Operating-reserve test. 2. Retained-flexibility test. 3. Downside scenario. 4. Confidence threshold. The system must warn: "This range is not sufficiently supported by current portfolio outcomes." if needed. 
+
+49. 
+VALUES 
+AND 
+REPUTATION 
+ENGINE This should be evidence-based and conservative. Look for: ● major regulatory violations; ● severe governance controversies; ● material labor / community controversies; ● fraud; ● persistent governance failures; ● business activities explicitly conflicting with team-approved client exclusions. Do not create political or ideological assumptions. Do not infer exclusions from Laura's identity. If no explicit exclusion exists: treat the company as neutral unless evidence of a meaningful conflict exists. 
+
+50. 
+EVIDENCE 
+ENGINE Each score must be auditable. Every metric should include: Metric: FCF margin Value: 24.2% Peer median: 14.1% Percentile: 87th Score: 87/100 Weight: 6% Weighted contribution: 5.22 Source: SEC 10-K As of: YYYY-MM-DD Interpretation: Strong cash generation relative to peers. This makes the model useful for both analysis and competition documentation. 
+
+51. 
+QUALITATIVE 
+EVIDENCE Qualitative assertions must also have evidence. Example: Claim: Strong switching-cost moat. Supporting evidence: 1. Source A. 2. Source B. 3. Specific operating evidence. The LLM may then classify the evidence. The LLM must never simply output: "Strong moat: 90" without explaining why. 
+
+52. 
+DECISION 
+LOG 
+INTEGRATION The application should automatically generate Cash Cows' Decision Log. Required fields: ● Author ● Date ● Security / ETF ● Action ● Price / Position ● Reason ● Evidence ● Client Link ● Risk ● Review Date ● Outcome Additional fields: ● Asset Type ● Proposed Role ● SQS ● LPFS ● CCS ● DCS ● Red Gate ● Cash Cow Signal ● Portfolio Impact ● Framework Version This directly produces material that can later support Trading Notes. 
+
+53. 
+SCORE 
+SNAPSHOTS Every evaluation must be frozen at the time of the decision. Example: AAPL evaluation 2026-10-03 must preserve: ● data; ● scores; ● sources; ● weights; ● portfolio composition; ● team assumptions. If Apple later rises 25%, the application must not rewrite the original reasoning . This prevents hindsight bias and makes Trading Notes authentic. 
+
+54. 
+REVIEW 
+TRIGGERS Every approved holding must have explicit review conditions. Possible triggers: ● funding probability <95%; ● earnings thesis breaks; ● FCF deteriorates; ● leverage rises materially; ● valuation becomes extreme; ● ETF methodology changes; ● expense ratio changes; ● portfolio overlap increases; ● sector concentration limit breached; ● credit rating downgraded; ● bond call event; ● liability date approaches; ● major client objective changes. 
+
+55. 
+TWO 
+PORTFOLIOS 
+MUST 
+EXIST 
+IN 
+THE 
+DATABASE This is extremely important for the competition. Competition Portfolio Actual WInS positions. Purpose: ● implement strategy; ● generate Trading Notes; ● demonstrate decision making. Laura Long-Term Portfolio Model beginning with: ● $300k in 2027; ● +$150k in 2028; ● long-term strategy assumptions. Purpose: ● operating-reserve analysis; ● facility-contribution projection; ● 2031 communication; ● 2033 planning. Never automatically transfer WInS gains or losses into Laura's long-term portfolio projections. The competition itself is designed around demonstrating strategy through WInS rather than treating short-term simulator performance as Laura's actual future return. Wharton Global Youth Program 
+
+56. 
+BACKEND 
+SERVICES Recommended backend architecture: 1. Security Classification Service Input: Ticker / CUSIP / symbol. Output: ● stock; ● broad ETF; ● international ETF; ● thematic ETF; ● bond ETF; ● target maturity ETF; ● Treasury; ● corporate bond; ● cash equivalent. 2. Market Data Service Fetch: ● prices; ● returns; ● volatility; ● benchmark data; ● rates. 3. Fundamentals Service Fetch: ● revenue; ● EPS; ● FCF; ● margins; ● ROIC; ● ROE; ● leverage; ● interest coverage; ● valuation multiples. Primary source whenever practical: 
+SEC EDGAR / company filings 
+
+4. ETF Data Service Fetch: ● expense ratio; ● holdings; ● weights; ● sector exposure; ● country exposure; ● AUM; ● spread; ● turnover; ● methodology; ● benchmark; ● tracking statistics. Prefer issuer data. 5. Fixed-Income Service Fetch: ● coupon; ● maturity; ● price; ● YTM; ● YTW; ● duration; ● credit rating; ● call schedule; ● cash-flow schedule; ● Treasury curve. 6. Portfolio Look-Through Service Calculate: ● issuer exposure; ● sectors; ● countries; ● ETF overlap; ● HHI; ● correlations. 7. Liability Service Store and evaluate: ● 2033 to 2042 obligations; ● matched assets; ● funding gaps; ● present values; ● projected reserve. 8. Scenario Service Run: ● Monte Carlo; ● deterministic shocks; ● facility capacity; ● funding probability. 9. Scoring Service Produces: ● SQS; ● LPFS; ● CCS; ● DCS; ● signal. 10. Evidence Service Stores: ● sources; ● articles; ● filing excerpts; ● screenshots; ● analyst notes; ● team research. 11. Decision Log Service Stores immutable historical evaluations. 
+
+57. 
+RECOMMENDED 
+TECH STACK For a competition MVP: Backend Python + FastAPI Data calculation Pandas or Polars + NumPy Models / validation Pydantic Database SQLite during local development. PostgreSQL if deployed for the entire team. HTTP httpx Monte Carlo NumPy / SciPy Background caching Simple local cache initially. Redis only if necessary. Do not overengineer this into microservices. A modular monolith is ideal. 
+
+58. 
+DATA 
+PROVIDER 
+ADAPTERS The backend should define a provider interface rather than hardcode one website. Example: get_company_fundamentals(ticker) Can use: 
+
+1. 
+SEC EDGAR; 2. Financial Modeling Prep / Alpha Vantage / another market API if keys exist; 3. manual fallback. ETF data: 1. issuer CSV/factsheet; 2. approved market-data provider; 3. manual fallback. Treasuries: 1. official U.S. Treasury data; 
+
+2. FRED or approved secondary source. Bonds: 
+
+1. FINRA; 2. market-data provider. This prevents the app from breaking if one API fails. 
+
+59. 
+DATA 
+FRESHNESS Suggested: Price 15 minutes to 1 trading day. ETF holdings Latest issuer release. Financial statements Latest reported quarter. Valuation Latest market close. Treasury curve Latest trading day. Credit rating Latest available. Qualitative news Previous 12 months, with serious historical controversies retained where relevant. 
+
+60. 
+MISSING 
+DATA RULES There are two different cases. Genuinely Not Applicable Example: P/E for a company with negative earnings. Redistribute that metric's weight among related valuation metrics. Data Missing Do not redistribute. Assign neutral 50 where necessary and penalize DCS. If more than 20% of weighted inputs are unavailable: no GREEN signal. 
+
+61. ANTI-
+HALLUCINATION RULES The LLM must never invent: ● financial values; ● analyst estimates; ● holdings; ● expense ratios; ● credit ratings; ● news; ● company controversies. Every factual claim must have a source object. If no source exists: return "Unable to verify." 
+
+62. ANTI-
+BACKFIT RULE The framework weights are version controlled. When weights change: 1. create new version; 2. record author; 3. record date; 4. record reason; 5. automatically rescore all candidates. Never silently adjust weights after seeing candidate scores. This is one of the strongest competition features because it demonstrates a genuine investment process. 
+
+63. 
+EXPLANATION 
+ENGINE Every output should include a plain-English explanation. Example: Why the score is high ● Revenue is growing faster than comparable companies. ● FCF generation is strong. ● Balance sheet is conservative. ● Adding the stock reduces rather than increases sector concentration. What could go wrong ● Valuation is substantially above sector average. ● The portfolio already has meaningful indirect exposure through an ETF. ● A technology-sector drawdown would materially affect the position. Why Laura should care ● The security belongs in growth capital, not operating-reserve capital. ● Her mandatory payments are protected elsewhere. ● The proposed position does not materially weaken funding certainty. 
+
+64. 
+COMMITTEE 
+OVERRIDE Humans must retain final authority. Users may override AMBER or RED only after entering: ● reason; ● author; ● evidence; ● proposed position; ● identified risk; ● review date. Overrides are permanently recorded. The app should never silently change an algorithmic decision. 
+
+65. 
+FUNCTIONAL 
+API 
+REQUIREMENTS Minimum endpoints: POST /security/evaluate GET /security/{ticker} GET /security/{ticker}/history POST /portfolio/position DELETE /portfolio/position GET /portfolio/exposure GET /portfolio/overlap GET /portfolio/liabilities POST /portfolio/simulate-trade POST /portfolio/stress-test GET /portfolio/funding-probability GET /portfolio/facility-capacity None None POST /decision-log GET /decision-log GET /framework/version POST /framework/version 
+
+66. 
+CORE 
+SECURITY 
+OBJECT Every security should store: security_id ticker name asset_type subtype sector industry country currency benchmark proposed_role price market_cap_or_aum data_as_of 
+
+67. 
+EVALUATION 
+OBJECT evaluation_id security_id portfolio_snapshot_id framework_version security_quality_score laura_portfolio_fit_score None None cash_cow_composite_score data_confidence_score red_gate_status signal category_scores metric_scores strengths risks client_rationale portfolio_impact review_triggers created_at created_by 
+
+68. 
+SOURCE 
+OBJECT source_id source_name source_url source_type publication_date accessed_at claim_supported authority_tier screenshot_reference 
+
+69. 
+CLIENT 
+CONFIG 
+OBJECT client_name: Laura Gao base_currency: USD None contribution_2027: 300000 contribution_2028: 150000 residency_start_year: 2033 annual_operating_payment: 50000 first_payment_year: 2033 last_payment_year: 2042 operating_payments_count: 10 required_funding_probability: 0.95 facility_contribution_priority: SECONDARY_TO_OPERATING_RESERVE liquidity_priority: MODERATE_HIGH growth_priority: HIGH_FOR_SURPLUS_CAPITAL risk_willingness: THOUGHTFUL_RISK risk_capacity: DYNAMIC_BY_GOAL normal_living_expenses_paid_elsewhere: TRUE 
+
+70. 
+TEAM 
+POLICY 
+CONFIG Separate object: payments_targeted_for_early_matching: 8 early_matching_years: 2033-2040 provisional_facility_planning_amount: 40000 provisional_facility_cap: 100000 retained_growth_target: 100000 illustrative_yield_assumption: 0.04 required_funding_probability: 0.95 These are editable because they belong to Cash Cows' strategy , not Laura's immutable client profile. The latest master strategy currently proposes a provisional $40,000 facility planning figure with a $100,000 cap and aims to retain roughly $100,000 for longer-term growth, while allowing the facility amount to fall if portfolio performance does not support both goals. WGHIC Master Doc (4) 
+
+71. 
+WHAT 
+MAKES 
+STONKY 
+UNIQUE The framework's differentiator is not AI . Thousands of teams can use AI. The differentiation should be the investment architecture. Stonky does seven things most generic stock screeners do not: 1. Separates security quality from client suitability. 2. Evaluates investments in the context of Laura's actual liabilities. 3. Performs ETF look-through analysis. 4. Dynamically changes risk treatment as 2033 approaches. 5. Scores the impact of a proposed position size, not just the ticker. 6. Preserves a time-stamped audit trail for every decision. 7. Connects every trade directly to the IPS and Trading Notes. That gives Cash Cows a real investment process rather than an AI-generated stock list. 
+
+72. 
+MVP 
+SUCCESS 
+CRITERIA The MVP is complete when a Cash Cows member can enter: AVUS select: Broad U.S. ETF, Core Growth, proposed allocation 20% and Stonky automatically returns: ● ETF data; ● underlying holdings; ● expense ratio; ● concentration; ● fundamentals; ● overlap; ● post-trade portfolio exposure; ● SQS; ● LPFS; ● CCS; ● DCS; ● Red Gate; ● Cash Cow Signal; ● strengths; ● risks; ● client rationale; ● evidence; ● review triggers; ● ready-to-use Decision Log content. The same workflow must work for: ● an individual growth stock; ● an international ETF; ● a bond; ● a Treasury; ● a bond ETF; ● a cash-equivalent security. 
+
+73. 
+EXAMPLE 
+OUTPUT 
+FORMAT This is illustrative only. Numbers must be calculated from actual data. AVUS Asset Type: Broad U.S. Equity ETF Role: Core Growth Security Quality Score: 92/100 Laura Portfolio Fit: 94/100 Cash Cow Composite: 93/100 Data Confidence: 96/100 Red Gate: PASS Signal: GREEN Why Strong diversified U.S. exposure with systematic profitability and valuation tilts. Laura Fit Provides long-term growth inside capital not dedicated to fixed operating payments, while avoiding excessive reliance on individually selected companies. Portfolio Impact Reduces concentration compared with adding another targeted technology position. Largest Risk Factor tilts can underperform market-cap-weighted benchmarks for extended periods. Review Trigger Re-evaluate if Laura's modeled 2033 funding probability falls below 95% or if portfolio overlap materially increases. Again, the numbers above are placeholders demonstrating the required output format. 
+
+74. 
+FINAL 
+FRAMEWORK 
+PRINCIPLE The entire platform should revolve around one sentence: A security earns a place in Laura's portfolio only when it is both financially strong and specifically useful for achieving her goals. And the internal Cash Cows philosophy should be: Secure what Laura needs. Grow what she can risk. Preserve what gives her freedom. That is the logic Stonky should enforce across every stock, ETF, bond and portfolio decision .

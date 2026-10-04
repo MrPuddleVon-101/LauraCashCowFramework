@@ -1,0 +1,32 @@
+{
+  "_note": "PRD 55. Two portfolios must exist and must never be mixed. WInS gains and losses are not carried into Laura's long-term projections, because the competition is designed to demonstrate strategy through WInS rather than to treat short-term simulator performance as Laura's future return.",
+  "competition": {
+    "name": "Competition portfolio",
+    "description": "Actual WInS positions. Implements the strategy, generates Trading Notes, demonstrates decision making.",
+    "cash": 42000,
+    "starting_value": 500000,
+    "positions": [
+      {"ticker": "AVUS", "value": 118000, "role": "CG", "opened": "2026-09-14", "note": "Core of the growth sleeve."},
+      {"ticker": "VXUS", "value": 74000, "role": "ID", "opened": "2026-09-14", "note": "Non-US exposure, unhedged."},
+      {"ticker": "SCHD", "value": 46000, "role": "CG", "opened": "2026-09-21", "note": "Quality and dividend tilt alongside the core."},
+      {"ticker": "IBTM", "value": 86000, "role": "LM", "target_payment_year": 2033, "opened": "2026-09-28", "note": "Dated against the first operating payment."},
+      {"ticker": "IBTO", "value": 52000, "role": "LM", "target_payment_year": 2034, "opened": "2026-09-28", "note": "Dated against the second operating payment."},
+      {"ticker": "SGOV", "value": 62000, "role": "LR", "opened": "2026-09-14", "note": "Liquidity reserve and dry powder."},
+      {"ticker": "NVDA", "value": 20000, "role": "SG", "opened": "2026-09-30", "note": "Researched satellite position, deliberately small."}
+    ]
+  },
+  "laura_long_term": {
+    "name": "Laura long-term model",
+    "description": "The projection model. Begins with $300,000 in 2027 and $150,000 in 2028 under the team's strategy assumptions. Never receives WInS gains or losses.",
+    "contributions": [
+      {"year": 2027, "amount": 300000},
+      {"year": 2028, "amount": 150000}
+    ],
+    "target_allocation": {
+      "operating_liability": 0.52,
+      "growth": 0.43,
+      "liquidity": 0.05
+    },
+    "equity_weight_within_growth": 0.78
+  }
+}

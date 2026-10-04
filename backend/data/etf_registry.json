@@ -1,0 +1,972 @@
+{
+  "_meta": {
+    "provenance": "seed",
+    "as_of": "2026-09-30",
+    "note": "Fund facts that no keyless public API exposes: expense ratios, holdings, sector and country weights, defined maturity dates. Every entry carries the issuer page it should be checked against. PRD 11 puts issuer factsheets in tier 1, but a figure transcribed into this file has not been re-read from the issuer today, so the scoring engine treats these as tier 2 and the interface marks them for verification. Refresh before any committee decision.",
+    "refresh_instruction": "Open the issuer URL on the row, confirm expense ratio, AUM, holdings count and top ten weight, then update as_of."
+  },
+  "funds": {
+    "AVUS": {
+      "name": "Avantis U.S. Equity ETF",
+      "issuer": "American Century / Avantis",
+      "category": "broad_us_equity",
+      "expense_ratio": 0.15,
+      "aum_usd": 7400000000.0,
+      "inception": "2019-09-24",
+      "holdings_count": 2100,
+      "top10_weight": 24.5,
+      "largest_holding_weight": 5.4,
+      "turnover_pct": 6,
+      "benchmark": "Russell 3000 (reference)",
+      "index_tracking": false,
+      "methodology": "Systematic, market cap weighted with tilts toward smaller size, higher profitability and lower valuation. Actively managed within a rules framework rather than tracking an index.",
+      "top_holdings": [
+        [
+          "NVDA",
+          5.4
+        ],
+        [
+          "AAPL",
+          4.6
+        ],
+        [
+          "MSFT",
+          4.4
+        ],
+        [
+          "AMZN",
+          2.4
+        ],
+        [
+          "META",
+          1.9
+        ],
+        [
+          "AVGO",
+          1.6
+        ],
+        [
+          "GOOGL",
+          1.5
+        ],
+        [
+          "GOOG",
+          1.3
+        ],
+        [
+          "JPM",
+          1.2
+        ],
+        [
+          "XOM",
+          1.1
+        ]
+      ],
+      "sector_weights": {
+        "Technology": 27.0,
+        "Financials": 15.5,
+        "Consumer Discretionary": 11.0,
+        "Health Care": 9.5,
+        "Industrials": 10.5,
+        "Communication Services": 7.5,
+        "Consumer Staples": 5.0,
+        "Energy": 5.0,
+        "Materials": 3.0,
+        "Real Estate": 3.0,
+        "Utilities": 3.0
+      },
+      "country_weights": {
+        "United States": 100.0
+      },
+      "source_url": "https://www.avantisinvestors.com/content/avantis/en/investments/avantis-us-equity-etf.html"
+    },
+    "VTI": {
+      "name": "Vanguard Total Stock Market ETF",
+      "issuer": "Vanguard",
+      "category": "broad_us_equity",
+      "expense_ratio": 0.03,
+      "aum_usd": 500000000000.0,
+      "inception": "2001-05-24",
+      "holdings_count": 3600,
+      "top10_weight": 33.0,
+      "largest_holding_weight": 6.8,
+      "turnover_pct": 2,
+      "benchmark": "CRSP US Total Market Index",
+      "index_tracking": true,
+      "methodology": "Full replication of the CRSP US Total Market Index, market capitalisation weighted across large, mid, small and micro cap US equities.",
+      "top_holdings": [
+        [
+          "NVDA",
+          6.8
+        ],
+        [
+          "AAPL",
+          6.0
+        ],
+        [
+          "MSFT",
+          5.6
+        ],
+        [
+          "AMZN",
+          3.6
+        ],
+        [
+          "META",
+          2.6
+        ],
+        [
+          "AVGO",
+          2.4
+        ],
+        [
+          "GOOGL",
+          2.1
+        ],
+        [
+          "GOOG",
+          1.8
+        ],
+        [
+          "TSLA",
+          1.6
+        ],
+        [
+          "BRK-B",
+          1.5
+        ]
+      ],
+      "sector_weights": {
+        "Technology": 34.0,
+        "Financials": 13.5,
+        "Consumer Discretionary": 10.5,
+        "Health Care": 9.0,
+        "Industrials": 9.0,
+        "Communication Services": 8.5,
+        "Consumer Staples": 4.5,
+        "Energy": 3.5,
+        "Real Estate": 2.5,
+        "Materials": 2.5,
+        "Utilities": 2.5
+      },
+      "country_weights": {
+        "United States": 100.0
+      },
+      "source_url": "https://investor.vanguard.com/investment-products/etfs/profile/vti"
+    },
+    "VOO": {
+      "name": "Vanguard S&P 500 ETF",
+      "issuer": "Vanguard",
+      "category": "broad_us_equity",
+      "expense_ratio": 0.03,
+      "aum_usd": 700000000000.0,
+      "inception": "2010-09-07",
+      "holdings_count": 505,
+      "top10_weight": 38.0,
+      "largest_holding_weight": 7.8,
+      "turnover_pct": 2,
+      "benchmark": "S&P 500",
+      "index_tracking": true,
+      "methodology": "Full replication of the S&P 500, market capitalisation weighted across US large cap equities selected by an index committee.",
+      "top_holdings": [
+        [
+          "NVDA",
+          7.8
+        ],
+        [
+          "AAPL",
+          6.9
+        ],
+        [
+          "MSFT",
+          6.4
+        ],
+        [
+          "AMZN",
+          4.1
+        ],
+        [
+          "META",
+          3.0
+        ],
+        [
+          "AVGO",
+          2.7
+        ],
+        [
+          "GOOGL",
+          2.4
+        ],
+        [
+          "GOOG",
+          2.0
+        ],
+        [
+          "TSLA",
+          1.8
+        ],
+        [
+          "BRK-B",
+          1.7
+        ]
+      ],
+      "sector_weights": {
+        "Technology": 36.5,
+        "Financials": 13.0,
+        "Consumer Discretionary": 10.5,
+        "Health Care": 9.0,
+        "Communication Services": 9.5,
+        "Industrials": 8.0,
+        "Consumer Staples": 4.5,
+        "Energy": 3.0,
+        "Real Estate": 2.0,
+        "Materials": 2.0,
+        "Utilities": 2.5
+      },
+      "country_weights": {
+        "United States": 100.0
+      },
+      "source_url": "https://investor.vanguard.com/investment-products/etfs/profile/voo"
+    },
+    "SCHD": {
+      "name": "Schwab U.S. Dividend Equity ETF",
+      "issuer": "Charles Schwab",
+      "category": "broad_us_equity",
+      "expense_ratio": 0.06,
+      "aum_usd": 70000000000.0,
+      "inception": "2011-10-20",
+      "holdings_count": 103,
+      "top10_weight": 40.0,
+      "largest_holding_weight": 4.5,
+      "turnover_pct": 28,
+      "benchmark": "Dow Jones U.S. Dividend 100 Index",
+      "index_tracking": true,
+      "methodology": "Screens for ten years of dividend payments, then ranks on cash flow to debt, return on equity, dividend yield and dividend growth. Caps single holdings at 4 percent and sectors at 25 percent.",
+      "top_holdings": [
+        [
+          "CVX",
+          4.5
+        ],
+        [
+          "ABBV",
+          4.4
+        ],
+        [
+          "KO",
+          4.2
+        ],
+        [
+          "AMGN",
+          4.1
+        ],
+        [
+          "VZ",
+          4.0
+        ],
+        [
+          "PEP",
+          3.9
+        ],
+        [
+          "CSCO",
+          3.8
+        ],
+        [
+          "HD",
+          3.7
+        ],
+        [
+          "MRK",
+          3.6
+        ],
+        [
+          "LMT",
+          3.4
+        ]
+      ],
+      "sector_weights": {
+        "Consumer Staples": 19.0,
+        "Health Care": 15.5,
+        "Energy": 13.0,
+        "Industrials": 13.0,
+        "Technology": 10.0,
+        "Financials": 9.0,
+        "Communication Services": 7.0,
+        "Consumer Discretionary": 6.0,
+        "Materials": 4.0,
+        "Utilities": 3.5
+      },
+      "country_weights": {
+        "United States": 100.0
+      },
+      "source_url": "https://www.schwabassetmanagement.com/products/schd"
+    },
+    "VXUS": {
+      "name": "Vanguard Total International Stock ETF",
+      "issuer": "Vanguard",
+      "category": "international_equity",
+      "expense_ratio": 0.05,
+      "aum_usd": 90000000000.0,
+      "inception": "2011-01-26",
+      "holdings_count": 8600,
+      "top10_weight": 12.0,
+      "largest_holding_weight": 2.3,
+      "turnover_pct": 3,
+      "benchmark": "FTSE Global All Cap ex US Index",
+      "index_tracking": true,
+      "developed_weight": 74.0,
+      "emerging_weight": 26.0,
+      "currency_hedged": false,
+      "methodology": "Full market exposure outside the United States across developed and emerging markets, all capitalisations, weighted by float adjusted market cap.",
+      "top_holdings": [
+        [
+          "TSM",
+          2.3
+        ],
+        [
+          "ASML",
+          1.1
+        ],
+        [
+          "NSRGY",
+          0.9
+        ],
+        [
+          "SAP",
+          0.9
+        ],
+        [
+          "TCEHY",
+          0.9
+        ],
+        [
+          "NVO",
+          0.8
+        ],
+        [
+          "BABA",
+          0.8
+        ],
+        [
+          "SHEL",
+          0.7
+        ],
+        [
+          "AZN",
+          0.7
+        ],
+        [
+          "NVS",
+          0.7
+        ]
+      ],
+      "sector_weights": {
+        "Financials": 23.0,
+        "Technology": 15.0,
+        "Industrials": 14.0,
+        "Consumer Discretionary": 11.0,
+        "Health Care": 8.5,
+        "Consumer Staples": 7.0,
+        "Materials": 6.5,
+        "Communication Services": 6.0,
+        "Energy": 5.0,
+        "Utilities": 3.0,
+        "Real Estate": 2.0
+      },
+      "country_weights": {
+        "Japan": 15.0,
+        "United Kingdom": 9.0,
+        "China": 9.0,
+        "Canada": 8.0,
+        "France": 7.0,
+        "Switzerland": 6.0,
+        "India": 6.0,
+        "Taiwan": 6.0,
+        "Germany": 6.0,
+        "Australia": 5.0,
+        "South Korea": 3.5,
+        "Other": 19.5
+      },
+      "source_url": "https://investor.vanguard.com/investment-products/etfs/profile/vxus"
+    },
+    "VEA": {
+      "name": "Vanguard FTSE Developed Markets ETF",
+      "issuer": "Vanguard",
+      "category": "international_equity",
+      "expense_ratio": 0.03,
+      "aum_usd": 160000000000.0,
+      "inception": "2007-07-20",
+      "holdings_count": 3900,
+      "top10_weight": 12.5,
+      "largest_holding_weight": 1.7,
+      "turnover_pct": 3,
+      "benchmark": "FTSE Developed All Cap ex US Index",
+      "index_tracking": true,
+      "developed_weight": 100.0,
+      "emerging_weight": 0.0,
+      "currency_hedged": false,
+      "methodology": "Developed markets outside the United States, all capitalisations, float adjusted market cap weighted. Excludes emerging markets entirely.",
+      "top_holdings": [
+        [
+          "ASML",
+          1.7
+        ],
+        [
+          "NSRGY",
+          1.4
+        ],
+        [
+          "SAP",
+          1.4
+        ],
+        [
+          "NVO",
+          1.2
+        ],
+        [
+          "SHEL",
+          1.2
+        ],
+        [
+          "AZN",
+          1.1
+        ],
+        [
+          "NVS",
+          1.1
+        ],
+        [
+          "RHHBY",
+          1.0
+        ],
+        [
+          "TM",
+          1.0
+        ],
+        [
+          "HSBC",
+          0.9
+        ]
+      ],
+      "sector_weights": {
+        "Financials": 24.0,
+        "Industrials": 16.0,
+        "Technology": 11.0,
+        "Consumer Discretionary": 11.0,
+        "Health Care": 11.0,
+        "Consumer Staples": 7.0,
+        "Materials": 6.0,
+        "Communication Services": 4.5,
+        "Energy": 4.5,
+        "Utilities": 3.5,
+        "Real Estate": 1.5
+      },
+      "country_weights": {
+        "Japan": 21.0,
+        "United Kingdom": 13.0,
+        "Canada": 10.0,
+        "France": 10.0,
+        "Switzerland": 9.0,
+        "Germany": 8.5,
+        "Australia": 7.0,
+        "Netherlands": 5.0,
+        "Other": 16.5
+      },
+      "source_url": "https://investor.vanguard.com/investment-products/etfs/profile/vea"
+    },
+    "AVDE": {
+      "name": "Avantis International Equity ETF",
+      "issuer": "American Century / Avantis",
+      "category": "international_equity",
+      "expense_ratio": 0.23,
+      "aum_usd": 5000000000.0,
+      "inception": "2019-09-24",
+      "holdings_count": 3300,
+      "top10_weight": 11.0,
+      "largest_holding_weight": 1.6,
+      "turnover_pct": 8,
+      "benchmark": "MSCI World ex USA (reference)",
+      "index_tracking": false,
+      "developed_weight": 100.0,
+      "emerging_weight": 0.0,
+      "currency_hedged": false,
+      "methodology": "Developed non US equities with systematic tilts toward smaller size, higher profitability and lower valuation.",
+      "top_holdings": [
+        [
+          "ASML",
+          1.6
+        ],
+        [
+          "SAP",
+          1.3
+        ],
+        [
+          "NSRGY",
+          1.2
+        ],
+        [
+          "SHEL",
+          1.2
+        ],
+        [
+          "NVS",
+          1.0
+        ],
+        [
+          "TM",
+          1.0
+        ],
+        [
+          "AZN",
+          0.9
+        ],
+        [
+          "HSBC",
+          0.9
+        ],
+        [
+          "RY",
+          0.8
+        ],
+        [
+          "TTE",
+          0.8
+        ]
+      ],
+      "sector_weights": {
+        "Financials": 25.0,
+        "Industrials": 17.0,
+        "Consumer Discretionary": 11.0,
+        "Technology": 10.0,
+        "Materials": 8.0,
+        "Health Care": 8.0,
+        "Energy": 6.0,
+        "Consumer Staples": 6.0,
+        "Communication Services": 4.0,
+        "Utilities": 3.0,
+        "Real Estate": 2.0
+      },
+      "country_weights": {
+        "Japan": 22.0,
+        "United Kingdom": 13.0,
+        "Canada": 10.0,
+        "France": 9.0,
+        "Germany": 8.0,
+        "Switzerland": 8.0,
+        "Australia": 7.0,
+        "Other": 23.0
+      },
+      "source_url": "https://www.avantisinvestors.com/content/avantis/en/investments/avantis-international-equity-etf.html"
+    },
+    "VWO": {
+      "name": "Vanguard FTSE Emerging Markets ETF",
+      "issuer": "Vanguard",
+      "category": "international_equity",
+      "expense_ratio": 0.07,
+      "aum_usd": 90000000000.0,
+      "inception": "2005-03-04",
+      "holdings_count": 5800,
+      "top10_weight": 24.0,
+      "largest_holding_weight": 8.0,
+      "turnover_pct": 5,
+      "benchmark": "FTSE Emerging Markets All Cap China A Inclusion Index",
+      "index_tracking": true,
+      "developed_weight": 0.0,
+      "emerging_weight": 100.0,
+      "currency_hedged": false,
+      "methodology": "Emerging market equities across all capitalisations including China A shares, float adjusted market cap weighted.",
+      "top_holdings": [
+        [
+          "TSM",
+          8.0
+        ],
+        [
+          "TCEHY",
+          4.5
+        ],
+        [
+          "BABA",
+          3.0
+        ],
+        [
+          "HDB",
+          1.5
+        ],
+        [
+          "PDD",
+          1.2
+        ],
+        [
+          "INFY",
+          1.0
+        ],
+        [
+          "MELI",
+          0.9
+        ],
+        [
+          "XIACY",
+          0.8
+        ],
+        [
+          "IBN",
+          0.8
+        ],
+        [
+          "JD",
+          0.7
+        ]
+      ],
+      "sector_weights": {
+        "Technology": 27.0,
+        "Financials": 22.0,
+        "Consumer Discretionary": 13.0,
+        "Communication Services": 10.0,
+        "Industrials": 7.0,
+        "Materials": 6.5,
+        "Consumer Staples": 5.0,
+        "Energy": 4.5,
+        "Health Care": 3.0,
+        "Utilities": 2.0
+      },
+      "country_weights": {
+        "China": 30.0,
+        "Taiwan": 21.0,
+        "India": 19.0,
+        "Brazil": 5.0,
+        "South Africa": 3.5,
+        "Saudi Arabia": 3.5,
+        "Mexico": 2.5,
+        "Other": 15.5
+      },
+      "source_url": "https://investor.vanguard.com/investment-products/etfs/profile/vwo"
+    },
+    "QQQM": {
+      "name": "Invesco NASDAQ 100 ETF",
+      "issuer": "Invesco",
+      "category": "thematic_sector",
+      "expense_ratio": 0.15,
+      "aum_usd": 50000000000.0,
+      "inception": "2020-10-13",
+      "holdings_count": 101,
+      "top10_weight": 50.0,
+      "largest_holding_weight": 9.5,
+      "turnover_pct": 12,
+      "benchmark": "NASDAQ-100 Index",
+      "index_tracking": true,
+      "theme": "Largest non financial companies listed on Nasdaq",
+      "methodology": "The 100 largest non financial Nasdaq listed companies, modified market cap weighted. Listing venue, not sector, defines eligibility, which produces a heavy technology concentration as a side effect.",
+      "top_holdings": [
+        [
+          "NVDA",
+          9.5
+        ],
+        [
+          "AAPL",
+          8.6
+        ],
+        [
+          "MSFT",
+          7.9
+        ],
+        [
+          "AMZN",
+          5.5
+        ],
+        [
+          "AVGO",
+          5.0
+        ],
+        [
+          "META",
+          3.8
+        ],
+        [
+          "GOOGL",
+          2.6
+        ],
+        [
+          "GOOG",
+          2.5
+        ],
+        [
+          "TSLA",
+          2.4
+        ],
+        [
+          "NFLX",
+          2.2
+        ]
+      ],
+      "sector_weights": {
+        "Technology": 60.0,
+        "Communication Services": 15.0,
+        "Consumer Discretionary": 13.0,
+        "Health Care": 5.0,
+        "Consumer Staples": 4.0,
+        "Industrials": 3.0
+      },
+      "country_weights": {
+        "United States": 97.0,
+        "Other": 3.0
+      },
+      "source_url": "https://www.invesco.com/qqq-etf/en/qqqm.html"
+    },
+    "SMH": {
+      "name": "VanEck Semiconductor ETF",
+      "issuer": "VanEck",
+      "category": "thematic_sector",
+      "expense_ratio": 0.35,
+      "aum_usd": 25000000000.0,
+      "inception": "2011-12-20",
+      "holdings_count": 26,
+      "top10_weight": 72.0,
+      "largest_holding_weight": 20.0,
+      "turnover_pct": 20,
+      "benchmark": "MVIS US Listed Semiconductor 25 Index",
+      "index_tracking": true,
+      "theme": "Semiconductor manufacturing and equipment",
+      "methodology": "The 25 largest US listed semiconductor companies, market cap weighted with a 20 percent single issuer cap.",
+      "top_holdings": [
+        [
+          "NVDA",
+          20.0
+        ],
+        [
+          "TSM",
+          11.0
+        ],
+        [
+          "AVGO",
+          9.5
+        ],
+        [
+          "AMD",
+          5.5
+        ],
+        [
+          "AMAT",
+          4.8
+        ],
+        [
+          "QCOM",
+          4.6
+        ],
+        [
+          "LRCX",
+          4.5
+        ],
+        [
+          "TXN",
+          4.2
+        ],
+        [
+          "KLAC",
+          4.1
+        ],
+        [
+          "MU",
+          3.8
+        ]
+      ],
+      "sector_weights": {
+        "Semiconductors": 100.0
+      },
+      "country_weights": {
+        "United States": 78.0,
+        "Taiwan": 11.0,
+        "Netherlands": 7.0,
+        "Other": 4.0
+      },
+      "source_url": "https://www.vaneck.com/us/en/investments/semiconductor-etf-smh/"
+    },
+    "BND": {
+      "name": "Vanguard Total Bond Market ETF",
+      "issuer": "Vanguard",
+      "category": "perpetual_bond",
+      "expense_ratio": 0.03,
+      "aum_usd": 130000000000.0,
+      "inception": "2007-04-03",
+      "holdings_count": 11000,
+      "top10_weight": 4.0,
+      "largest_holding_weight": 0.6,
+      "turnover_pct": 38,
+      "benchmark": "Bloomberg U.S. Aggregate Float Adjusted Index",
+      "index_tracking": true,
+      "average_duration_years": 6.0,
+      "average_maturity_years": 8.4,
+      "sec_yield_pct": 4.3,
+      "credit_quality": "Investment grade, majority US government",
+      "has_maturity_date": false,
+      "methodology": "Broad investment grade US bond market. The fund rolls its holdings continuously and has no maturity date, so its value on any future date is unknown.",
+      "top_holdings": [],
+      "sector_weights": {},
+      "country_weights": {
+        "United States": 100.0
+      },
+      "source_url": "https://investor.vanguard.com/investment-products/etfs/profile/bnd"
+    },
+    "SGOV": {
+      "name": "iShares 0-3 Month Treasury Bond ETF",
+      "issuer": "BlackRock",
+      "category": "cash_equivalent",
+      "expense_ratio": 0.09,
+      "aum_usd": 50000000000.0,
+      "inception": "2020-05-26",
+      "holdings_count": 12,
+      "top10_weight": 95.0,
+      "largest_holding_weight": 20.0,
+      "turnover_pct": 0,
+      "benchmark": "ICE 0-3 Month US Treasury Securities Index",
+      "index_tracking": true,
+      "average_duration_years": 0.1,
+      "average_maturity_years": 0.1,
+      "sec_yield_pct": 4.2,
+      "credit_quality": "US Treasury",
+      "has_maturity_date": false,
+      "methodology": "US Treasury bills maturing within three months. Effectively a cash substitute with daily liquidity and negligible interest rate risk.",
+      "top_holdings": [],
+      "sector_weights": {},
+      "country_weights": {
+        "United States": 100.0
+      },
+      "source_url": "https://www.ishares.com/us/products/314116/"
+    },
+    "IBTM": {
+      "name": "iShares iBonds Dec 2033 Term Treasury ETF",
+      "issuer": "BlackRock",
+      "category": "defined_maturity_bond",
+      "expense_ratio": 0.07,
+      "aum_usd": 400000000.0,
+      "inception": "2023-03-07",
+      "holdings_count": 12,
+      "top10_weight": 95.0,
+      "largest_holding_weight": 18.0,
+      "turnover_pct": 5,
+      "benchmark": "ICE 2033 Maturity US Treasury Index",
+      "index_tracking": true,
+      "termination_date": "2033-12-15",
+      "maturity_year": 2033,
+      "average_duration_years": 6.8,
+      "sec_yield_pct": 4.1,
+      "credit_quality": "US Treasury",
+      "has_maturity_date": true,
+      "callable": false,
+      "methodology": "Holds US Treasuries maturing in 2033, then terminates in December 2033 and distributes the proceeds. The termination structure is what makes it usable for liability matching, unlike a perpetual bond fund.",
+      "top_holdings": [],
+      "sector_weights": {},
+      "country_weights": {
+        "United States": 100.0
+      },
+      "source_url": "https://www.ishares.com/us/products/ibonds-term-treasury-etfs"
+    },
+    "IBTO": {
+      "name": "iShares iBonds Dec 2034 Term Treasury ETF",
+      "issuer": "BlackRock",
+      "category": "defined_maturity_bond",
+      "expense_ratio": 0.07,
+      "aum_usd": 250000000.0,
+      "inception": "2024-03-05",
+      "holdings_count": 10,
+      "top10_weight": 96.0,
+      "largest_holding_weight": 20.0,
+      "turnover_pct": 5,
+      "benchmark": "ICE 2034 Maturity US Treasury Index",
+      "index_tracking": true,
+      "termination_date": "2034-12-15",
+      "maturity_year": 2034,
+      "average_duration_years": 7.6,
+      "sec_yield_pct": 4.15,
+      "credit_quality": "US Treasury",
+      "has_maturity_date": true,
+      "callable": false,
+      "methodology": "Holds US Treasuries maturing in 2034, then terminates and distributes proceeds in December 2034.",
+      "top_holdings": [],
+      "sector_weights": {},
+      "country_weights": {
+        "United States": 100.0
+      },
+      "source_url": "https://www.ishares.com/us/products/ibonds-term-treasury-etfs"
+    },
+    "IBTP": {
+      "name": "iShares iBonds Dec 2035 Term Treasury ETF",
+      "issuer": "BlackRock",
+      "category": "defined_maturity_bond",
+      "expense_ratio": 0.07,
+      "aum_usd": 150000000.0,
+      "inception": "2025-03-04",
+      "holdings_count": 9,
+      "top10_weight": 97.0,
+      "largest_holding_weight": 22.0,
+      "turnover_pct": 5,
+      "benchmark": "ICE 2035 Maturity US Treasury Index",
+      "index_tracking": true,
+      "termination_date": "2035-12-15",
+      "maturity_year": 2035,
+      "average_duration_years": 8.3,
+      "sec_yield_pct": 4.2,
+      "credit_quality": "US Treasury",
+      "has_maturity_date": true,
+      "callable": false,
+      "methodology": "Holds US Treasuries maturing in 2035, then terminates and distributes proceeds in December 2035.",
+      "top_holdings": [],
+      "sector_weights": {},
+      "country_weights": {
+        "United States": 100.0
+      },
+      "source_url": "https://www.ishares.com/us/products/ibonds-term-treasury-etfs"
+    },
+    "TLT": {
+      "name": "iShares 20+ Year Treasury Bond ETF",
+      "issuer": "BlackRock",
+      "category": "perpetual_bond",
+      "expense_ratio": 0.15,
+      "aum_usd": 50000000000.0,
+      "inception": "2002-07-22",
+      "holdings_count": 45,
+      "top10_weight": 40.0,
+      "largest_holding_weight": 6.0,
+      "turnover_pct": 25,
+      "benchmark": "ICE U.S. Treasury 20+ Year Index",
+      "index_tracking": true,
+      "average_duration_years": 16.5,
+      "average_maturity_years": 25.0,
+      "sec_yield_pct": 4.6,
+      "credit_quality": "US Treasury",
+      "has_maturity_date": false,
+      "methodology": "US Treasuries with more than twenty years remaining. Rolls continuously, so it carries very high interest rate sensitivity and no defined terminal value.",
+      "top_holdings": [],
+      "sector_weights": {},
+      "country_weights": {
+        "United States": 100.0
+      },
+      "source_url": "https://www.ishares.com/us/products/239454/"
+    },
+    "VGSH": {
+      "name": "Vanguard Short-Term Treasury ETF",
+      "issuer": "Vanguard",
+      "category": "perpetual_bond",
+      "expense_ratio": 0.03,
+      "aum_usd": 25000000000.0,
+      "inception": "2009-11-19",
+      "holdings_count": 100,
+      "top10_weight": 22.0,
+      "largest_holding_weight": 3.5,
+      "turnover_pct": 60,
+      "benchmark": "Bloomberg US Treasury 1-3 Year Index",
+      "index_tracking": true,
+      "average_duration_years": 1.9,
+      "average_maturity_years": 2.0,
+      "sec_yield_pct": 4.0,
+      "credit_quality": "US Treasury",
+      "has_maturity_date": false,
+      "methodology": "US Treasuries with one to three years remaining, rolled continuously. Low rate sensitivity but no defined maturity value.",
+      "top_holdings": [],
+      "sector_weights": {},
+      "country_weights": {
+        "United States": 100.0
+      },
+      "source_url": "https://investor.vanguard.com/investment-products/etfs/profile/vgsh"
+    }
+  }
+}
