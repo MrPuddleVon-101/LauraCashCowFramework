@@ -1,0 +1,12 @@
+# Keep the build context small and stop a local install leaking into the image.
+# Render builds from a clean clone, but a local `docker build` would otherwise
+# copy 200MB of cache over the top of the one npm ci just produced.
+**/node_modules
+**/.venv
+**/__pycache__
+**/.cache
+**/dist
+**/*.db
+**/.DS_Store
+.git
+docs
