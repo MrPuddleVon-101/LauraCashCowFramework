@@ -1,3 +1,4 @@
+import { asset } from "../lib/asset";
 import { useEffect, useState } from "react";
 import { api, fmtMoney } from "../api";
 import { useDrift, useTilt } from "../lib/motion";
@@ -27,7 +28,7 @@ const CARDS: Card[] = [
   {
     k: "client", kind: "Case study", label: "Who", fig: "1", figNote: "person, and she is specific",
     title: "Laura Gao", tint: "#8e4f86",
-    photo: "/brand/laura-books.webp",
+    photo: asset("brand/laura-books.webp"),
     lede: "Cartoonist, entrepreneur, and the reason the second score exists at all.",
     body: [
       "Wuhan, then Texas, then Wharton in 2018 for Statistics and Information Decisions Management. She wrote The Wuhan I Know in 2020, then Messy Roots, a graphic memoir that sells well and gets taught in classrooms.",
@@ -38,7 +39,7 @@ const CARDS: Card[] = [
   {
     k: "in", kind: "Case study", label: "In", fig: "$450k", figNote: "and then the tap closes",
     title: "Two cheques, six years", tint: "var(--sage-dk)",
-    photo: "/brand/laura-outdoor.webp",
+    photo: asset("brand/laura-outdoor.webp"),
     lede: "$300,000 at the start of 2027. $150,000 at the start of 2028. That is the lot.",
     body: [
       "Nothing goes in after that and nothing comes out before 2033. Her living costs are paid from somewhere else entirely.",
@@ -207,9 +208,9 @@ export default function Home({ go }: { go: (v: View) => void }) {
             </div>
 
             <div className="cover-stack" ref={polaroid}>
-              <div className="pol pol-back"><img src="/brand/laura-books.webp" alt="" /></div>
+              <div className="pol pol-back"><img src={asset("brand/laura-books.webp")} alt="" /></div>
               <div className="pol pol-front">
-                <img src="/brand/laura-cutout.png" alt="Laura Gao" />
+                <img src={asset("brand/laura-cutout.png")} alt="Laura Gao" />
                 <span className="pol-cap">the client</span>
                 <i className="tape tape-left" aria-hidden="true" />
               </div>

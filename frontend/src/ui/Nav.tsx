@@ -1,3 +1,4 @@
+import { asset } from "../lib/asset";
 import { useEffect, useState } from "react";
 import { onScroll } from "../lib/motion";
 
@@ -34,7 +35,7 @@ export function Nav({ view, go }: { view: View; go: (v: View) => void }) {
     <header className={`nav${stuck ? " is-stuck" : ""}`}>
       <div className="nav-in">
         <button className="brand" onClick={() => go("home")}>
-          <img src="/brand/lccf-logo.png" alt="" draggable={false} />
+          <img src={asset("brand/lccf-logo.png")} alt="" draggable={false} />
           <span className="brand-w">
             <span className="brand-1">Stonky</span>
             <span className="brand-x">×</span>

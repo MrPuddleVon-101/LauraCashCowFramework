@@ -3,6 +3,7 @@
  * meant to press, a torn seam where one colour field ends.
  */
 
+import { asset } from "../lib/asset";
 import { useEffect, useRef } from "react";
 import { inkArrow, inkEllipse, inkUnderline, sparkle, tornEdge } from "../lib/draw";
 import { useEnter } from "../lib/motion";
@@ -134,7 +135,7 @@ export function Cow({ size = 220, className = "", watch = true }: {
 
   return (
     <div className="cow" ref={box} style={{ ["--size" as string]: `${size}px` }}>
-      <img src="/brand/lccf-logo.png" alt="Laura Cash Cow Framework" className={className} draggable={false} />
+      <img src={asset("brand/lccf-logo.png")} alt="Laura Cash Cow Framework" className={className} draggable={false} />
       <span className="cow-eye cow-eye-l" aria-hidden="true" />
       <span className="cow-eye cow-eye-r" aria-hidden="true" />
     </div>

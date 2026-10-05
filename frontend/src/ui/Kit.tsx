@@ -1,3 +1,4 @@
+import { asset } from "../lib/asset";
 import { useEffect, useRef, useState } from "react";
 import { skew } from "../lib/draw";
 import { reduced, useEnter, useTally, useVelocity } from "../lib/motion";
@@ -179,7 +180,7 @@ export function Fold({ title, note, children, open: initial = false }: {
 export function Working({ what = "Working" }: { what?: string }) {
   return (
     <div className="working" role="status">
-      <img src="/brand/lccf-logo.png" alt="" className="working-cow" />
+      <img src={asset("brand/lccf-logo.png")} alt="" className="working-cow" />
       <span className="working-t">{what}</span>
       <span className="working-dots" aria-hidden="true"><i /><i /><i /></span>
     </div>

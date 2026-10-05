@@ -1,3 +1,4 @@
+import { asset } from "./lib/asset";
 import { useEffect, useState } from "react";
 import { engineIsLive, snapshotMeta, type Snapshot } from "./api";
 import { useRevealAll } from "./lib/motion";
@@ -46,7 +47,7 @@ export default function App() {
       <footer className="band band-ink foot">
         <div className="wrap foot-in">
           <div className="foot-brand">
-            <img src="/brand/lccf-logo.png" alt="" />
+            <img src={asset("brand/lccf-logo.png")} alt="" />
             <div>
               <span className="foot-n">Stonky × Cash Cows</span>
               <span className="foot-s">The Laura Cash Cow Framework</span>
