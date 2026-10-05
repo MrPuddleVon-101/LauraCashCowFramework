@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { engineIsLive, snapshotMeta, type Snapshot } from "./api";
 import { useRevealAll } from "./lib/motion";
 import { Nav, Progress, type View } from "./ui/Nav";
 import { Tear } from "./ui/Marks";
@@ -10,6 +11,15 @@ const FROM_HASH = (): View => (window.location.hash.replace("#", "") === "score"
 export default function App() {
   const [view, setView] = useState<View>(FROM_HASH);
   useRevealAll();
+  const [snap, setSnap] = useState<Snapshot | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    engineIsLive().then((v) => {
+      if (!v && alive) snapshotMeta().then((m) => alive && setSnap(m));
+    });
+    return () => { alive = false; };
+  }, []);
 
   useEffect(() => {
     const onHash = () => setView(FROM_HASH());
@@ -48,6 +58,13 @@ export default function App() {
             <button onClick={() => go("score")} aria-current={view === "score"}>Score a ticker</button>
           </nav>
 
+          {snap && (
+            <p className="foot-snap">
+              Hosted as plain files, so the scoring engine is not running behind this
+              build. Every figure is the engine's own output, frozen on{" "}
+              {snap.generated_on} under {snap.framework_version}.
+            </p>
+          )}
           <p className="foot-src">
             Company numbers come from SEC EDGAR, IFRS filers included. Prices and spreads from
             Nasdaq. The yield curve from the U.S. Treasury. Fund facts are typed up from issuer

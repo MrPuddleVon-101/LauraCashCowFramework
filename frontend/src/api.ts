@@ -98,10 +98,62 @@ export type Evaluation = {
 
 const BASE = "/api";
 
-async function get<T>(path: string): Promise<T> {
-  const r = await fetch(`${BASE}${path}`);
+/* --- live engine, or a frozen snapshot of it --------------------------------
+ *
+ * The scoring engine is Python. A static host cannot run it, so the build also
+ * ships the engine's own output for a fixed universe of tickers. We probe the
+ * API once: if it answers we use it and everything is live, and if it does not
+ * we read the snapshot and the interface says so on its face. The two paths
+ * return the same shapes, because the snapshot is literally what the engine
+ * wrote.
+ */
+
+const SNAP = `${import.meta.env.BASE_URL}data`;
+
+export type Snapshot = {
+  generated_on: string;
+  framework_version: string;
+  position_pct: number;
+  tickers: string[];
+  index: { ticker: string; name: string; type: string; signal: string; composite: number }[];
+  note: string;
+};
+
+let probe: Promise<boolean> | null = null;
+let snapshot: Promise<Snapshot | null> | null = null;
+
+/** True when a real engine is answering, false when we are reading the snapshot. */
+export function engineIsLive(): Promise<boolean> {
+  if (!probe) {
+    probe = fetch(`${BASE}/health`)
+      .then((r) => r.ok)
+      .catch(() => false);
+  }
+  return probe;
+}
+
+export function snapshotMeta(): Promise<Snapshot | null> {
+  if (!snapshot) {
+    snapshot = fetch(`${SNAP}/manifest.json`)
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null);
+  }
+  return snapshot;
+}
+
+async function frozen<T>(file: string): Promise<T> {
+  const r = await fetch(`${SNAP}/${file}`);
   if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
   return r.json();
+}
+
+async function get<T>(path: string, fallback: string): Promise<T> {
+  if (await engineIsLive()) {
+    const r = await fetch(`${BASE}${path}`);
+    if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+    return r.json();
+  }
+  return frozen<T>(fallback);
 }
 
 async function post<T>(path: string, body: unknown): Promise<T> {
@@ -115,18 +167,48 @@ async function post<T>(path: string, body: unknown): Promise<T> {
 }
 
 export const api = {
-  framework: () => get<any>("/framework"),
-  client: () => get<any>("/client"),
-  search: (q: string) => get<{ results: { ticker: string; name: string | null; type: string }[] }>(
-    `/search?q=${encodeURIComponent(q)}`,
-  ),
-  evaluate: (body: {
+  framework: () => get<any>("/framework", "framework.json"),
+  client: () => get<any>("/client", "client.json"),
+  liabilities: (asOf = 2027) =>
+    get<any>(`/liabilities?as_of_year=${asOf}`, "liabilities.json"),
+
+  search: async (q: string) => {
+    if (await engineIsLive()) {
+      const r = await fetch(`${BASE}/search?q=${encodeURIComponent(q)}`);
+      if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+      return r.json() as Promise<{ results: { ticker: string; name: string | null; type: string }[] }>;
+    }
+    const snap = await snapshotMeta();
+    const needle = q.trim().toUpperCase();
+    const results = (snap?.index ?? [])
+      .filter((x) => x.ticker.includes(needle) || x.name.toUpperCase().includes(needle))
+      .slice(0, 12)
+      .map((x) => ({ ticker: x.ticker, name: x.name, type: x.type }));
+    return { results };
+  },
+
+  evaluate: async (body: {
     ticker: string;
     role?: string | null;
     position_pct?: number;
     target_payment_year?: number | null;
-  }) => post<Evaluation>("/security/evaluate", body),
-  liabilities: (asOf = 2027) => get<any>(`/liabilities?as_of_year=${asOf}`),
+  }): Promise<Evaluation> => {
+    if (await engineIsLive()) return post<Evaluation>("/security/evaluate", body);
+    const sym = body.ticker.trim().toUpperCase();
+    try {
+      return await frozen<Evaluation>(`eval/${sym}.json`);
+    } catch {
+      const snap = await snapshotMeta();
+      return {
+        error: "not_in_snapshot",
+        message:
+          `${sym} is not in the saved set. This build has no scoring engine behind it, ` +
+          `so it can only show tickers that were scored in advance` +
+          (snap ? ` on ${snap.generated_on}` : "") +
+          `. Run the API locally and it will score anything.`,
+      } as Evaluation;
+    }
+  },
 };
 
 export const fmtMoney = (n: number | null | undefined, dp = 0) =>

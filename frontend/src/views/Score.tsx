@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { api, type Evaluation } from "../api";
+import { api, engineIsLive, snapshotMeta, type Evaluation, type Snapshot } from "../api";
 import { Btn, Note, Paper, Working } from "../ui/Kit";
 import { Arrow, Spark } from "../ui/Marks";
 import Verdict from "./Verdict";
@@ -43,6 +43,8 @@ export default function Score() {
   const [cursor, setCursor] = useState(-1);
   const [result, setResult] = useState<Evaluation | null>(null);
   const [need, setNeed] = useState({ sqs: 85, lpfs: 85, ccs: 85, dcs: 85 });
+  const [live, setLive] = useState<boolean | null>(null);
+  const [snap, setSnap] = useState<Snapshot | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const box = useRef<HTMLDivElement>(null);
@@ -50,6 +52,19 @@ export default function Score() {
   const out = useRef<HTMLDivElement>(null);
 
   useEffect(() => { field.current?.focus(); }, []);
+
+  // Whether there is a real engine behind this build. When there is not, the
+  // controls below cannot do anything, so they are turned off and said so
+  // rather than left live and quietly ignored.
+  useEffect(() => {
+    let alive = true;
+    engineIsLive().then((v) => {
+      if (!alive) return;
+      setLive(v);
+      if (!v) snapshotMeta().then((m) => alive && setSnap(m));
+    });
+    return () => { alive = false; };
+  }, []);
 
   // The gate row quotes real thresholds, so it reads them from the locked
   // framework rather than hard coding numbers that could drift from policy.
@@ -123,7 +138,8 @@ export default function Score() {
     else if (e.key === "Escape") setShowSug(false);
   }
 
-  const wantsYear = role === "LM";
+  const wantsYear = role === "LM" && live !== false;
+  const frozen = live === false;
 
   return (
     <div className="band band-paper view">
@@ -138,6 +154,18 @@ export default function Score() {
             tell you whether that is a good idea.
           </p>
         </header>
+
+        {frozen && (
+          <Note tone="warn">
+            <b>Snapshot, not a live engine. </b>
+            This build is hosted as plain files, so the Python scoring engine is not
+            running behind it. Every verdict here is the real engine's own output,
+            frozen{snap ? ` on ${snap.generated_on}` : ""} at the default role and an
+            {" "}{snap ? snap.position_pct.toFixed(0) : "8"}% position, for{" "}
+            {snap ? snap.tickers.length : "a fixed set of"} tickers. Pick one below, or
+            run the API locally to score anything you like with any role and size.
+          </Note>
+        )}
 
         <Paper seed={3} tilt={0.5} className="desk" anim="rise">
           <div className="desk-main" ref={box}>
@@ -175,11 +203,12 @@ export default function Score() {
 
           <div className="desk-opts">
             <div className="opt">
-              <span className="opt-k">What is it for</span>
+              <span className="opt-k">What is it for{frozen ? ", fixed in this snapshot" : ""}</span>
               <div className="opt-chips">
                 {ROLES.map(([k, label, hint]) => (
                   <button key={k || "auto"} className="rolechip" data-on={role === k || undefined}
-                          title={hint} onClick={() => setRole(k)}>
+                          disabled={frozen} title={frozen ? "Fixed in this snapshot" : hint}
+                          onClick={() => setRole(k)}>
                     {label}
                   </button>
                 ))}
