@@ -2,7 +2,7 @@
  "generated_on": "2026-10-05",
  "framework_version": "LCCF-1.0.0",
  "position_pct": 8.0,
- "role": "auto",
+ "role": "auto, with dated funds pointed at the year they mature",
  "tickers": [
   "AAPL",
   "ABBV",
@@ -53,6 +53,27 @@
   "XOM"
  ],
  "index": [
+  {
+   "ticker": "IBTM",
+   "name": "iShares iBonds Dec 2033 Term Treasury ETF",
+   "type": "Defined maturity bond ETF",
+   "signal": "AMBER_PLUS",
+   "composite": 85.8
+  },
+  {
+   "ticker": "IBTO",
+   "name": "iShares iBonds Dec 2034 Term Treasury ETF",
+   "type": "Defined maturity bond ETF",
+   "signal": "AMBER_PLUS",
+   "composite": 85.8
+  },
+  {
+   "ticker": "IBTP",
+   "name": "iShares iBonds Dec 2035 Term Treasury ETF",
+   "type": "Defined maturity bond ETF",
+   "signal": "AMBER_PLUS",
+   "composite": 85.6
+  },
   {
    "ticker": "SGOV",
    "name": "iShares 0-3 Month Treasury Bond ETF",
@@ -115,27 +136,6 @@
    "type": "Individual stock",
    "signal": "AMBER",
    "composite": 72.6
-  },
-  {
-   "ticker": "IBTM",
-   "name": "iShares iBonds Dec 2033 Term Treasury ETF",
-   "type": "Defined maturity bond ETF",
-   "signal": "AMBER",
-   "composite": 71.8
-  },
-  {
-   "ticker": "IBTO",
-   "name": "iShares iBonds Dec 2034 Term Treasury ETF",
-   "type": "Defined maturity bond ETF",
-   "signal": "AMBER",
-   "composite": 71.7
-  },
-  {
-   "ticker": "IBTP",
-   "name": "iShares iBonds Dec 2035 Term Treasury ETF",
-   "type": "Defined maturity bond ETF",
-   "signal": "AMBER",
-   "composite": 71.6
   },
   {
    "ticker": "PG",

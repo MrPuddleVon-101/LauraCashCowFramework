@@ -35,7 +35,11 @@ STOCKS = [
 def main() -> None:
     (OUT / "eval").mkdir(parents=True, exist_ok=True)
 
-    funds = [f["ticker"] for f in list_funds()]
+    # A defined maturity fund is pointless without a payment to point it at, and
+    # scoring one with no target year reads its fit score as though it matched
+    # nothing. Give each one the year it actually matures into.
+    maturity = {f["ticker"]: f.get("maturity_year") for f in list_funds()}
+    funds = list(maturity)
     tickers = sorted(set(funds) | set(STOCKS))
 
     (OUT / "framework.json").write_text(json.dumps(get_framework(), default=str))
@@ -46,7 +50,10 @@ def main() -> None:
     failed: list[str] = []
     for i, t in enumerate(tickers, 1):
         try:
-            result = ev.evaluate(ticker=t, role=None, position_pct=8.0, target_payment_year=None)
+            result = ev.evaluate(
+                ticker=t, role=None, position_pct=8.0,
+                target_payment_year=maturity.get(t),
+            )
         except Exception as exc:  # a snapshot is best effort; the live engine is not
             failed.append(f"{t}: {exc}")
             print(f"  [{i}/{len(tickers)}] {t} FAILED {exc}", flush=True)
@@ -70,7 +77,7 @@ def main() -> None:
         "generated_on": date.today().isoformat(),
         "framework_version": FRAMEWORK_VERSION,
         "position_pct": 8.0,
-        "role": "auto",
+        "role": "auto, with dated funds pointed at the year they mature",
         "tickers": sorted(r["ticker"] for r in index),
         "index": sorted(index, key=lambda r: -r["composite"]),
         "failed": failed,
