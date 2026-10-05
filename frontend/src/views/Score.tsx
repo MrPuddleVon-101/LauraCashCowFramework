@@ -19,7 +19,7 @@ const PICKS: { t: string; r: string; y?: number; why: string }[] = [
   { t: "AVUS", r: "CG", why: "the core" },
   { t: "VXUS", r: "ID", why: "outside the US" },
   { t: "IBTM", r: "LM", y: 2033, why: "dated to 2033" },
-  { t: "BND", r: "LM", y: 2033, why: "fails the gate" },
+  { t: "BND", r: "DA", why: "ballast, not a matcher" },
   { t: "NVDA", r: "SG", why: "a single name" },
   { t: "SGOV", r: "LR", why: "dry powder" },
   { t: "SMH", r: "SG", why: "one sector" },
@@ -29,7 +29,7 @@ const PICKS: { t: string; r: string; y?: number; why: string }[] = [
 const STEPS: [string, string, string][] = [
   ["01", "Work out what it is", "A Treasury and a growth stock cannot share a scoring model."],
   ["02", "Go and check", "Filings from SEC EDGAR. Price and spread from the exchange. No estimates."],
-  ["03", "Rank it honestly", "Against 1,613 registrants, not five companies somebody picked."],
+  ["03", "Rank it honestly", "Against 1,608 registrants, not five companies somebody picked."],
   ["04", "Run the gate first", "Before any weighting. A hard failure cannot be outscored later."],
 ];
 
@@ -255,7 +255,7 @@ export default function Score() {
 
         <div ref={out} />
 
-        {busy && <Working what={`Reading filings, prices and 1,613 peers for ${q}`} />}
+        {busy && <Working what={`Reading filings, prices and 1,608 peers for ${q}`} />}
 
         {error && !busy && <Note tone="bad">{error}</Note>}
 

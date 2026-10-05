@@ -16,13 +16,17 @@ from ..config import CLIENT, POLICY
 from ..providers import treasury
 from .registry import get_fund
 
-FundingState = Literal["UNFUNDED", "PARTIALLY_FUNDED", "ECONOMICALLY_COVERED", "MATCHED", "PAID"]
+FundingState = Literal["UNFUNDED", "PARTIALLY_FUNDED", "ECONOMICALLY_COVERED", "MATCHED", "PAID", "UNRECORDED"]
 
 STATE_DESCRIPTIONS: dict[str, str] = {
     "UNFUNDED": "No dedicated matching asset and no modelled capital behind it.",
     "PARTIALLY_FUNDED": "A dedicated cash flow exists but covers less than the full $50,000.",
     "ECONOMICALLY_COVERED": "Portfolio modelling suggests enough capital, but nothing is dedicated to this date.",
     "MATCHED": "A specific high certainty cash flow is dedicated to this payment.",
+    "UNRECORDED": (
+        "The due date has passed but no payment was recorded against it, so this is "
+        "still an open obligation rather than a settled one."
+    ),
     "PAID": "The obligation has been met.",
 }
 
@@ -77,6 +81,8 @@ def build_calendar(
     matched: list[MatchedAsset] | None = None,
     economic_capital: float = 0.0,
     flat_rate: float | None = None,
+    paid_years: set[int] | None = None,
+    curve: dict | None = None,
 ) -> dict:
     """The full ten year ladder with a funding state and present value per payment.
 
@@ -86,7 +92,8 @@ def build_calendar(
     marked ECONOMICALLY_COVERED rather than MATCHED.
     """
     matched = matched or []
-    curve = treasury.get_curve()
+    paid_years = paid_years or set()
+    curve = curve if curve is not None else treasury.get_curve()
     by_year: dict[int, float] = {}
     notes: dict[int, list[str]] = {}
     for m in matched:
@@ -103,9 +110,14 @@ def build_calendar(
         dedicated = by_year.get(year, 0.0)
         pv = present_value(year, as_of_year, curve, flat_rate=flat_rate)
 
-        if year < as_of_year:
+        if year in paid_years:
             state: FundingState = "PAID"
             shortfall = 0.0
+        elif year < as_of_year and dedicated < required:
+            # A year going by is not a payment. Without a recorded transaction this
+            # is an open obligation whose due date has passed, not a settled one.
+            state = "UNRECORDED"
+            shortfall = required - dedicated
         elif dedicated >= required:
             state = "MATCHED"
             shortfall = 0.0
@@ -131,6 +143,9 @@ def build_calendar(
             "state": state,
             "state_description": STATE_DESCRIPTIONS[state],
             "present_value": pv["present_value"],
+            "residual_present_value": round(
+                pv["present_value"] * (shortfall / required) if required else 0.0, 2
+            ),
             "discount_rate_pct": pv["discount_rate_pct"],
             "years_away": pv["years"],
             "notes": notes.get(year, []),
@@ -140,7 +155,11 @@ def build_calendar(
     for p in payments:
         counts[p["state"]] = counts.get(p["state"], 0) + 1
 
-    total_pv = sum(p["present_value"] for p in payments if p["state"] not in ("MATCHED", "PAID"))
+    # What is left to buy is the residual on each payment, not its whole face
+    # amount. Counting the full $50,000 of a payment that already has $25,000
+    # dedicated to it overstated the remaining cost by everything already set aside.
+    total_pv = sum(p["residual_present_value"] for p in payments)
+    gross_pv = sum(p["present_value"] for p in payments)
     matched_count = counts.get("MATCHED", 0) + counts.get("PAID", 0)
 
     return {
@@ -150,9 +169,12 @@ def build_calendar(
         "matched_count": matched_count,
         "state_counts": counts,
         "cost_to_secure_remaining": round(total_pv, 2),
+        "gross_liability_pv": round(gross_pv, 2),
         "cost_to_secure_note": (
-            "What it would cost today to buy every payment that is not already matched, "
-            "discounted at the Treasury yield for each payment's own maturity."
+            "What it would cost today to buy the part of each payment that is not already "
+            "covered, discounted at the Treasury par yield for that payment's own maturity. "
+            "A par yield is an approximation here: discounting a single future cash flow "
+            "properly needs a zero-coupon rate bootstrapped from the curve."
         ),
         "curve": {
             "as_of": curve.get("as_of"),

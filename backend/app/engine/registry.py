@@ -119,6 +119,9 @@ def list_funds() -> list[dict]:
             "asset_type_label": ASSET_TYPE_LABELS.get(fund.get("category", ""), "Fund"),
             "expense_ratio": fund.get("expense_ratio"),
             "maturity_year": fund.get("maturity_year"),
+            # Callers need the real date, not just the year: whether a fund can
+            # pay a given January bill depends on the month it winds up.
+            "termination_date": fund.get("termination_date"),
         })
     return sorted(out, key=lambda x: x["ticker"])
 

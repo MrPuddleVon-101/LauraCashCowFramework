@@ -1,6 +1,6 @@
 {
  "generated_on": "2026-10-05",
- "framework_version": "LCCF-1.0.0",
+ "framework_version": "LCCF-1.2.0",
  "position_pct": 8.0,
  "role": "auto, with dated funds pointed at the year they mature",
  "tickers": [
@@ -55,332 +55,332 @@
  "index": [
   {
    "ticker": "IBTM",
-   "name": "iShares iBonds Dec 2033 Term Treasury ETF",
+   "name": "iShares iBonds Dec 2032 Term Treasury ETF",
    "type": "Defined maturity bond ETF",
    "signal": "AMBER_PLUS",
-   "composite": 85.8
+   "composite": 83.9
   },
   {
    "ticker": "IBTO",
-   "name": "iShares iBonds Dec 2034 Term Treasury ETF",
+   "name": "iShares iBonds Dec 2033 Term Treasury ETF",
    "type": "Defined maturity bond ETF",
    "signal": "AMBER_PLUS",
-   "composite": 85.8
-  },
-  {
-   "ticker": "IBTP",
-   "name": "iShares iBonds Dec 2035 Term Treasury ETF",
-   "type": "Defined maturity bond ETF",
-   "signal": "AMBER_PLUS",
-   "composite": 85.6
+   "composite": 83.9
   },
   {
    "ticker": "SGOV",
    "name": "iShares 0-3 Month Treasury Bond ETF",
    "type": "Cash equivalent",
    "signal": "AMBER_PLUS",
-   "composite": 81.0
+   "composite": 83.8
   },
   {
-   "ticker": "AVUS",
-   "name": "Avantis U.S. Equity ETF",
-   "type": "Broad U.S. equity ETF",
-   "signal": "AMBER",
-   "composite": 77.1
+   "ticker": "IBTP",
+   "name": "iShares iBonds Dec 2034 Term Treasury ETF",
+   "type": "Defined maturity bond ETF",
+   "signal": "AMBER_PLUS",
+   "composite": 82.9
   },
   {
    "ticker": "VTI",
    "name": "Vanguard Total Stock Market ETF",
    "type": "Broad U.S. equity ETF",
-   "signal": "AMBER",
-   "composite": 77.0
+   "signal": "AMBER_PLUS",
+   "composite": 79.8
+  },
+  {
+   "ticker": "AVUS",
+   "name": "Avantis U.S. Equity ETF",
+   "type": "Broad U.S. equity ETF",
+   "signal": "AMBER_PLUS",
+   "composite": 78.7
   },
   {
    "ticker": "VOO",
    "name": "Vanguard S&P 500 ETF",
    "type": "Broad U.S. equity ETF",
-   "signal": "AMBER",
-   "composite": 75.4
+   "signal": "AMBER_PLUS",
+   "composite": 78.3
   },
   {
    "ticker": "VGSH",
    "name": "Vanguard Short-Term Treasury ETF",
    "type": "Perpetual bond ETF",
-   "signal": "AMBER",
-   "composite": 74.9
-  },
-  {
-   "ticker": "QQQM",
-   "name": "Invesco NASDAQ 100 ETF",
-   "type": "Sector or thematic ETF",
-   "signal": "AMBER",
-   "composite": 74.8
-  },
-  {
-   "ticker": "LLY",
-   "name": "ELI LILLY AND COMPANY",
-   "type": "Individual stock",
-   "signal": "AMBER",
-   "composite": 74.0
+   "signal": "AMBER_PLUS",
+   "composite": 78.2
   },
   {
    "ticker": "VXUS",
    "name": "Vanguard Total International Stock ETF",
    "type": "International equity ETF",
    "signal": "AMBER",
-   "composite": 73.9
+   "composite": 77.0
   },
   {
-   "ticker": "KO",
-   "name": "COCA COLA CO",
-   "type": "Individual stock",
-   "signal": "AMBER",
-   "composite": 72.6
-  },
-  {
-   "ticker": "PG",
-   "name": "The Procter & Gamble Company",
-   "type": "Individual stock",
-   "signal": "AMBER",
-   "composite": 71.3
-  },
-  {
-   "ticker": "SMH",
-   "name": "VanEck Semiconductor ETF",
+   "ticker": "QQQM",
+   "name": "Invesco NASDAQ 100 ETF",
    "type": "Sector or thematic ETF",
    "signal": "AMBER",
-   "composite": 70.7
+   "composite": 76.6
+  },
+  {
+   "ticker": "TLT",
+   "name": "iShares 20+ Year Treasury Bond ETF",
+   "type": "Perpetual bond ETF",
+   "signal": "AMBER",
+   "composite": 75.9
   },
   {
    "ticker": "VEA",
    "name": "Vanguard FTSE Developed Markets ETF",
    "type": "International equity ETF",
    "signal": "AMBER",
-   "composite": 70.3
-  },
-  {
-   "ticker": "AVGO",
-   "name": "Broadcom Inc.",
-   "type": "Individual stock",
-   "signal": "AMBER",
-   "composite": 70.2
+   "composite": 73.3
   },
   {
    "ticker": "VWO",
    "name": "Vanguard FTSE Emerging Markets ETF",
    "type": "International equity ETF",
    "signal": "AMBER",
-   "composite": 70.0
+   "composite": 72.9
   },
   {
-   "ticker": "COST",
-   "name": "COSTCO WHOLESALE CORP /NEW",
-   "type": "Individual stock",
+   "ticker": "SMH",
+   "name": "VanEck Semiconductor ETF",
+   "type": "Sector or thematic ETF",
    "signal": "AMBER",
-   "composite": 69.7
+   "composite": 72.8
   },
   {
-   "ticker": "AMGN",
-   "name": "Amgen Inc.",
+   "ticker": "LLY",
+   "name": "ELI LILLY AND COMPANY",
    "type": "Individual stock",
    "signal": "AMBER",
-   "composite": 69.5
+   "composite": 72.0
   },
   {
-   "ticker": "ABBV",
-   "name": "AbbVie Inc.",
+   "ticker": "KO",
+   "name": "COCA COLA CO",
    "type": "Individual stock",
    "signal": "AMBER",
-   "composite": 69.0
-  },
-  {
-   "ticker": "MCD",
-   "name": "McDONALD\u2019S CORPORATION",
-   "type": "Individual stock",
-   "signal": "AMBER",
-   "composite": 68.9
-  },
-  {
-   "ticker": "NVDA",
-   "name": "NVIDIA CORP",
-   "type": "Individual stock",
-   "signal": "AMBER",
-   "composite": 68.3
+   "composite": 70.5
   },
   {
    "ticker": "SCHD",
    "name": "Schwab U.S. Dividend Equity ETF",
    "type": "Broad U.S. equity ETF",
    "signal": "AMBER",
-   "composite": 68.1
-  },
-  {
-   "ticker": "PLTR",
-   "name": "Palantir Technologies Inc.",
-   "type": "Individual stock",
-   "signal": "AMBER",
-   "composite": 68.0
-  },
-  {
-   "ticker": "PEP",
-   "name": "PepsiCo, Inc.",
-   "type": "Individual stock",
-   "signal": "AMBER",
-   "composite": 67.8
-  },
-  {
-   "ticker": "VZ",
-   "name": "VERIZON COMMUNICATIONS INC",
-   "type": "Individual stock",
-   "signal": "AMBER",
-   "composite": 67.8
+   "composite": 69.9
   },
   {
    "ticker": "AVDE",
    "name": "Avantis International Equity ETF",
    "type": "International equity ETF",
    "signal": "AMBER",
-   "composite": 66.7
+   "composite": 69.7
   },
   {
-   "ticker": "CVX",
-   "name": "Chevron Corp",
-   "type": "Individual stock",
-   "signal": "RED",
-   "composite": 66.5
-  },
-  {
-   "ticker": "GOOGL",
-   "name": "Alphabet Inc.",
+   "ticker": "AVGO",
+   "name": "Broadcom Inc.",
    "type": "Individual stock",
    "signal": "AMBER",
-   "composite": 66.4
+   "composite": 69.5
   },
   {
-   "ticker": "XOM",
-   "name": "Exxon Mobil Corporation",
-   "type": "Individual stock",
-   "signal": "RED",
-   "composite": 65.9
-  },
-  {
-   "ticker": "MSFT",
-   "name": "MICROSOFT CORPORATION",
+   "ticker": "PG",
+   "name": "The Procter & Gamble Company",
    "type": "Individual stock",
    "signal": "AMBER",
-   "composite": 65.7
+   "composite": 69.5
   },
   {
-   "ticker": "META",
-   "name": "Meta Platforms, Inc.",
+   "ticker": "COST",
+   "name": "COSTCO WHOLESALE CORP /NEW",
    "type": "Individual stock",
    "signal": "AMBER",
-   "composite": 65.1
+   "composite": 68.4
   },
   {
-   "ticker": "O",
-   "name": "REALTY INCOME CORPORATION",
+   "ticker": "NVDA",
+   "name": "NVIDIA CORP",
    "type": "Individual stock",
    "signal": "AMBER",
-   "composite": 64.9
+   "composite": 68.1
   },
   {
    "ticker": "BND",
    "name": "Vanguard Total Bond Market ETF",
    "type": "Perpetual bond ETF",
    "signal": "AMBER",
-   "composite": 64.4
+   "composite": 67.9
+  },
+  {
+   "ticker": "AMGN",
+   "name": "Amgen Inc.",
+   "type": "Individual stock",
+   "signal": "AMBER",
+   "composite": 67.8
+  },
+  {
+   "ticker": "PLTR",
+   "name": "Palantir Technologies Inc.",
+   "type": "Individual stock",
+   "signal": "AMBER",
+   "composite": 67.6
+  },
+  {
+   "ticker": "MCD",
+   "name": "McDONALD\u2019S CORPORATION",
+   "type": "Individual stock",
+   "signal": "AMBER",
+   "composite": 67.5
+  },
+  {
+   "ticker": "ABBV",
+   "name": "AbbVie Inc.",
+   "type": "Individual stock",
+   "signal": "AMBER",
+   "composite": 67.1
+  },
+  {
+   "ticker": "PEP",
+   "name": "PepsiCo, Inc.",
+   "type": "Individual stock",
+   "signal": "AMBER",
+   "composite": 66.8
+  },
+  {
+   "ticker": "VZ",
+   "name": "VERIZON COMMUNICATIONS INC",
+   "type": "Individual stock",
+   "signal": "AMBER",
+   "composite": 66.5
+  },
+  {
+   "ticker": "GOOGL",
+   "name": "Alphabet Inc.",
+   "type": "Individual stock",
+   "signal": "RED",
+   "composite": 65.7
+  },
+  {
+   "ticker": "O",
+   "name": "REALTY INCOME CORPORATION",
+   "type": "Individual stock",
+   "signal": "RED",
+   "composite": 65.6
+  },
+  {
+   "ticker": "META",
+   "name": "Meta Platforms, Inc.",
+   "type": "Individual stock",
+   "signal": "RED",
+   "composite": 65.0
   },
   {
    "ticker": "JPM",
    "name": "JPMORGAN CHASE & CO",
    "type": "Individual stock",
-   "signal": "AMBER",
+   "signal": "RED",
+   "composite": 64.9
+  },
+  {
+   "ticker": "CVX",
+   "name": "Chevron Corp",
+   "type": "Individual stock",
+   "signal": "RED",
+   "composite": 64.6
+  },
+  {
+   "ticker": "MSFT",
+   "name": "MICROSOFT CORPORATION",
+   "type": "Individual stock",
+   "signal": "RED",
+   "composite": 63.9
+  },
+  {
+   "ticker": "XOM",
+   "name": "Exxon Mobil Corporation",
+   "type": "Individual stock",
+   "signal": "RED",
    "composite": 63.8
   },
   {
    "ticker": "HD",
    "name": "The Home Depot, Inc.",
    "type": "Individual stock",
-   "signal": "AMBER",
-   "composite": 63.5
+   "signal": "RED",
+   "composite": 62.4
   },
   {
    "ticker": "CSCO",
    "name": "CISCO SYSTEMS, INC.",
    "type": "Individual stock",
-   "signal": "AMBER",
-   "composite": 62.7
-  },
-  {
-   "ticker": "TLT",
-   "name": "iShares 20+ Year Treasury Bond ETF",
-   "type": "Perpetual bond ETF",
    "signal": "RED",
-   "composite": 62.1
-  },
-  {
-   "ticker": "AAPL",
-   "name": "Apple Inc.",
-   "type": "Individual stock",
-   "signal": "RED",
-   "composite": 61.5
-  },
-  {
-   "ticker": "CAT",
-   "name": "CATERPILLAR INC",
-   "type": "Individual stock",
-   "signal": "RED",
-   "composite": 60.4
+   "composite": 61.8
   },
   {
    "ticker": "UNH",
    "name": "UnitedHealth Group Incorporated",
    "type": "Individual stock",
    "signal": "RED",
-   "composite": 59.7
+   "composite": 59.3
+  },
+  {
+   "ticker": "AAPL",
+   "name": "Apple Inc.",
+   "type": "Individual stock",
+   "signal": "RED",
+   "composite": 59.2
+  },
+  {
+   "ticker": "CAT",
+   "name": "CATERPILLAR INC",
+   "type": "Individual stock",
+   "signal": "RED",
+   "composite": 59.0
   },
   {
    "ticker": "AMZN",
    "name": "AMAZON COM INC",
    "type": "Individual stock",
    "signal": "RED",
-   "composite": 59.0
+   "composite": 58.0
   },
   {
    "ticker": "F",
    "name": "Ford Motor Co",
    "type": "Individual stock",
    "signal": "RED",
-   "composite": 58.6
+   "composite": 57.7
   },
   {
    "ticker": "PFE",
    "name": "PFIZER INC",
    "type": "Individual stock",
    "signal": "RED",
-   "composite": 55.5
+   "composite": 55.3
   },
   {
    "ticker": "TSLA",
    "name": "Tesla, Inc.",
    "type": "Individual stock",
    "signal": "RED",
-   "composite": 54.3
+   "composite": 54.2
   },
   {
    "ticker": "BA",
    "name": "THE BOEING COMPANY",
    "type": "Individual stock",
    "signal": "RED",
-   "composite": 53.0
+   "composite": 51.9
   },
   {
    "ticker": "INTC",
    "name": "INTEL CORP",
    "type": "Individual stock",
    "signal": "RED",
-   "composite": 49.7
+   "composite": 49.0
   }
  ],
  "failed": [],

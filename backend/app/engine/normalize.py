@@ -12,6 +12,7 @@ audit trail is not generated afterwards. It is the data structure the score is m
 from __future__ import annotations
 
 import math
+from numbers import Real
 from dataclasses import dataclass, field, asdict
 from datetime import date, datetime, timezone
 from typing import Iterable, Literal, Sequence
@@ -195,15 +196,38 @@ def _quantile(ordered: Sequence[float], q: float) -> float:
     return ordered[lower] + (ordered[upper] - ordered[lower]) * (pos - lower)
 
 
+def finite(value: float | None) -> float | None:
+    """Return the value only if it is a real, finite number.
+
+    NaN and infinity used to pass straight through into rankings, JSON responses
+    and score comparisons, where NaN compares false against everything and
+    quietly lands at one end of a distribution.
+    """
+    if value is None or isinstance(value, bool) or not isinstance(value, Real):
+        return None
+    v = float(value)
+    return v if math.isfinite(v) else None
+
+
 def percentile_rank(value: float, peers: Sequence[float]) -> float:
-    """Share of the winsorised peer set at or below `value`, in 0..1."""
-    if not peers:
+    """Tie-aware rank of `value` within the winsorised peer set, in 0..1.
+
+    Counting everything at or below the value made a complete tie rank 1.0, so a
+    candidate identical to every peer scored 98 when higher was better and 8 when
+    lower was better: the same company at opposite ends of the scale depending on
+    which way the metric pointed. Splitting the tied block puts it at the middle,
+    which is what being indistinguishable from your peers actually means.
+    """
+    clean = [p for p in (finite(x) for x in peers) if p is not None]
+    v = finite(value)
+    if not clean or v is None:
         return 0.5
-    clipped = winsorise(list(peers))
+    clipped = winsorise(clean)
     lo, hi = min(clipped), max(clipped)
-    v = min(max(value, lo), hi)
-    at_or_below = sum(1 for p in clipped if p <= v)
-    return at_or_below / len(clipped)
+    v = min(max(v, lo), hi)
+    below = sum(1 for p in clipped if p < v)
+    equal = sum(1 for p in clipped if p == v)
+    return (below + equal / 2.0) / len(clipped)
 
 
 def score_against_peers(
@@ -212,7 +236,7 @@ def score_against_peers(
     higher_is_better: bool = True,
 ) -> tuple[float, float | None, float | None]:
     """Returns (score 0-100, percentile 0-1, peer median)."""
-    if value is None or not peers:
+    if finite(value) is None or not peers:
         return NEUTRAL, None, None
     pct = percentile_rank(value, peers)
     rank = pct if higher_is_better else 1.0 - pct
@@ -228,6 +252,7 @@ def score_against_bands(value: float | None, bands: Sequence[tuple[float, float]
     own units. Interpolates linearly between the two bracketing bands so the score
     moves continuously rather than stepping.
     """
+    value = finite(value)
     if value is None or not bands:
         return NEUTRAL
     pts = sorted(bands, key=lambda b: b[0])
@@ -251,6 +276,7 @@ class ScoreCard:
         self.model_name = model_name
         self.categories = categories  # category key -> total points available
         self.metrics: list[Metric] = []
+        self.empty_categories: list[str] = []
         self._finalised = False
 
     def add(self, metric: Metric) -> Metric:
@@ -286,7 +312,7 @@ class ScoreCard:
             )
             return self.add(m)
 
-        if value is None:
+        if finite(value) is None:
             m = Metric(
                 key=key, label=label, weight=weight, category=category, value=None,
                 units=units, status="MISSING", higher_is_better=higher_is_better,
@@ -375,12 +401,25 @@ class ScoreCard:
                     m.effective_weight = m.weight + na_weight * (m.weight / observed_weight)
                 else:
                     m.effective_weight = m.weight
-            if not observed and na_weight:
-                # Nothing in this category resolved. Hold the declared weight on the
-                # missing metrics so data confidence records the whole gap.
-                for m in metrics:
-                    if m.status == "MISSING":
-                        m.effective_weight = m.weight
+            if not observed:
+                # Nothing in this category resolved. The released weight has to stay
+                # inside the category, or the model silently shrinks: a 50 point
+                # category of 40 not-applicable plus 10 missing used to contribute
+                # only 10 points, which magnified every category that did resolve and
+                # understated how much evidence was actually absent.
+                declared = self.categories.get(cat, sum(m.weight for m in metrics))
+                missing = [m for m in metrics if m.status == "MISSING"]
+                if missing:
+                    missing_weight = sum(m.weight for m in missing) or 1.0
+                    for m in missing:
+                        m.effective_weight = declared * (m.weight / missing_weight)
+                else:
+                    # Every metric in the category is genuinely inapplicable. Holding
+                    # the weight at neutral would invent an opinion, so the category
+                    # is recorded as carrying no points and the fact is reported.
+                    for m in metrics:
+                        m.effective_weight = 0.0
+                    self.empty_categories.append(cat)
 
         total = sum(m.contribution for m in self.metrics)
         available = sum(m.effective_weight for m in self.metrics)
@@ -412,6 +451,7 @@ class ScoreCard:
             "points_earned": round(total, 2),
             "points_available": round(available, 2),
             "missing_weight_share": round(missing_share, 4),
+            "inapplicable_categories": list(self.empty_categories),
             "categories": categories,
             "metrics": [m.to_dict() for m in self.metrics],
         }

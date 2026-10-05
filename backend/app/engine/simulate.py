@@ -69,6 +69,7 @@ def project(
     n_paths: int = DEFAULT_PATHS,
     ladder_payments_secured: int | None = None,
     flat_yield: float | None = None,
+    curve: dict | None = None,
 ) -> dict:
     """Project Laura's portfolio from the 2027 contribution to the 2033 decision point.
 
@@ -82,7 +83,7 @@ def project(
     secured = POLICY.payments_targeted_for_early_matching if ladder_payments_secured is None else ladder_payments_secured
     secured = max(0, min(CLIENT.operating_payments_count, secured))
 
-    curve = treasury.get_curve()
+    curve = curve if curve is not None else treasury.get_curve()
 
     # Cost today of buying the first `secured` payments outright.
     ladder_cost_2027 = 0.0
@@ -113,16 +114,40 @@ def project(
 
     total_2033 = growth + ladder
 
-    # In 2033 the operating reserve is established before anything goes to the facility.
+    # Two accounts, kept apart.
+    #
+    # The ladder is dedicated: it exists to pay the payments it bought and no
+    # dollar of it is available for anything else. Adding it back into the total
+    # and then spending that total on the operating reserve and the facility let
+    # the same money be committed twice, which is why every saved evaluation
+    # reported 100% funding and the same facility capacity no matter what was
+    # being scored. Only the growth sleeve is free capital.
+    free_capital = growth
+
+    # A payment counts as secured when it was actually paid for, not when policy
+    # says it was targeted. The contributions buy payments in order; whatever the
+    # money did not reach is still an open obligation.
+    ladder_spent = float(ladder[0]) if n_paths else 0.0
+    secured_actual = 0
+    budget = ladder_spent
+    for i in range(secured):
+        year = CLIENT.first_payment_year + i
+        cost = present_value(year, 2027, curve, flat_rate=flat_yield)["present_value"]
+        if budget + 1e-6 >= cost:
+            budget -= cost
+            secured_actual += 1
+        else:
+            break
+
+    # The reserve the growth sleeve has to carry in 2033 covers every payment the
+    # ladder did not actually secure.
     reserve_needed = 0.0
-    for i in range(secured, CLIENT.operating_payments_count):
+    for i in range(secured_actual, CLIENT.operating_payments_count):
         year = CLIENT.first_payment_year + i
         reserve_needed += present_value(year, CLIENT.residency_start_year, curve, flat_rate=flat_yield)["present_value"]
 
-    after_reserve = np.maximum(0.0, total_2033 - reserve_needed)
-    fundable = (total_2033 >= reserve_needed) if secured < CLIENT.operating_payments_count else np.ones(n_paths, dtype=bool)
-    # A matched payment is matched regardless of the growth sleeve, so funding
-    # probability only depends on covering the payments that are still unsecured.
+    after_reserve = np.maximum(0.0, free_capital - reserve_needed)
+    fundable = free_capital >= reserve_needed
     funding_probability = float(np.mean(fundable))
 
     # PRD 47. Operating payments have priority, so capacity is what survives the
@@ -139,9 +164,11 @@ def project(
     return {
         "paths": n_paths,
         "equity_weight": equity_weight,
-        "payments_secured_by_2028": secured,
+        "payments_secured_by_2028": secured_actual,
+        "payments_secured_requested": secured,
         "ladder_cost_2027": round(ladder_cost_2027, 2),
         "ladder_fully_funded_by_2028": bool(ladder_shortfall <= 1.0),
+        "ladder_shortfall_2028": round(float(ladder_shortfall), 2),
         "reserve_needed_2033": round(reserve_needed, 2),
         "funding_probability": round(funding_probability, 4),
         "meets_policy_threshold": bool(funding_probability >= POLICY.required_funding_probability),
@@ -160,7 +187,10 @@ def project(
             "p75": round(pct(raw_capacity, 75), 2),
             "optimistic_p90": round(pct(raw_capacity, 90), 2),
             "probability_above_zero": round(float(np.mean(raw_capacity > 0)), 4),
-            "basis": "Uncapped. What the portfolio could afford after the operating reserve and the $100,000 retained growth target.",
+            "basis": (
+                "Uncapped, and drawn only from the growth sleeve. Capital dedicated to the "
+                "payment ladder is excluded because it is already committed."
+            ),
         },
         "facility_recommended": {
             "pessimistic_p10": round(pct(recommended, 10), 2),
@@ -175,6 +205,11 @@ def project(
         "curve_source": curve.get("source"),
         "seed": SEED,
         "reproducibility": "Fixed seed. Any figure shown can be regenerated exactly.",
+        "free_capital_2033": {
+            "p10": round(float(np.percentile(free_capital, 10)), 2),
+            "median": round(float(np.percentile(free_capital, 50)), 2),
+            "basis": "The growth sleeve only. The dedicated ladder is not included.",
+        },
         "_distribution": total_2033,
         "_facility": raw_capacity,
         "_recommended": recommended,

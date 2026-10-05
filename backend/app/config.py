@@ -11,12 +11,17 @@ from __future__ import annotations
 from dataclasses import dataclass, field, asdict
 from typing import Literal
 
-FRAMEWORK_VERSION = "LCCF-1.0.0"
+FRAMEWORK_VERSION = "LCCF-1.2.0"
 FRAMEWORK_AUTHOR = "Cash Cows investment team"
-FRAMEWORK_LOCKED_ON = "2026-10-02"
-FRAMEWORK_CHANGE_REASON = "Initial framework lock, before any candidate was scored."
-
-# Year 0 is 2026. Subtract 2026 from a calendar year to get its year number.
+FRAMEWORK_LOCKED_ON = "2026-10-05"
+FRAMEWORK_CHANGE_REASON = (
+    "Audit remediation. Dedicated ladder capital is no longer counted as spendable; "
+    "liability matching compares real cash-arrival dates rather than calendar years; "
+    "the three dated Treasury fund identities were corrected; protection mode now makes "
+    "a risky holding score worse rather than better; a balance sheet ratio is no longer "
+    "read as a trading spread; peer ties are neutral and nonfinite inputs are rejected. "
+    "Scores from earlier versions are not comparable with these."
+)# Year 0 is 2026. Subtract 2026 from a calendar year to get its year number.
 BASE_YEAR = 2026
 
 

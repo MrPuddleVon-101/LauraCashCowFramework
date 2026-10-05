@@ -13,6 +13,7 @@ preferences, and PRD 31 says so in those words.
 from __future__ import annotations
 
 from ..config import CLIENT, POLICY, ROLE_BUCKET, ROLES, risk_state
+from .dates import covers, match_score
 from .normalize import NEUTRAL, ScoreCard, Source, score_against_bands
 
 TEAM = Source(
@@ -68,6 +69,22 @@ TEAM_DEFINED_ROLES = {"LG", "DA"}
 # Risk state changes how hard the downside categories bite. PRD 40 asks the framework
 # to change behaviour mathematically rather than by assertion.
 RISK_STATE_DOWNSIDE_MULTIPLIER = {"GROWTH": 0.80, "BALANCED": 1.00, "PROTECTION": 1.35}
+
+
+#: How far a drawdown score sits below perfect is what the risk state scales. The
+#: previous form, 50 + (base - 50) / multiplier, divided the penalty instead of
+#: multiplying it, so a -45% drawdown scored 27.5 in growth mode and 36.7 in
+#: protection mode. The holding looked better precisely when Laura could least
+#: afford it. Scaling the shortfall from 100 keeps the ordering right at every
+#: drawdown: stricter state, lower score, always.
+DRAWDOWN_BANDS = [(-70, 6), (-55, 20), (-45, 32), (-35, 48), (-25, 66), (-18, 80), (-10, 93), (-4, 100)]
+
+
+def downside_score(max_drawdown_pct: float, state: str) -> float:
+    """Score an observed drawdown, made stricter by a more protective risk state."""
+    base = score_against_bands(max_drawdown_pct, DRAWDOWN_BANDS)
+    mult = RISK_STATE_DOWNSIDE_MULTIPLIER.get(state, 1.0)
+    return round(max(0.0, min(100.0, 100.0 - (100.0 - base) * mult)), 1)
 
 
 def _diversification_score(trade: dict, candidate_type: str) -> tuple[float, list[str]]:
@@ -227,22 +244,33 @@ def build(
                          source=TEAM)
 
     if "downside" in weights:
-        base = score_against_bands(
-            max_dd if max_dd is not None else -35.0,
-            [(-70, 6), (-55, 20), (-45, 32), (-35, 48), (-25, 66), (-18, 80), (-10, 93), (-4, 100)],
-        )
-        adjusted = max(0.0, min(100.0, 50 + (base - 50) / downside_mult))
-        card.qualitative(
-            "downside", CATEGORY_LABELS["downside"], weights["downside"], "downside", adjusted,
-            [
-                f"Worst observed drawdown {max_dd:.1f}%." if max_dd is not None else "No price history on file.",
-                f"Risk state is {state}. {state_reason}",
-                f"Downside is weighted {downside_mult:.2f}x in this state, per PRD 40.",
-            ],
-            source=TEAM,
-        )
+        if max_dd is None:
+            # An absent price history is absent. Assuming a -35% drawdown and
+            # filing it as evidence turned a gap in the data into an observation.
+            card.measure(
+                "downside", CATEGORY_LABELS["downside"], weights["downside"], "downside", None,
+                units="%", source=TEAM,
+            )
+        else:
+            card.qualitative(
+                "downside", CATEGORY_LABELS["downside"], weights["downside"], "downside",
+                downside_score(max_dd, state),
+                [
+                    f"Worst observed drawdown {max_dd:.1f}%.",
+                    f"Risk state is {state}. {state_reason}",
+                    f"In this state the shortfall from a perfect downside reading is scaled "
+                    f"{downside_mult:.2f}x, per PRD 40, so the same drawdown scores worse the "
+                    f"less capacity Laura has for it.",
+                ],
+                source=TEAM,
+            )
 
     # --- liability-matching role --------------------------------------------------
+    # Whether the cash actually arrives before the bill, on real dates. Computed
+    # once here and reused by funding_impact and by the Red Gate, so the three
+    # cannot disagree about the same instrument.
+    eligibility = covers((fund or {}).get("termination_date"), target_payment_year)
+
     if "date_match" in weights:
         if not has_maturity:
             score = 4.0
@@ -252,21 +280,19 @@ def build(
             ]
         elif target_payment_year is None:
             score = 45.0
-            evidence = ["A maturity exists but no target payment year was specified for this evaluation."]
+            evidence = ["A maturity exists but no target payment year was nominated for this evaluation."]
         else:
-            gap = maturity_year - target_payment_year if maturity_year else 99
-            if gap > 0:
-                score = max(0.0, 25 - gap * 8)
-                evidence = [
-                    f"Matures in {maturity_year}, after the {target_payment_year} payment is due. "
-                    "The cash arrives too late without another liquidity source."
-                ]
+            score = match_score(eligibility)
+            evidence = [eligibility.reason]
+            if eligibility.ok:
+                evidence.append(
+                    "This is an expected liquidation value, not a contractual par amount: a "
+                    "terminating fund distributes whatever its portfolio is worth on the day."
+                )
             else:
-                score = score_against_bands(float(abs(gap)), [(0, 100), (1, 78), (2, 52), (3, 28), (5, 8)])
-                evidence = [
-                    f"Terminates {(fund or {}).get('termination_date')}, ahead of the "
-                    f"{target_payment_year} payment at the start of that year."
-                ]
+                evidence.append(
+                    "Without a separately funded bridge, this cannot be called a match."
+                )
         card.qualitative("date_match", CATEGORY_LABELS["date_match"], weights["date_match"],
                          "date_match", score, evidence, source=TEAM)
 
@@ -288,17 +314,22 @@ def build(
         )
 
     if "funding_impact" in weights:
-        improves = has_maturity and target_payment_year is not None
+        # Only an instrument whose cash actually lands in time moves a payment
+        # from economically covered to matched. A late one changes nothing.
+        improves = has_maturity and target_payment_year is not None and eligibility.ok
         score = 88.0 if improves else (NEUTRAL if not is_equity_like else 35.0)
         card.qualitative(
             "funding_impact", CATEGORY_LABELS["funding_impact"], weights["funding_impact"],
             "funding_impact", score,
             [
                 f"Current modelled funding probability is {prob:.1%}.",
-                "A dated instrument converts a modelled probability into a matched payment, which is the "
-                "distinction PRD 35 treats as the important one."
+                "A dated instrument whose proceeds arrive before the payment converts a modelled "
+                "probability into a matched payment, which is the distinction PRD 35 treats as "
+                "the important one."
                 if improves else
-                "This holding does not move a payment from economically covered to matched.",
+                ("This holding does not move a payment from economically covered to matched."
+                 if target_payment_year is None or not has_maturity
+                 else f"Its cash arrives too late to matter: {eligibility.reason}"),
             ],
             source=TEAM,
         )
@@ -343,12 +374,25 @@ def build(
         )
 
     if "liquidity" in weights:
+        # Only a real quoted spread, in basis points, counts here.
+        #
+        # This used to accept any SQS metric whose key was "bid_ask" OR
+        # "liquidity". The stock model has a metric called "liquidity" that is
+        # cash divided by current liabilities, measured in times. AAPL's 0.217x
+        # balance sheet ratio was read as a 0.217 basis point trading spread and
+        # scored a perfect 100. Matching on a loosely related key name is how a
+        # balance sheet turns into a trading desk.
         spread = None
         for c in sqs.get("categories", []):
             for m in c.get("metrics", []):
-                if m["key"] in ("bid_ask", "liquidity") and m["value"] is not None:
+                if (m.get("key") == "bid_ask"
+                        and m.get("units") == "bps"
+                        and m.get("status") == "OK"
+                        and m.get("value") is not None):
                     spread = m["value"]
                     break
+            if spread is not None:
+                break
         card.measure(
             "liquidity", CATEGORY_LABELS["liquidity"], weights["liquidity"], "liquidity", spread,
             bands=[(0.5, 100), (2, 92), (5, 82), (12, 66), (25, 44), (50, 18)],
@@ -376,6 +420,7 @@ def build(
                      mission_score, mission_evidence, source=TEAM)
 
     result = card.finalise()
+    result["date_eligibility"] = eligibility.to_dict()
     result["role"] = role
     result["role_label"] = ROLES.get(role, role)
     result["role_is_team_defined"] = role in TEAM_DEFINED_ROLES

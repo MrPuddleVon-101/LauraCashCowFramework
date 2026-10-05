@@ -20,6 +20,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.config import FRAMEWORK_VERSION  # noqa: E402
 from app.engine import evaluate as ev  # noqa: E402
+from app.config import CLIENT  # noqa: E402
+from app.engine.dates import covers  # noqa: E402
 from app.engine.registry import list_funds  # noqa: E402
 from app.main import get_client, get_framework, get_liabilities  # noqa: E402
 
@@ -33,18 +35,35 @@ STOCKS = [
 
 
 def main() -> None:
-    (OUT / "eval").mkdir(parents=True, exist_ok=True)
+    # Build into a staging directory and swap it in only once every ticker has
+    # scored. Writing in place left an older file behind whenever a refresh
+    # failed, and the interface then served it as though it were current.
+    import shutil, tempfile
+    staging = Path(tempfile.mkdtemp(prefix="snapshot-", dir=OUT.parent))
+    global OUT_STAGE
+    OUT_STAGE = staging
+    (staging / "eval").mkdir(parents=True, exist_ok=True)
 
     # A defined maturity fund is pointless without a payment to point it at, and
     # scoring one with no target year reads its fit score as though it matched
-    # nothing. Give each one the year it actually matures into.
-    maturity = {f["ticker"]: f.get("maturity_year") for f in list_funds()}
+    # nothing. Point each one at the first payment its cash can actually reach:
+    # a fund terminating in December covers the payment due the following January,
+    # not the one eleven months earlier in the same calendar year.
+    maturity: dict[str, int | None] = {}
+    for f in list_funds():
+        termination = f.get("termination_date")
+        target = None
+        for year in CLIENT.liability_years:
+            if covers(termination, year).ok:
+                target = year
+                break
+        maturity[f["ticker"]] = target
     funds = list(maturity)
     tickers = sorted(set(funds) | set(STOCKS))
 
-    (OUT / "framework.json").write_text(json.dumps(get_framework(), default=str))
-    (OUT / "client.json").write_text(json.dumps(get_client(), default=str))
-    (OUT / "liabilities.json").write_text(json.dumps(get_liabilities(2027), default=str))
+    (OUT_STAGE / "framework.json").write_text(json.dumps(get_framework(), default=str))
+    (OUT_STAGE / "client.json").write_text(json.dumps(get_client(), default=str))
+    (OUT_STAGE / "liabilities.json").write_text(json.dumps(get_liabilities(2027), default=str))
 
     index: list[dict] = []
     failed: list[str] = []
@@ -62,7 +81,7 @@ def main() -> None:
             failed.append(f"{t}: {result.get('message')}")
             print(f"  [{i}/{len(tickers)}] {t} rejected", flush=True)
             continue
-        (OUT / "eval" / f"{t}.json").write_text(json.dumps(result, default=str))
+        (OUT_STAGE / "eval" / f"{t}.json").write_text(json.dumps(result, default=str))
         index.append({
             "ticker": t,
             "name": result.get("name") or t,
@@ -73,7 +92,7 @@ def main() -> None:
         print(f"  [{i}/{len(tickers)}] {t} {result['signal']['signal']} "
               f"{result['scores']['composite']}", flush=True)
 
-    (OUT / "manifest.json").write_text(json.dumps({
+    (OUT_STAGE / "manifest.json").write_text(json.dumps({
         "generated_on": date.today().isoformat(),
         "framework_version": FRAMEWORK_VERSION,
         "position_pct": 8.0,
@@ -86,9 +105,18 @@ def main() -> None:
             "position. Run the API locally for live prices, any ticker and any role."
         ),
     }, indent=1))
-    print(f"\nwrote {len(index)} evaluations to {OUT}")
     if failed:
-        print("could not score:", ", ".join(failed))
+        # A partial snapshot is a misleading snapshot: publish all of it or none.
+        shutil.rmtree(staging, ignore_errors=True)
+        print(f"\nREFUSED to publish: {len(failed)} ticker(s) could not be scored.")
+        for f in failed:
+            print("  -", f)
+        raise SystemExit(1)
+
+    if OUT.exists():
+        shutil.rmtree(OUT)
+    staging.rename(OUT)
+    print(f"\npublished {len(index)} evaluations to {OUT}")
 
 
 if __name__ == "__main__":

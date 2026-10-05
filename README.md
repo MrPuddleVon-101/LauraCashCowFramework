@@ -49,7 +49,7 @@ than filled in.
 | Data | Source | Tier |
 | --- | --- | --- |
 | Company fundamentals | SEC EDGAR XBRL company facts, 10-K and 20-F | 1 |
-| Peer distributions | SEC XBRL frames, 1,613 registrants above $1bn revenue | 1 |
+| Peer distributions | SEC XBRL frames, 1,608 registrants above $1bn revenue | 1 |
 | Prices, quotes, bid-ask | Nasdaq market data | 1 |
 | Treasury yield curve | U.S. Treasury daily par yield curve | 1 |
 | Fund holdings, fees, maturities | Issuer factsheets, transcribed to `backend/data/etf_registry.json` | 2 |

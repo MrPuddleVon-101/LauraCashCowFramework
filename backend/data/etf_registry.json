@@ -2,8 +2,9 @@
   "_meta": {
     "provenance": "seed",
     "as_of": "2026-09-30",
-    "note": "Fund facts that no keyless public API exposes: expense ratios, holdings, sector and country weights, defined maturity dates. Every entry carries the issuer page it should be checked against. PRD 11 puts issuer factsheets in tier 1, but a figure transcribed into this file has not been re-read from the issuer today, so the scoring engine treats these as tier 2 and the interface marks them for verification. Refresh before any committee decision.",
-    "refresh_instruction": "Open the issuer URL on the row, confirm expense ratio, AUM, holdings count and top ten weight, then update as_of."
+    "note": "Fund facts that no keyless public API exposes: expense ratios, holdings, sector and country weights, defined maturity dates. Every entry carries the issuer page it should be checked against. The three dated Treasury records were corrected on 2026-10-05: every one had been transcribed a year ahead of the real product. Identity fields are verified against the issuer's registered name; the numeric fields listed in each record's unverified_fields still need re-reading from a dated issuer document.",
+    "refresh_instruction": "Open the issuer URL on the row, confirm expense ratio, AUM, holdings count and top ten weight, then update as_of.",
+    "identity_checked_on": "2026-10-05"
   },
   "funds": {
     "AVUS": {
@@ -833,7 +834,7 @@
       "source_url": "https://www.ishares.com/us/products/314116/"
     },
     "IBTM": {
-      "name": "iShares iBonds Dec 2033 Term Treasury ETF",
+      "name": "iShares iBonds Dec 2032 Term Treasury ETF",
       "issuer": "BlackRock",
       "category": "defined_maturity_bond",
       "expense_ratio": 0.07,
@@ -843,25 +844,37 @@
       "top10_weight": 95.0,
       "largest_holding_weight": 18.0,
       "turnover_pct": 5,
-      "benchmark": "ICE 2033 Maturity US Treasury Index",
+      "benchmark": "ICE 2032 Maturity US Treasury Index",
       "index_tracking": true,
-      "termination_date": "2033-12-15",
-      "maturity_year": 2033,
-      "average_duration_years": 6.8,
+      "termination_date": "2032-12-15",
+      "maturity_year": 2032,
+      "average_duration_years": 5.8,
       "sec_yield_pct": 4.1,
       "credit_quality": "US Treasury",
       "has_maturity_date": true,
       "callable": false,
-      "methodology": "Holds US Treasuries maturing in 2033, then terminates in December 2033 and distributes the proceeds. The termination structure is what makes it usable for liability matching, unlike a perpetual bond fund.",
+      "methodology": "Holds US Treasuries maturing in 2032, then terminates around 15 December 2032 and distributes the proceeds. Because it winds up in December it can fund a payment due at the start of 2033, not 2032. The distribution is whatever the portfolio is worth on liquidation: the fund does not target a predetermined terminal amount, so this is not a contractual par payment.",
       "top_holdings": [],
       "sector_weights": {},
       "country_weights": {
         "United States": 100.0
       },
-      "source_url": "https://www.ishares.com/us/products/ibonds-term-treasury-etfs"
+      "source_url": "https://www.ishares.com/us/products/ibonds-term-treasury-etfs",
+      "identity_verified_on": "2026-10-05",
+      "identity_source": "Nasdaq quote service, issuer registered fund name",
+      "unverified_fields": [
+        "aum_usd",
+        "sec_yield_pct",
+        "average_duration_years",
+        "holdings_count",
+        "top10_weight",
+        "largest_holding_weight",
+        "inception",
+        "turnover_pct"
+      ]
     },
     "IBTO": {
-      "name": "iShares iBonds Dec 2034 Term Treasury ETF",
+      "name": "iShares iBonds Dec 2033 Term Treasury ETF",
       "issuer": "BlackRock",
       "category": "defined_maturity_bond",
       "expense_ratio": 0.07,
@@ -871,25 +884,37 @@
       "top10_weight": 96.0,
       "largest_holding_weight": 20.0,
       "turnover_pct": 5,
-      "benchmark": "ICE 2034 Maturity US Treasury Index",
+      "benchmark": "ICE 2033 Maturity US Treasury Index",
       "index_tracking": true,
-      "termination_date": "2034-12-15",
-      "maturity_year": 2034,
-      "average_duration_years": 7.6,
+      "termination_date": "2033-12-15",
+      "maturity_year": 2033,
+      "average_duration_years": 6.7,
       "sec_yield_pct": 4.15,
       "credit_quality": "US Treasury",
       "has_maturity_date": true,
       "callable": false,
-      "methodology": "Holds US Treasuries maturing in 2034, then terminates and distributes proceeds in December 2034.",
+      "methodology": "Holds US Treasuries maturing in 2033, then terminates around 15 December 2033 and distributes the proceeds. Because it winds up in December it can fund a payment due at the start of 2034, not 2033. The distribution is whatever the portfolio is worth on liquidation: the fund does not target a predetermined terminal amount, so this is not a contractual par payment.",
       "top_holdings": [],
       "sector_weights": {},
       "country_weights": {
         "United States": 100.0
       },
-      "source_url": "https://www.ishares.com/us/products/ibonds-term-treasury-etfs"
+      "source_url": "https://www.ishares.com/us/products/ibonds-term-treasury-etfs",
+      "identity_verified_on": "2026-10-05",
+      "identity_source": "Nasdaq quote service, issuer registered fund name",
+      "unverified_fields": [
+        "aum_usd",
+        "sec_yield_pct",
+        "average_duration_years",
+        "holdings_count",
+        "top10_weight",
+        "largest_holding_weight",
+        "inception",
+        "turnover_pct"
+      ]
     },
     "IBTP": {
-      "name": "iShares iBonds Dec 2035 Term Treasury ETF",
+      "name": "iShares iBonds Dec 2034 Term Treasury ETF",
       "issuer": "BlackRock",
       "category": "defined_maturity_bond",
       "expense_ratio": 0.07,
@@ -899,22 +924,34 @@
       "top10_weight": 97.0,
       "largest_holding_weight": 22.0,
       "turnover_pct": 5,
-      "benchmark": "ICE 2035 Maturity US Treasury Index",
+      "benchmark": "ICE 2034 Maturity US Treasury Index",
       "index_tracking": true,
-      "termination_date": "2035-12-15",
-      "maturity_year": 2035,
-      "average_duration_years": 8.3,
+      "termination_date": "2034-12-15",
+      "maturity_year": 2034,
+      "average_duration_years": 7.5,
       "sec_yield_pct": 4.2,
       "credit_quality": "US Treasury",
       "has_maturity_date": true,
       "callable": false,
-      "methodology": "Holds US Treasuries maturing in 2035, then terminates and distributes proceeds in December 2035.",
+      "methodology": "Holds US Treasuries maturing in 2034, then terminates around 15 December 2034 and distributes the proceeds. Because it winds up in December it can fund a payment due at the start of 2035, not 2034. The distribution is whatever the portfolio is worth on liquidation: the fund does not target a predetermined terminal amount, so this is not a contractual par payment.",
       "top_holdings": [],
       "sector_weights": {},
       "country_weights": {
         "United States": 100.0
       },
-      "source_url": "https://www.ishares.com/us/products/ibonds-term-treasury-etfs"
+      "source_url": "https://www.ishares.com/us/products/ibonds-term-treasury-etfs",
+      "identity_verified_on": "2026-10-05",
+      "identity_source": "Nasdaq quote service, issuer registered fund name",
+      "unverified_fields": [
+        "aum_usd",
+        "sec_yield_pct",
+        "average_duration_years",
+        "holdings_count",
+        "top10_weight",
+        "largest_holding_weight",
+        "inception",
+        "turnover_pct"
+      ]
     },
     "TLT": {
       "name": "iShares 20+ Year Treasury Bond ETF",

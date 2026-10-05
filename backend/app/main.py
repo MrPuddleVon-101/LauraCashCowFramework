@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -41,7 +41,17 @@ def _portfolios() -> dict:
 
 
 def _positions(name: str = "competition") -> list[lookthrough.Position]:
-    data = _portfolios().get(name, {})
+    """Positions for a named portfolio.
+
+    An unknown name used to return an empty list, which the engine then scored as
+    though Laura owned nothing. A typo should be a 404, not a silent reset of her
+    whole portfolio.
+    """
+    portfolios = _portfolios()
+    if name not in portfolios:
+        known = ", ".join(sorted(k for k in portfolios if not k.startswith("_")))
+        raise HTTPException(status_code=404, detail=f"Unknown portfolio '{name}'. Known: {known}.")
+    data = portfolios.get(name, {})
     out = [
         lookthrough.Position(
             ticker=p["ticker"], value=float(p["value"]), role=p.get("role", ""),
@@ -117,14 +127,28 @@ def get_client() -> dict:
 # --- securities -------------------------------------------------------------------
 
 class EvaluateRequest(BaseModel):
-    ticker: str
-    role: str | None = None
+    """A request the engine can actually answer.
+
+    These bounds exist so a mistyped field comes back as a 422 naming the field
+    rather than a 500 from somewhere deep in the engine. An unknown role used to
+    raise inside the fit model; a payment year of 9999 and a secured count of
+    -999 were accepted and quietly produced nonsense.
+    """
+
+    model_config = {"extra": "forbid"}
+
+    ticker: str = Field(min_length=1, max_length=12, pattern=r"^[A-Za-z0-9.\-]+$")
+    role: Literal["CG", "SG", "ID", "LM", "LR", "LG", "DA"] | None = None
     position_pct: float = Field(default=5.0, ge=0, le=100)
-    portfolio: str = "competition"
-    target_payment_year: int | None = None
-    payments_secured: int | None = None
+    portfolio: str = Field(default="competition", max_length=64)
+    target_payment_year: int | None = Field(
+        default=None, ge=CLIENT.first_payment_year, le=CLIENT.last_payment_year
+    )
+    payments_secured: int | None = Field(
+        default=None, ge=0, le=CLIENT.operating_payments_count
+    )
     equity_weight: float = Field(default=0.62, ge=0, le=1)
-    as_of_year: int = 2027
+    as_of_year: int = Field(default=2027, ge=2026, le=CLIENT.last_payment_year)
 
 
 @app.post("/api/security/evaluate")
@@ -332,7 +356,7 @@ def health() -> dict:
 # does nothing. In a deployment there is one process: the API also hands out the
 # built single page app, which means one service, one URL and no CORS to arrange.
 # Mounted last so every /api route is matched first.
-_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
+_DIST = (Path(__file__).resolve().parents[2] / "frontend" / "dist").resolve()
 
 if _DIST.is_dir():
     from fastapi.responses import FileResponse
@@ -342,12 +366,35 @@ if _DIST.is_dir():
     if (_DIST / "brand").is_dir():
         app.mount("/brand", StaticFiles(directory=_DIST / "brand"), name="brand")
 
+    def _inside_dist(requested: str) -> Path | None:
+        """Resolve a request path to a real file inside the published build.
+
+        Returns None for anything that escapes it. Joining the request onto the
+        directory and trusting the result is not enough: Starlette hands this
+        route the percent-decoded path, so "%2e%2e%2f" arrives as "../" after
+        the server's own normalisation has already run and walks straight out of
+        the build. Resolving first and then proving containment is what closes
+        it, and resolve() also follows any symlink before the check so a link
+        pointing outside cannot be used either.
+        """
+        if not requested:
+            return None
+        candidate = (_DIST / requested).resolve()
+        if candidate != _DIST and _DIST not in candidate.parents:
+            return None
+        return candidate if candidate.is_file() else None
+
     @app.get("/{full_path:path}", include_in_schema=False)
     def spa(full_path: str) -> Any:
-        """Any path that is not an API route is the single page app."""
-        if full_path.startswith("api/"):
+        """Any path that is not an API route is the single page app.
+
+        An unknown API route stays a 404 from the API rather than quietly
+        becoming a 200 with an HTML body, because a client that asked for JSON
+        should be told it was wrong, not handed a web page to parse.
+        """
+        if full_path == "api" or full_path.startswith("api/"):
             raise HTTPException(status_code=404, detail="Unknown API route.")
-        asset = _DIST / full_path
-        if full_path and asset.is_file():
+        asset = _inside_dist(full_path)
+        if asset is not None:
             return FileResponse(asset)
         return FileResponse(_DIST / "index.html")

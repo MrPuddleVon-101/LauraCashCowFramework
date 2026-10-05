@@ -23,7 +23,21 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Offline regression checks for the findings in the October 2026 audit. No
+  # provider calls, so a transient network failure cannot redefine the truth.
+  engine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r backend/requirements.txt
+      - run: python -m tests.test_audit
+        working-directory: backend
+
   build:
+    needs: engine
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

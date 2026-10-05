@@ -297,6 +297,7 @@ def evaluate(
         post_trade_funding_probability=funding["funding_probability"],
         position_pct=position_pct,
         lookthrough_issuer_pct=largest_issuer_pct,
+        target_payment_year=target_payment_year,
         candidate_adds_to_top_issuer=candidate_adds_to_top,
         top_issuer=top_issuer,
     )

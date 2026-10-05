@@ -8,6 +8,7 @@ is a fantastic security and the wrong client, and the arithmetic should say so.
 from __future__ import annotations
 
 from ..config import CLIENT, POLICY, ROLES
+from .dates import covers
 from .registry import ROLES_FOR_TYPE
 
 SIGNALS = ("GREEN", "AMBER_PLUS", "AMBER", "RED", "INSUFFICIENT_DATA")
@@ -49,6 +50,7 @@ def red_gate(
     post_trade_funding_probability: float | None,
     position_pct: float,
     lookthrough_issuer_pct: float | None,
+    target_payment_year: int | None = None,
     candidate_adds_to_top_issuer: bool = False,
     top_issuer: str | None = None,
     competition_mode: bool = False,
@@ -116,6 +118,15 @@ def red_gate(
             fail("no_maturity",
                  "Proposed as a liability matcher but the instrument has no maturity date. A normal bond "
                  "fund does not guarantee a future $50,000 payment because its value on that date is unknown.")
+        elif target_payment_year is None:
+            review("no_target_year",
+                   "Proposed as a liability matcher without nominating which payment it is meant to "
+                   "cover, so there is nothing to check its dates against.")
+        else:
+            # A December termination cannot pay a January bill in the same year.
+            elig = covers((fund or {}).get("termination_date"), target_payment_year)
+            if not elig.ok:
+                fail("late_cash", f"Proposed as a liability matcher for {target_payment_year}. {elig.reason}")
         if (fund or {}).get("callable"):
             fail("call_risk", "Callable, so the expected cash flow can be removed before Laura needs it.")
         currency = (fund or {}).get("currency", "USD")
@@ -195,6 +206,15 @@ def signal(*, sqs: float, lpfs: float, ccs: float, dcs: float, gate: dict,
         return {
             "signal": "AMBER_PLUS", "label": SIGNAL_LABELS["AMBER_PLUS"],
             "meaning": SIGNAL_MEANINGS["AMBER_PLUS"], "reasons": green_blockers,
+        }
+
+    # POLICY.amber_min_ccs was declared and never consulted, so a composite below
+    # the amber floor still came back amber. Below the floor it is a reject.
+    if ccs < POLICY.amber_min_ccs:
+        return {
+            "signal": "RED", "label": SIGNAL_LABELS["RED"], "meaning": SIGNAL_MEANINGS["RED"],
+            "reasons": [f"Composite {ccs:.0f} is below the {POLICY.amber_min_ccs:.0f} amber floor."]
+                       + green_blockers,
         }
 
     return {

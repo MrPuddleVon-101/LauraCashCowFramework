@@ -100,7 +100,7 @@ const REFUSES: string[] = [
 ];
 
 const SOURCES: [string, string, string, string][] = [
-  ["1,613", "registrants", "SEC EDGAR XBRL, US GAAP and IFRS. Every percentile runs against the whole universe above $1bn revenue, not a hand picked set of five lookalikes.", "1"],
+  ["1,608", "registrants", "SEC EDGAR XBRL, US GAAP and IFRS. Every percentile runs against the whole universe above $1bn revenue, not a hand picked set of five lookalikes.", "1"],
   ["Live", "prices and spreads", "Nasdaq market data. Quote, bid, ask and the spread in basis points, with the as-of stamped on the row.", "1"],
   ["Daily", "yield curve", "U.S. Treasury par yields. Every payment is discounted at the rate for its own maturity.", "1"],
   ["By hand", "fund factsheets", "Holdings, fees and maturity structure typed up from the issuer. Tier 2 on purpose, and every row carries the URL to check it against.", "2"],
@@ -228,7 +228,7 @@ export default function Home({ go }: { go: (v: View) => void }) {
           {([
             [450000, "$", "", "she puts in", "two cheques, 2027 and 2028, then nothing"],
             [500000, "$", "", "she owes", "ten payments, 2033 through 2042"],
-            [1613, "", "", "companies to beat", "the whole SEC universe, not five lookalikes"],
+            [1608, "", "", "companies to beat", "the whole SEC universe, not five lookalikes"],
             [95, "", "%", "certainty, minimum", "the funding floor we will not go under"],
           ] as [number, string, string, string, string][]).map(([v, pre, suf, l, s2], i) => (
             <div className="fs" key={l} data-anim="rise" style={{ ["--delay" as string]: `${i * 90}ms` }}>
@@ -372,7 +372,7 @@ export default function Home({ go }: { go: (v: View) => void }) {
               <h3>Is it any good?</h3>
               <p className="duo-l">
                 Security quality. The same question you would ask about anything, answered
-                against 1,613 SEC registrants rather than five companies somebody chose.
+                against 1,608 SEC registrants rather than five companies somebody chose.
               </p>
               <ul className="duo-list">
                 {QUALITY.map(([k, v]) => (

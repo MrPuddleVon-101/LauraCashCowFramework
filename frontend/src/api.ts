@@ -122,12 +122,35 @@ export type Snapshot = {
 let probe: Promise<boolean> | null = null;
 let snapshot: Promise<Snapshot | null> | null = null;
 
-/** True when a real engine is answering, false when we are reading the snapshot. */
+/**
+ * True when a real engine is answering, false when we are reading the snapshot.
+ *
+ * The probe has to look at what came back, not just at the status: a static host
+ * answers every path with the app's own HTML, which is a perfectly good 200 and
+ * is not an engine. It also has a timeout, and a negative result is not cached,
+ * so an API still warming up is retried instead of locking the page into
+ * snapshot mode until someone reloads it.
+ */
 export function engineIsLive(): Promise<boolean> {
   if (!probe) {
-    probe = fetch(`${BASE}/health`)
-      .then((r) => r.ok)
-      .catch(() => false);
+    probe = (async () => {
+      const stop = new AbortController();
+      const timer = setTimeout(() => stop.abort(), 4000);
+      try {
+        const r = await fetch(`${BASE}/health`, { signal: stop.signal });
+        if (!r.ok) return false;
+        const body = await r.json();
+        return body?.status === "ok" && typeof body?.framework_version === "string";
+      } catch {
+        return false;
+      } finally {
+        clearTimeout(timer);
+      }
+    })();
+    probe = probe.then((live) => {
+      if (!live) probe = null;   // let a cold or restarting API be found later
+      return live;
+    });
   }
   return probe;
 }
@@ -195,10 +218,21 @@ export const api = {
   }): Promise<Evaluation> => {
     if (await engineIsLive()) return post<Evaluation>("/security/evaluate", body);
     const sym = body.ticker.trim().toUpperCase();
+    const snap = await snapshotMeta();
+    // Only what the current manifest lists. A file left behind by an earlier
+    // build is not part of this snapshot and must not be served as if it were.
+    if (snap && !snap.tickers.includes(sym)) {
+      return {
+        error: "not_in_snapshot",
+        message:
+          `${sym} is not in the saved set. This build has no scoring engine behind it, ` +
+          `so it can only show the ${snap.tickers.length} tickers scored in advance on ` +
+          `${snap.generated_on}. Run the API locally and it will score anything.`,
+      } as Evaluation;
+    }
     try {
       return await frozen<Evaluation>(`eval/${sym}.json`);
     } catch {
-      const snap = await snapshotMeta();
       return {
         error: "not_in_snapshot",
         message:
