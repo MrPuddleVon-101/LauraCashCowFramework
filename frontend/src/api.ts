@@ -76,6 +76,25 @@ export type Evaluation = {
   laura_fit: ScoreCard;
   data_confidence: { score: number; components: { key: string; label: string; weight: number; score: number }[] };
   position_sizing: { policy_cap_pct: number; suggested_pct: number; constraints: string[]; note: string };
+  /** Whether the transcribed fund registry still matches an independent read.
+   *  Reported only: nothing in `scores` is derived from it. */
+  registry_drift?: {
+    checked: boolean;
+    against: string;
+    against_url: string;
+    authority_tier: number;
+    registry_as_of: string | null;
+    issuer_url: string;
+    rows: {
+      field: string; registry: number | string; observed: number | string;
+      delta: number | null; units: string;
+      status: "agrees" | "drifted" | "not comparable"; note?: string;
+    }[];
+    drifted_count: number;
+    stale: boolean;
+    scored: boolean;
+    note: string;
+  } | null;
   quote: any;
   risk_profile: any;
   portfolio_impact: any;

@@ -4,6 +4,8 @@ import { engineIsLive, snapshotMeta, type Snapshot } from "./api";
 import { useRevealAll } from "./lib/motion";
 import { Nav, Progress, type View } from "./ui/Nav";
 import { Tear } from "./ui/Marks";
+import Boot, { hasBooted } from "./ui/Boot";
+import Cursor from "./ui/Cursor";
 import Home from "./views/Home";
 import Score from "./views/Score";
 
@@ -13,6 +15,10 @@ export default function App() {
   const [view, setView] = useState<View>(FROM_HASH);
   useRevealAll();
   const [snap, setSnap] = useState<Snapshot | null>(null);
+  // A ticker handed over from the overview, so pressing score there lands on a
+  // verdict rather than on an empty field you have to fill in a second time.
+  const [seed, setSeed] = useState<string>("");
+  const [booting, setBooting] = useState(() => !hasBooted());
 
   useEffect(() => {
     let alive = true;
@@ -28,19 +34,22 @@ export default function App() {
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
 
-  function go(v: View) {
+  function go(v: View, ticker?: string) {
     setView(v);
+    setSeed(v === "score" ? (ticker ?? "") : "");
     window.history.replaceState(null, "", v === "home" ? "#" : "#score");
     window.scrollTo({ top: 0 });
   }
 
   return (
     <>
+      {booting && <Boot onDone={() => setBooting(false)} />}
+      <Cursor />
       <Nav view={view} go={go} />
       <Progress />
 
       <main key={view} className="main">
-        {view === "home" ? <Home go={go} /> : <Score />}
+        {view === "home" ? <Home go={go} /> : <Score seed={seed} />}
       </main>
 
       <Tear fill="var(--ink)" seed={77} />
@@ -61,15 +70,14 @@ export default function App() {
 
           {snap && (
             <p className="foot-snap">
-              Hosted as plain files, so the scoring engine is not running behind this
-              build. Every figure is the engine's own output, frozen on{" "}
-              {snap.generated_on} under {snap.framework_version}.
+              Hosted as plain files, so the engine is not running behind this build. Every
+              figure is its own output, frozen {snap.generated_on} under {snap.framework_version}.
             </p>
           )}
           <p className="foot-src">
-            Company numbers come from SEC EDGAR, IFRS filers included. Prices and spreads from
-            Nasdaq. The yield curve from the U.S. Treasury. Fund facts are typed up from issuer
-            factsheets by hand, which is why they are marked tier 2 on every row that uses them.
+            SEC EDGAR for filings, Nasdaq for prices, the U.S. Treasury for the curve.
+            Fund facts are typed up from issuer factsheets by hand, and marked tier 2 wherever
+            they are used.
           </p>
         </div>
       </footer>

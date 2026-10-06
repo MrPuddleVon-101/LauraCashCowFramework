@@ -1,10 +1,15 @@
 """Local fund registry and security classification. PRD 56 service 1.
 
-No keyless public API exposes ETF holdings, expense ratios or defined maturity dates,
-so those facts live in data/etf_registry.json with the issuer page each row should be
-checked against. PRD 11 would place an issuer factsheet in tier 1, but a figure
-transcribed into a file and not re-read today is not the same thing as reading the
-factsheet, so the registry is treated as tier 2 and the interface says so.
+Holdings, expense ratios and maturity structure live in data/etf_registry.json,
+transcribed from the issuer factsheet, with the page each row should be checked
+against. PRD 11 would place an issuer factsheet in tier 1, but a figure typed into
+a file and not re-read today is not the same thing as reading the factsheet, so the
+registry is treated as tier 2 and the interface says so.
+
+Yahoo does now carry some of this keylessly, and it is read, but as a second
+opinion rather than as the source: see engine/drift.py. It is tier 2 itself, it
+carries no issuer page to check against, and its total net assets figure is wrong
+often enough to be unusable, so it flags a stale row here instead of replacing it.
 """
 
 from __future__ import annotations

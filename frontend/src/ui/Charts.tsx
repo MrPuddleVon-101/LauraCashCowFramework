@@ -356,14 +356,3 @@ export function Meter({ score, status }: { score: number; status: string }) {
 }
 
 /** A proportion, drawn as a row of blocks. Counting beats reading a percent. */
-export function Blocks({ filled, total = 10, tone = "gold" }: {
-  filled: number; total?: number; tone?: string;
-}) {
-  return (
-    <span className="blocks" aria-hidden="true">
-      {Array.from({ length: total }, (_, i) => (
-        <i key={i} data-on={i < filled || undefined} data-tone={tone} style={{ ["--d" as string]: `${i * 45}ms` }} />
-      ))}
-    </span>
-  );
-}

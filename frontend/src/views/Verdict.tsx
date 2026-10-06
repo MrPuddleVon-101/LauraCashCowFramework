@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { fmtNum, fmtPct, type Category, type Evaluation, type Metric } from "../api";
-import { Blocks, Breakdown, Gates, Meter, Stamp, Trace, TwoUp } from "../ui/Charts";
-import { Fold, Note, Paper } from "../ui/Kit";
+import { Breakdown, Gates, Meter, Stamp, Trace, TwoUp } from "../ui/Charts";
+import { Fig, Fold, Note, Paper } from "../ui/Kit";
 import { Spark } from "../ui/Marks";
 
 /* Counts and index values are whole numbers. Printing 2,100.0 holdings is the
@@ -242,74 +242,87 @@ export default function Verdict({ ev, need }: {
       </section>
 
       {/* ---- what it does to the rest ---- */}
-      <section className="wrap vd-impact">
-        <header className="sec-head">
-          <span className="tag">Knock-on effects</span>
-          <h2>What it does to everything else she holds</h2>
-        </header>
-
-        <div className="impact">
-          <div className="imp-col">
-            <span className="tag bare">Crowding, before and after</span>
-            {([
-              ["Issuer", pi.before.issuer_hhi, pi.after.issuer_hhi, pi.delta.issuer_hhi],
-              ["Sector", pi.before.sector_hhi, pi.after.sector_hhi, pi.delta.sector_hhi],
-              ["Country", pi.before.country_hhi, pi.after.country_hhi, pi.delta.country_hhi],
-            ] as [string, number, number, number][]).map(([label, b, a, dl]) => (
-              <div className="hhi" key={label}>
-                <span className="hhi-k">{label}</span>
-                <span className="hhi-b num">{fmtNum(b, 0)}</span>
-                <svg className="hhi-arrow" viewBox="0 0 30 12" aria-hidden="true">
-                  <path d="M1 6h24M21 2l5 4-5 4" fill="none" stroke="currentColor"
-                        strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <span className="hhi-a num">{fmtNum(a, 0)}</span>
-                <span className="hhi-d num" data-dir={dl < 0 ? "down" : dl > 0 ? "up" : "flat"}>
-                  {dl > 0 ? "+" : ""}{fmtNum(dl, 0)}
-                </span>
-              </div>
-            ))}
-            <p className="fine">
-              A Herfindahl index counts how much of the money sits in how few names. Down
-              is the good direction, so green points down here.
+      {pi.before.positions?.length > 0 && (
+        <section className="wrap vd-impact">
+          <header className="sec-head">
+            <span className="tag">Knock-on effects</span>
+            <h2>What it does to everything else she holds</h2>
+            <p className="lede">
+              At {fmtPct(pi.candidate_weight_pct, 0)} of the book, against the{" "}
+              {pi.before.positions.length} positions already open.
             </p>
-          </div>
+          </header>
 
-          <div className="imp-col">
-            <span className="tag bare">How much of this she owns already</span>
-            <div className="overlaps">
+          <div className="impact">
+            <div className="imp-col">
+              <span className="tag bare">Crowding, before and after</span>
               {([
-                ["Issuer", pi.overlap.issuer_overlap_pct],
-                ["Sector", pi.overlap.sector_overlap_pct],
-                ["Country", pi.overlap.country_overlap_pct],
-              ] as [string, number][]).map(([k, v]) => (
-                <div className="ov" key={k}>
-                  <span className="ov-v num">{fmtPct(v, 0)}</span>
-                  <span className="ov-k">{k.toLowerCase()} overlap</span>
-                  <Blocks filled={Math.round((v / 100) * 10)} tone="rose" />
-                </div>
-              ))}
+                ["Issuer", pi.before.issuer_hhi, pi.after.issuer_hhi, pi.delta.issuer_hhi],
+                ["Sector", pi.before.sector_hhi, pi.after.sector_hhi, pi.delta.sector_hhi],
+                ["Country", pi.before.country_hhi, pi.after.country_hhi, pi.delta.country_hhi],
+              ] as [string, number, number, number][]).map(([label, b, a, dl], i) => {
+                const max = Math.max(b, a) || 1;
+                const dir = dl < 0 ? "down" : dl > 0 ? "up" : "flat";
+                return (
+                  <div className="cr" key={label} data-dir={dir} data-anim="rise"
+                       style={{ ["--delay" as string]: `${i * 90}ms` }}>
+                    <span className="cr-k">{label}</span>
+                    <span className="cr-track">
+                      <i className="cr-fill" style={{ width: `${(Math.min(b, a) / max) * 100}%` }} />
+                      <i className="cr-move" style={{
+                        left: `${(Math.min(b, a) / max) * 100}%`,
+                        width: `${(Math.abs(a - b) / max) * 100}%`,
+                      }} />
+                    </span>
+                    <span className="cr-v num">{fmtNum(b, 0)} <em>→</em> {fmtNum(a, 0)}</span>
+                    <span className="cr-d num">{dl > 0 ? "+" : ""}{fmtNum(dl, 0)}</span>
+                  </div>
+                );
+              })}
+              <p className="fine">
+                Herfindahl: how much of the money sits in how few names. Lower is safer.
+              </p>
             </div>
 
-            {pi.overlap.shared_issuers?.length > 0 ? (
-              <>
-                <span className="tag bare">Already hers, through other funds</span>
-                <div className="shared">
-                  {pi.overlap.shared_issuers.slice(0, 6).map((s: any) => (
-                    <div className="sh" key={s.key}>
-                      <span className="sh-k num">{s.key}</span>
-                      <span className="sh-bar"><i style={{ width: `${Math.min(100, s.already_held_pct * 9)}%` }} /></span>
-                      <span className="sh-v num">{fmtPct(s.already_held_pct, 2)}</span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <p className="fine">Nothing named inside this is already held anywhere else.</p>
-            )}
+            <div className="imp-col">
+              <span className="tag bare">How much of this she owns already</span>
+              <div className="overlaps">
+                {([
+                  ["Issuer", pi.overlap.issuer_overlap_pct],
+                  ["Sector", pi.overlap.sector_overlap_pct],
+                  ["Country", pi.overlap.country_overlap_pct],
+                ] as [string, number][]).map(([k, v]) => (
+                  <div className="ov" key={k}>
+                    <Fig value={v} dp={0} suffix="%" className="ov-v" />
+                    <span className="ov-k">{k.toLowerCase()}</span>
+                  </div>
+                ))}
+              </div>
+
+              {pi.overlap.shared_issuers?.length > 0 ? (
+                <>
+                  <span className="tag bare">Bought twice</span>
+                  <div className="shared">
+                    {pi.overlap.shared_issuers.slice(0, 6).map((sh: any, i: number) => (
+                      <div className="sh" key={sh.key} data-anim="rise"
+                           style={{ ["--delay" as string]: `${i * 60}ms` }}>
+                        <span className="sh-k num">{sh.key}</span>
+                        <span className="sh-bar">
+                          <i style={{ width: `${Math.min(100, sh.already_held_pct * 9)}%` }} />
+                        </span>
+                        <span className="sh-v num">{fmtPct(sh.already_held_pct, 2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="fine">As a share of the whole book.</p>
+                </>
+              ) : (
+                <p className="fine">Nothing inside this is held anywhere else.</p>
+              )}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ---- sizing, confidence, triggers ---- */}
       <section className="wrap vd-close">
@@ -322,7 +335,6 @@ export default function Verdict({ ev, need }: {
           <ul className="vc-list">
             {ev.position_sizing.constraints.map((c, i) => <li key={i}>{c}</li>)}
           </ul>
-          <p className="fine">{ev.position_sizing.note}</p>
         </div>
 
         <div className="vc">
@@ -351,14 +363,27 @@ export default function Verdict({ ev, need }: {
         </div>
       </section>
 
+      {ev.registry_drift?.stale && (
+        <section className="wrap vd-drift">
+          <Note tone="warn">
+            <b>The transcribed registry behind this fund has moved. </b>
+            {ev.registry_drift.drifted_count} figure
+            {ev.registry_drift.drifted_count === 1 ? "" : "s"} no longer match an
+            independent read of the fund. The scores above are unchanged and do not
+            use this check. It is a prompt to re-read the issuer factsheet. The
+            comparison is in the audit trail below.
+          </Note>
+        </section>
+      )}
+
       {/* ---- the audit trail ---- */}
       <section className="wrap vd-audit">
         <Fold title="Show me everything" note="Every metric, every source, every as-of date">
           <div className="audit">
             <h3>Is it any good, metric by metric</h3>
             <p className="fine">
-              Not written up afterwards. This is the structure the score is made of.
-              {sqCat && " Filtered to the category you picked above."}
+              The structure the score is made of.
+              {sqCat && " Filtered to the category you picked."}
             </p>
             <Metrics categories={ev.security_quality.categories}
                      labels={ev.security_quality.category_labels} only={sqCat} />
@@ -373,8 +398,8 @@ export default function Verdict({ ev, need }: {
                 <h3>Looking through to the companies inside</h3>
                 <p className="fine">
                   Each holding resolved against its own SEC filings and weighted by position
-                  size, covering {fmtPct(lt.coverage_pct, 0)} of the sampled weight. Holdings
-                  that do not file with the SEC are skipped rather than guessed at, and the
+                  size, covering {fmtPct(lt.coverage_pct, 0)} of the sampled weight. Non-filers
+                  are skipped rather than guessed at, and the
                   gap is charged to data confidence.
                 </p>
                 <table className="tbl">
@@ -419,6 +444,52 @@ export default function Verdict({ ev, need }: {
                 </div>
               ))}
             </div>
+
+            {ev.registry_drift && (
+              <>
+                <h3>Does the registry still match the fund</h3>
+                <p className="fine">
+                  The holdings and weights above are transcribed from the issuer
+                  factsheet by hand. This compares that transcription against{" "}
+                  {ev.registry_drift.against} (tier {ev.registry_drift.authority_tier}),
+                  which is a second opinion, not a correction. Nothing here feeds any
+                  score.
+                </p>
+                <table className="t drift-t">
+                  <thead>
+                    <tr>
+                      <th>Figure</th>
+                      <th className="r">Registry</th>
+                      <th className="r">Observed</th>
+                      <th className="r">Difference</th>
+                      <th>Reading</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ev.registry_drift.rows.map((r) => (
+                      <tr key={r.field} data-status={r.status}>
+                        <td>{r.field}</td>
+                        <td className="r num">{r.registry}{typeof r.registry === "number" ? r.units : ""}</td>
+                        <td className="r num">{r.observed}{typeof r.observed === "number" ? r.units : ""}</td>
+                        <td className="r num">
+                          {/* The gap between two percentages is percentage points. */}
+                          {r.delta === null ? "·" : `${r.delta > 0 ? "+" : ""}${r.delta}${r.units === "%" ? "pp" : r.units}`}
+                        </td>
+                        <td>
+                          <span className="drift-s" data-status={r.status}>{r.status}</span>
+                          {r.note && <i className="drift-n">{r.note}</i>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <p className="fine">
+                  {ev.registry_drift.note}
+                  {ev.registry_drift.registry_as_of &&
+                    ` Registry transcribed ${ev.registry_drift.registry_as_of}.`}
+                </p>
+              </>
+            )}
 
             {ev.details?.source_url && (
               <p className="fine">

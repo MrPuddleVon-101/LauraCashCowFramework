@@ -222,10 +222,82 @@ def test_trailing_window() -> None:
           abs((g.ratios.get("roe") or 0) - (30.0 / 90.0 * 100)) < 0.01, f"roe={g.ratios.get('roe')}")
 
 
+# --- registry drift, reported and never scored ---------------------------------
+
+
+def test_registry_drift() -> None:
+    from app.engine import drift
+
+    print("\nregistry drift is reported, not scored")
+
+    fund = {
+        "expense_ratio": 0.15, "top10_weight": 24.5,
+        "largest_holding_weight": 5.4, "turnover_pct": 6.0,
+        "top_holdings": [["NVDA", 5.4], ["AAPL", 4.6]],
+        "as_of": "2026-09-30", "source_url": "https://example.invalid/avus",
+    }
+    moved = drift.compare("AVUS", fund, {
+        "expense_ratio_pct": 0.15, "top10_weight": 30.79,
+        "largest_holding_weight": 5.864, "turnover_pct": 2.0,
+        "largest_holding": "NVDA",
+    })
+    by = {r["field"]: r for r in moved["rows"]}
+    check("a top ten that has moved six points is flagged",
+          by["Top ten weight"]["status"] == "drifted",
+          str(by["Top ten weight"]))
+    check("an expense ratio that still matches is not",
+          by["Expense ratio"]["status"] == "agrees", str(by["Expense ratio"]))
+    check("turnover is judged relatively, so 6 against 2 is drift",
+          by["Turnover"]["status"] == "drifted", str(by["Turnover"]))
+    check("the fund is marked stale", moved["stale"] is True)
+    check("and the reading is explicitly not scored", moved["scored"] is False)
+
+    steady = drift.compare("VTI", {
+        "expense_ratio": 0.03, "top10_weight": 33.0,
+        "largest_holding_weight": 6.8, "turnover_pct": 2.0,
+        "top_holdings": [["NVDA", 6.8]],
+    }, {
+        "expense_ratio_pct": 0.03, "top10_weight": 33.45,
+        "largest_holding_weight": 6.875, "turnover_pct": 3.0,
+        "largest_holding": "NVDA",
+    })
+    check("a registry row that still agrees raises nothing",
+          steady["stale"] is False and steady["drifted_count"] == 0,
+          str(steady["rows"]))
+
+    # A foreign fund reports its top line on the local exchange. TSM and 2330.TW
+    # are the same company and flagging them would be noise.
+    foreign = drift.compare("VXUS", {
+        "expense_ratio": 0.05, "top10_weight": 12.0,
+        "largest_holding_weight": 2.3, "turnover_pct": 3.0,
+        "top_holdings": [["TSM", 2.3]],
+    }, {
+        "expense_ratio_pct": 0.05, "top10_weight": 12.8,
+        "largest_holding_weight": 2.35, "turnover_pct": 4.0,
+        "largest_holding": "2330.TW",
+    })
+    names = {r["field"]: r for r in foreign["rows"]}["Largest holding"]
+    check("a local exchange line is not comparable rather than drifted",
+          names["status"] == "not comparable", str(names))
+    check("and it does not make the fund stale on its own",
+          foreign["stale"] is False, str(foreign["rows"]))
+
+    # The exchange already overrides the expense ratio, so the comparison has to
+    # look at what was transcribed rather than at what replaced it.
+    overridden = drift.compare("SGOV", {
+        "expense_ratio": 0.05, "expense_ratio_registry": 0.09,
+        "top_holdings": [],
+    }, {"expense_ratio_pct": 0.09})
+    er = {r["field"]: r for r in overridden["rows"]}["Expense ratio"]
+    check("the transcribed figure is what gets compared, not the live override",
+          er["registry"] == 0.09 and er["status"] == "agrees", str(er))
+
+
 def main() -> int:
     for fn in (test_fund_identities, test_date_eligibility, test_protection_mode,
                test_normalisation, test_liability_ledger, test_funding_accounting,
-               test_period_alignment, test_cagr_span, test_trailing_window):
+               test_period_alignment, test_cagr_span, test_trailing_window,
+               test_registry_drift):
         try:
             fn()
         except Exception as exc:  # a missing helper is itself a failure to report

@@ -23,7 +23,7 @@ from app.engine import evaluate as ev  # noqa: E402
 from app.config import CLIENT  # noqa: E402
 from app.engine.dates import covers  # noqa: E402
 from app.engine.registry import list_funds  # noqa: E402
-from app.main import get_client, get_framework, get_liabilities  # noqa: E402
+from app.main import _positions, get_client, get_framework, get_liabilities  # noqa: E402
 
 OUT = Path(__file__).resolve().parents[2] / "frontend" / "public" / "data"
 
@@ -61,6 +61,14 @@ def main() -> None:
     funds = list(maturity)
     tickers = sorted(set(funds) | set(STOCKS))
 
+    # The API passes Laura's actual positions. This did not, so every frozen
+    # evaluation was scored as though she owned nothing: crowding read 0 to 0,
+    # every overlap read 0%, and the whole knock-on section shipped empty.
+    portfolio = _positions("competition")
+    if not portfolio:
+        raise SystemExit("The competition portfolio is empty. Refusing to freeze a "
+                         "snapshot that would score every candidate against nothing.")
+
     (OUT_STAGE / "framework.json").write_text(json.dumps(get_framework(), default=str))
     (OUT_STAGE / "client.json").write_text(json.dumps(get_client(), default=str))
     (OUT_STAGE / "liabilities.json").write_text(json.dumps(get_liabilities(2027), default=str))
@@ -71,6 +79,7 @@ def main() -> None:
         try:
             result = ev.evaluate(
                 ticker=t, role=None, position_pct=8.0,
+                portfolio=portfolio,
                 target_payment_year=maturity.get(t),
             )
         except Exception as exc:  # a snapshot is best effort; the live engine is not
@@ -97,6 +106,7 @@ def main() -> None:
         "framework_version": FRAMEWORK_VERSION,
         "position_pct": 8.0,
         "role": "auto, with dated funds pointed at the year they mature",
+        "portfolio": "competition",
         "tickers": sorted(r["ticker"] for r in index),
         "index": sorted(index, key=lambda r: -r["composite"]),
         "failed": failed,

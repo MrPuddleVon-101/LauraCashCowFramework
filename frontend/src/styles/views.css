@@ -996,11 +996,6 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; background: v
 .meter-notch { position: absolute; top: -2px; bottom: -2px; left: 50%; width: 1.4px; background: rgba(22, 18, 15, 0.4); }
 .meter.is-na { width: auto; height: auto; border: 0; background: none; font-size: 11.5px; color: var(--ink-4); font-style: italic; }
 
-.blocks { display: inline-flex; gap: 3px; }
-.blocks i { width: 13px; height: 13px; border: 1.4px solid var(--ink); border-radius: 2px; background: var(--paper); transition: background 0.3s var(--ease) var(--d, 0ms); }
-.blocks i[data-on][data-tone="gold"] { background: var(--gold); }
-.blocks i[data-on][data-tone="sage"] { background: var(--sage); }
-.blocks i[data-on][data-tone="rose"] { background: var(--rose); }
 
 .srcs { display: grid; gap: 10px; margin: 14px 0 20px; }
 .src { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start; }
@@ -1478,3 +1473,373 @@ input[type="range"]:disabled::-webkit-slider-thumb { background: var(--paper-dee
 
 /* Captions under a heading hang from the heading, not from the grid row. */
 .sec-head-row .fine { align-self: start; padding-top: 0.5em; }
+
+/* ===========================================================================
+   The cover, rebuilt
+   ---------------------------------------------------------------------------
+   The call to action is the thing itself. A reader who has arrived wanting to
+   score a ticker should be able to type one here, rather than press a button
+   that takes them somewhere else to find the same field.
+   =========================================================================== */
+
+.cover { padding: clamp(28px, 3.4vw, 54px) 0 clamp(26px, 3vw, 44px); }
+.cover-h { margin: 16px 0 18px; }
+.cover-lede { margin-bottom: 26px; max-width: 40ch; }
+
+/* The field and its button are one object, pressed into the paper together. */
+.hunt {
+  display: flex;
+  align-items: stretch;
+  width: min(470px, 100%);
+  background: var(--paper-hi);
+  border: 2.5px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 5px 6px 0 var(--ink);
+  transition: box-shadow 0.18s var(--ease), translate 0.18s var(--ease);
+}
+.hunt:focus-within { translate: 2px 3px; box-shadow: 2px 2px 0 var(--ink); }
+
+.hunt-f { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; gap: 1px; padding: 9px 4px 10px 24px; min-width: 0; }
+.hunt-k {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.hunt-f input {
+  width: 100%;
+  border: 0;
+  background: none;
+  outline: none;
+  font-family: var(--mono);
+  font-size: 25px;
+  font-weight: 600;
+  letter-spacing: 0.055em;
+  line-height: 1.1;
+  color: var(--ink);
+}
+.hunt-f input::placeholder { color: var(--ink-4); opacity: 0.62; }
+
+.hunt-go {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px;
+  padding: 0 24px;
+  border-radius: 999px;
+  background: var(--gold);
+  border: 2px solid var(--ink);
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--ink);
+  transition: background 0.18s var(--ease), gap 0.2s var(--ease);
+}
+.hunt-go svg { width: 17px; height: 17px; transition: transform 0.22s var(--ease); }
+.hunt-go:hover { background: var(--gold-hi); }
+.hunt-go:hover svg { transform: translateX(4px); }
+.hunt-go:active { background: var(--gold-dk); color: var(--paper); }
+
+/* Four we would hand somebody first, as keys you can actually press. */
+.tries { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 18px; }
+.tries-k {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-right: 4px;
+}
+.tryk {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  padding: 6px 13px 7px;
+  background: var(--paper-hi);
+  border: 1.8px solid var(--ink);
+  border-radius: 5px;
+  box-shadow: 2.5px 3px 0 var(--ink);
+  rotate: var(--rot, 0deg);
+  transition: translate 0.16s var(--ease), box-shadow 0.16s var(--ease), rotate 0.24s var(--ease), background 0.18s var(--ease);
+}
+.tryk b { font-size: 13.5px; font-weight: 600; letter-spacing: 0.06em; line-height: 1.15; }
+.tryk i { font-family: var(--display); font-style: italic; font-size: 11.5px; color: var(--ink-3); line-height: 1.2; }
+.tryk:hover { background: var(--gold); rotate: 0deg; translate: -1px -2px; box-shadow: 4px 5px 0 var(--ink); }
+.tryk:hover i { color: #5a3f07; }
+.tryk:active { translate: 2px 3px; box-shadow: 0 0 0 var(--ink); }
+
+/* The second route through the page, kept quiet so the first one wins. */
+.cover-alt {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 22px;
+  padding-bottom: 2px;
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 17px;
+  color: var(--ink-2);
+  border-bottom: 1.8px solid transparent;
+  transition: color 0.18s var(--ease), border-color 0.18s var(--ease);
+}
+.cover-alt svg { transition: transform 0.3s var(--pop); }
+.cover-alt:hover { color: var(--ink); border-bottom-color: var(--gold-dk); }
+.cover-alt:hover svg { transform: translateY(3px) rotate(-14deg); }
+
+/* The figure rail. Separators are drawn on the cells, so a cell that has not
+   arrived yet reads as paper rather than as a grey slab waiting to fill. */
+.figstrip { background: var(--paper); gap: 0; margin-top: clamp(26px, 3.2vw, 46px); }
+.fs { position: relative; padding: 20px 22px 18px; transition: background 0.22s var(--ease); }
+.fs + .fs { border-left: 1.5px solid var(--line); }
+.fs:hover { background: var(--paper-hi); }
+.fs-dd { position: absolute; top: 16px; right: 16px; opacity: 0.4; transition: opacity 0.22s var(--ease), transform 0.4s var(--pop); }
+.fs:hover .fs-dd { opacity: 0.85; transform: rotate(-12deg) scale(1.15); }
+
+@media (max-width: 860px) {
+  .figstrip { grid-template-columns: 1fr 1fr; }
+  .fs:nth-child(3) { border-left: 0; }
+  .fs:nth-child(n + 3) { border-top: 1.5px solid var(--line); }
+}
+@media (max-width: 520px) {
+  .figstrip { grid-template-columns: 1fr; }
+  .fs + .fs { border-left: 0; border-top: 1.5px solid var(--line); }
+  .hunt { width: 100%; }
+  .hunt-go { padding: 0 16px; }
+  .hunt-go span { display: none; }
+}
+
+/* The margin note was landing on top of the card it was pointing at. */
+.brief-note { position: absolute; right: 0; top: -6px; }
+.brief .sec-head { position: relative; padding-right: 180px; }
+@media (max-width: 900px) { .brief .sec-head { padding-right: 0; } }
+
+/* --- collage placement ---------------------------------------------------- */
+
+/* The postmark was printed half off the right edge of the window. It belongs
+   inside the stage, in the gap under the cow. */
+.cover-pm { right: 7%; bottom: 3%; z-index: 2; opacity: 0.9; rotate: -11deg; }
+.cover-stage { overflow: visible; }
+
+/* A lede should not drop one word onto a line of its own. */
+.lede, .cover-lede, .fine, .caption { text-wrap: pretty; }
+.cover-lede { max-width: 42ch; }
+
+/* ===========================================================================
+   Section headers, across the full measure
+   ---------------------------------------------------------------------------
+   A tag, a heading and a lede stacked in a 64ch column left the right half of
+   a 1280px page empty and pushed every section's content a screen further
+   down. The heading and its lede now sit side by side, sharing a baseline, so
+   the band is as wide as the page and roughly half as tall.
+   =========================================================================== */
+
+.sec-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1.22fr) minmax(0, 0.88fr);
+  column-gap: clamp(28px, 4vw, 76px);
+  row-gap: 10px;
+  align-items: end;
+  max-width: none;
+  margin-bottom: clamp(24px, 2.6vw, 38px);
+}
+.sec-head > .tag { grid-column: 1; grid-row: 1; }
+.sec-head > h2 { grid-column: 1; grid-row: 2; margin: 0; }
+.sec-head > .lede { grid-column: 2; grid-row: 2; max-width: 42ch; margin: 0 0 0.4em; }
+
+/* The row variant is already two columns of its own and keeps its own rules. */
+.sec-head-row { display: flex; }
+
+@media (max-width: 900px) {
+  .sec-head { grid-template-columns: 1fr; }
+  .sec-head > h2, .sec-head > .lede { grid-column: 1; }
+  .sec-head > .lede { grid-row: auto; margin-bottom: 0; }
+}
+
+/* With the headers paying their own way, the bands can breathe less. */
+.brief { padding: clamp(40px, 4.4vw, 68px) 0 clamp(44px, 5vw, 76px); }
+.jobs { padding: clamp(40px, 4.4vw, 66px) 0; }
+.scores { padding: clamp(40px, 4.4vw, 68px) 0 clamp(42px, 4.6vw, 72px); }
+.signals { padding: clamp(42px, 4.6vw, 70px) 0 clamp(44px, 5vw, 76px); }
+.boardsec { padding: clamp(38px, 4.2vw, 62px) 0; }
+.rules { padding: clamp(40px, 4.4vw, 68px) 0 clamp(42px, 4.6vw, 72px); }
+.closer { padding: clamp(44px, 4.8vw, 74px) 0; }
+
+/* The eighth cell states the rule the other seven are instances of, so the
+   grid finishes square instead of trailing off into a gap. */
+.job-rule {
+  background: var(--ink);
+  border-color: var(--ink);
+  box-shadow: var(--cast-2);
+  gap: 7px;
+}
+.job-rule .job-n { color: var(--paper); }
+.job-rule .job-w { color: rgba(246, 236, 217, 0.76); }
+.job-rule .mk-doodle { margin-bottom: 2px; }
+.job-rule:hover { box-shadow: var(--cast-deep); }
+
+/* --- the cover on a phone -------------------------------------------------- */
+
+/* The collage was taking a whole screen before the headline arrived, and the
+   polaroid was running off the right edge. Both shrink, so a reader on a phone
+   meets the sentence and the field without scrolling for them. */
+@media (max-width: 720px) {
+  .cover-stage { max-width: 330px; min-height: 0; aspect-ratio: 1 / 0.82; }
+  .cover-cow .cow { --size: clamp(150px, 46vw, 196px); }
+  .cover-stack { width: clamp(88px, 25vw, 116px); right: 4%; top: 2%; }
+  .pol { padding: 6px 6px 22px; }
+  .pol-cap { bottom: 5px; font-size: 11px; }
+  .cover-badge { scale: 0.68; left: -8%; bottom: 0; }
+  .cover-cred { gap: 8px; }
+  /* The folded corner sits over the bottom right of a sticker, so the label
+     needs room on that side or the corner crops its last characters. */
+  .cover-cred .peel { flex: none; font-size: 10px; padding: 6px 23px 7px 12px; }
+  .cover-h { margin: 14px 0 14px; }
+  .cover-lede { margin-bottom: 20px; }
+  .tries { gap: 7px; margin-top: 14px; }
+  .tries-k { width: 100%; margin: 0 0 2px; }
+  .cover-alt { margin-top: 16px; font-size: 16px; }
+}
+
+/* ===========================================================================
+   The closer
+   ---------------------------------------------------------------------------
+   It used to be a centred heading and one lone button on an empty gold field.
+   It now closes with the same field the page opened with, set against the
+   mascot, so the last thing on the page is the thing the page is for.
+   =========================================================================== */
+
+.closer-in {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.62fr);
+  gap: clamp(24px, 4vw, 64px);
+  align-items: center;
+  text-align: left;
+  justify-items: stretch;
+}
+.closer-copy { display: grid; justify-items: start; gap: 12px; }
+.closer-copy h2 { margin: 2px 0 0; }
+.closer-in .lede { color: #4a3209; max-width: 44ch; margin: 0; }
+.closer-copy .tag { color: #6b4a08; }
+.closer-fine { font-size: 13px; color: #5c4008; max-width: 48ch; margin: 2px 0 0; }
+
+/* On gold, the field is ink: a gold panel on a gold band would vanish. */
+.hunt-ink { margin-top: 8px; background: var(--ink); border-color: var(--ink); box-shadow: 5px 6px 0 rgba(22, 18, 15, 0.42); }
+.hunt-ink .hunt-k { color: rgba(246, 236, 217, 0.68); }
+.hunt-ink .hunt-f input { color: var(--paper); }
+.hunt-ink .hunt-f input::placeholder { color: rgba(246, 236, 217, 0.42); }
+.hunt-ink:focus-within { box-shadow: 2px 2px 0 rgba(22, 18, 15, 0.42); }
+
+.closer-mark { position: relative; display: grid; justify-items: center; }
+.closer-mark .cow { animation: bob 6s var(--ease) infinite; }
+.closer-pm { position: absolute; right: -6%; bottom: -4%; opacity: 0.5; rotate: 11deg; }
+
+.closer-dd1 { position: absolute; top: 6%; right: 44%; opacity: 0.35; animation: twinkle 4.4s var(--ease) infinite; }
+.closer-dd2 { position: absolute; bottom: 14%; left: 2%; opacity: 0.3; animation: twinkle 5.8s var(--ease) infinite; }
+
+@media (max-width: 860px) {
+  .closer-in { grid-template-columns: 1fr; }
+  .closer-mark { order: -1; justify-items: start; }
+  .closer-pm { display: none; }
+}
+
+/* Stacked, the collage used to centre itself over a left aligned headline and
+   field, which read as two different margins. It now shares the text's edge. */
+@media (max-width: 960px) {
+  .cover-stage { margin-inline: 0; margin-left: -2%; }
+}
+
+/* --- registry drift ---------------------------------------------------------
+   A disagreement between the transcribed registry and an independent read. It
+   is reported and never scored, so it is marked clearly and coloured calmly:
+   amber is the signal ladder's and does not belong to a data note. */
+
+.vd-drift { padding-bottom: clamp(16px, 2vw, 26px); }
+
+.drift-t td[data-status] { vertical-align: top; }
+.drift-t tr[data-status="drifted"] { background: rgba(193, 84, 61, 0.07); }
+
+.drift-s {
+  display: inline-block;
+  padding: 2px 8px 3px;
+  border-radius: 3px;
+  border: 1.5px solid var(--line-2);
+  background: var(--paper-hi);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.drift-s[data-status="drifted"] { background: #f6d2ca; border-color: var(--rose-dk); color: #731f12; }
+.drift-s[data-status="agrees"] { background: var(--paper-lo); color: var(--ink-3); }
+.drift-s[data-status="not comparable"] { background: var(--paper-lo); color: var(--ink-3); }
+
+.drift-n { display: block; margin-top: 4px; font-size: 11.5px; font-style: normal; color: var(--ink-3); max-width: 34ch; }
+
+/* --- crowding, before and after ---------------------------------------------
+   Three Herfindahl readings on wildly different scales (an issuer index in the
+   tens, a country index in the thousands), so each gets its own track and the
+   bar shows the move rather than the level. Rose is a crowding that got worse,
+   sage one that got better: neither is the signal ladder's green or red. */
+
+.cr {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom: 1.5px solid var(--line);
+}
+.cr:last-of-type { border-bottom: 0; }
+.cr-k { font-size: 14px; font-weight: 700; }
+
+.cr-track {
+  position: relative;
+  display: block;
+  height: 10px;
+  background: var(--paper-deep);
+  border: 1.5px solid var(--ink);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.cr-fill { position: absolute; inset: 0 auto 0 0; background: var(--ink-4); }
+.cr-move { position: absolute; top: 0; bottom: 0; }
+.cr[data-dir="up"] .cr-move { background: var(--rose-dk); }
+.cr[data-dir="down"] .cr-move { background: var(--sage); }
+.cr[data-dir="flat"] .cr-move { background: var(--ink-4); }
+
+.cr-v { font-size: 13px; color: var(--ink-2); white-space: nowrap; }
+.cr-v em { font-style: normal; color: var(--ink-4); padding: 0 2px; }
+.cr-d {
+  font-size: 13px; font-weight: 600; min-width: 3.4rem; text-align: right;
+}
+.cr[data-dir="up"] .cr-d { color: var(--rose-dk); }
+.cr[data-dir="down"] .cr-d { color: var(--sage-dk); }
+.cr[data-dir="flat"] .cr-d { color: var(--ink-4); }
+
+/* The three overlap readings, as figures rather than as ten empty boxes each. */
+.overlaps { display: flex; flex-wrap: wrap; gap: clamp(18px, 3vw, 40px); margin: 6px 0 22px; }
+.ov { display: flex; flex-direction: column; gap: 0; }
+.ov-v { font-family: var(--display); font-size: clamp(30px, 3.4vw, 44px); font-weight: 700; line-height: 1; }
+.ov-k { font-size: 12.5px; color: var(--ink-3); }
+
+/* The bar travels the distance the number moved, once, on arrival. A row that
+   draws itself is making the before-and-after argument the section exists for. */
+.cr-move { transform: scaleX(0); transform-origin: left; }
+.cr[data-in="true"] .cr-move {
+  transform: scaleX(1);
+  transition: transform 0.72s var(--ease) calc(var(--delay, 0ms) + 120ms);
+}
+.sh-bar i { transform: scaleX(0); transform-origin: left; }
+.sh[data-in="true"] .sh-bar i {
+  transform: scaleX(1);
+  transition: transform 0.6s var(--ease) var(--delay, 0ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .cr-move, .sh-bar i { transform: none !important; }
+}

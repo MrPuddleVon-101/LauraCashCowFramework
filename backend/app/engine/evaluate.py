@@ -12,7 +12,7 @@ from datetime import date, datetime, timezone
 from ..config import CLIENT, FRAMEWORK_VERSION, POLICY, ROLES, ROLE_BUCKET, ROLE_DESCRIPTIONS, risk_state
 from ..providers import market, sec, yahoo
 from . import composite as comp
-from . import fit, funds, liability, lookthrough, simulate, stock
+from . import drift, fit, funds, liability, lookthrough, simulate, stock
 from .normalize import data_confidence
 from .peers import PeerGroup
 from .registry import ASSET_TYPE_LABELS, ROLES_FOR_TYPE, classify, get_fund, registry_meta
@@ -348,6 +348,12 @@ def evaluate(
     risks = _top_metrics(sqs, 3, best=False)
     state, state_reason = risk_state(as_of_year, funding["funding_probability"])
 
+    # Whether the transcribed registry still matches the fund as it is today.
+    # Deliberately computed after the scores and deliberately not passed to any
+    # of them: it is an observation about the input, not a judgement about the
+    # security, and wiring it into data confidence would move verdicts.
+    registry_drift = drift.check(ticker, fund)
+
     return {
         "ticker": ticker,
         "name": name,
@@ -390,6 +396,7 @@ def evaluate(
         "risks": risks,
         "explanation": _explanation(ticker, asset_type, role, sqs, lpfs, trade, funding, gate, sig, strengths, risks),
         "review_triggers": comp.review_triggers(asset_type, role, fund),
+        "registry_drift": registry_drift,
         "details": extra,
         "sources": _collect_sources(sqs),
     }

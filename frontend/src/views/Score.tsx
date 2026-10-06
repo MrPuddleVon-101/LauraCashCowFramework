@@ -39,8 +39,8 @@ const SIGNAL_TONE: Record<string, string> = {
   GREEN: "green", AMBER_PLUS: "amberplus", AMBER: "amber", RED: "red", INSUFFICIENT_DATA: "none",
 };
 
-export default function Score() {
-  const [q, setQ] = useState("");
+export default function Score({ seed = "" }: { seed?: string }) {
+  const [q, setQ] = useState(seed);
   const [role, setRole] = useState("");
   const [position, setPosition] = useState(8);
   const [year, setYear] = useState<number | "">("");
@@ -57,7 +57,16 @@ export default function Score() {
   const field = useRef<HTMLInputElement>(null);
   const out = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { field.current?.focus(); }, []);
+  useEffect(() => { if (!seed) field.current?.focus(); }, [seed]);
+
+  // A ticker handed over from the overview runs itself, once the engine check
+  // has answered, so the reader arrives at a verdict rather than at a form.
+  const ran = useRef(false);
+  useEffect(() => {
+    if (!seed || ran.current || live === null) return;
+    ran.current = true;
+    run(seed);
+  }, [seed, live]);
 
   // Whether there is a real engine behind this build. When there is not, the
   // controls below cannot do anything, so they are turned off and said so
@@ -111,8 +120,11 @@ export default function Score() {
     setQ(sym);
     try {
       const ev = await api.evaluate({
+        // Auto is the empty string in the control, and the engine only accepts
+        // one of the seven codes or null. Coalescing on nullish alone sent the
+        // empty string straight through and the API answered 422.
         ticker: sym,
-        role: forcedRole ?? role ?? null,
+        role: (forcedRole ?? role) || null,
         position_pct: position,
         target_payment_year: forcedYear ?? (year === "" ? null : Number(year)),
       });
@@ -173,12 +185,11 @@ export default function Score() {
         {frozen && (
           <Note tone="warn">
             <b>Snapshot, not a live engine. </b>
-            This build is hosted as plain files, so the Python scoring engine is not
-            running behind it. Every verdict here is the real engine's own output,
-            frozen{snap ? ` on ${snap.generated_on}` : ""} at the default role and an
-            {" "}{snap ? snap.position_pct.toFixed(0) : "8"}% position, for{" "}
-            {snap ? snap.tickers.length : "a fixed set of"} tickers. Pick one below, or
-            run the API locally to score anything you like with any role and size.
+            Every verdict here is the engine's own output, frozen
+            {snap ? ` ${snap.generated_on}` : ""} at the default role and an{" "}
+            {snap ? snap.position_pct.toFixed(0) : "8"}% position, for{" "}
+            {snap ? snap.tickers.length : "a fixed set of"} tickers. Pick one below, or run
+            the API locally to score anything, at any role and size.
           </Note>
         )}
 
