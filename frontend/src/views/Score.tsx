@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { api, engineIsLive, snapshotMeta, type Evaluation, type Snapshot } from "../api";
-import { Btn, Note, Paper, Working } from "../ui/Kit";
-import { Arrow, Spark } from "../ui/Marks";
+import { Btn, Note, Paper, Peel, Stagger, Working } from "../ui/Kit";
+import {
+  Arrow, Cow, Doodle, Mark, Note as Margin, Paper as Grid, Pin, Postmark, Splat,
+} from "../ui/Marks";
 import Verdict from "./Verdict";
 
 const ROLES: [string, string, string][] = [
@@ -26,12 +28,16 @@ const PICKS: { t: string; r: string; y?: number; why: string }[] = [
   { t: "COST", r: "SG", why: "quality, priced" },
 ];
 
-const STEPS: [string, string, string][] = [
-  ["01", "Work out what it is", "A Treasury and a growth stock cannot share a scoring model."],
-  ["02", "Go and check", "Filings from SEC EDGAR. Price and spread from the exchange. No estimates."],
-  ["03", "Rank it honestly", "Against 1,608 registrants, not five companies somebody picked."],
-  ["04", "Run the gate first", "Before any weighting. A hard failure cannot be outscored later."],
+const STEPS: [string, string, string, string][] = [
+  ["01", "Work out what it is", "A Treasury and a growth stock cannot share a scoring model.", "eye"],
+  ["02", "Go and check", "Filings from SEC EDGAR. Price and spread from the exchange. No estimates.", "coin"],
+  ["03", "Rank it honestly", "Against 1,608 registrants, not five companies somebody picked.", "star"],
+  ["04", "Run the gate first", "Before any weighting. A hard failure cannot be outscored later.", "bolt"],
 ];
+
+const SIGNAL_TONE: Record<string, string> = {
+  GREEN: "green", AMBER_PLUS: "amberplus", AMBER: "amber", RED: "red", INSUFFICIENT_DATA: "none",
+};
 
 export default function Score() {
   const [q, setQ] = useState("");
@@ -142,17 +148,26 @@ export default function Score() {
   const frozen = live === false;
 
   return (
-    <div className="band band-paper view">
+    <div className="band band-paper view deskview">
+      <Grid kind="grid" size={30} color="rgba(22,18,15,0.05)" />
+      <Splat size={96} seed={11} color="var(--gold)" opacity={0.13} style={{ top: "4%", right: "2%" }} />
+      <Splat size={64} seed={29} color="var(--rose)" opacity={0.12} style={{ bottom: "6%", left: "1%" }} />
       <div className="wrap">
-        <header className="view-head">
+        <header className="view-head desk-head">
           <div>
             <span className="tag">The desk</span>
-            <h1 className="view-h">Throw a ticker at it</h1>
+            <h1 className="view-h"><Stagger text="Throw a ticker at it" /></h1>
+            <div className="desk-chips">
+              <Peel tone="gold" rotate={-2}>SEC filings</Peel>
+              <Peel tone="sage" rotate={1.6}>live prices</Peel>
+              <Peel tone="paper" rotate={-1.2}>1,608 peers</Peel>
+            </div>
           </div>
           <p className="view-sub">
-            Stocks, funds, Treasuries, cash. Tell it what the thing is for and it will
-            tell you whether that is a good idea.
+            Stocks, funds, Treasuries, cash. Tell it what the thing is <Mark color="var(--sage-hi)">for</Mark>{" "}
+            and it will tell you whether that is a good idea.
           </p>
+          <Postmark top="NOTHING PASSES" bottom="ON CHARM" size={92} className="desk-pm" color="var(--rose-dk)" />
         </header>
 
         {frozen && (
@@ -167,7 +182,9 @@ export default function Score() {
           </Note>
         )}
 
-        <Paper seed={3} tilt={0.5} className="desk" anim="rise">
+        <Paper seed={3} tilt={0.5} className="desk" anim="rise" tape="both">
+          <Pin size={23} color="var(--red)" style={{ top: -13, left: "50%", marginLeft: -11 }} />
+          <Margin side="left" rotate={-5} className="desk-note">any US ticker, not just ours</Margin>
           <div className="desk-main" ref={box}>
             <label className="field">
               <span className="field-k">Symbol</span>
@@ -243,13 +260,19 @@ export default function Score() {
 
           <div className="desk-picks">
             <span className="tag">Or borrow one of ours</span>
-            {PICKS.map((p, i) => (
-              <button key={p.t} className="pick" style={{ ["--d" as string]: `${i * 40}ms` }}
-                      onClick={() => { setRole(p.r); setYear(p.y ?? ""); run(p.t, p.r, p.y); }}>
-                <b className="num">{p.t}</b>
-                <i>{p.why}</i>
-              </button>
-            ))}
+            <div className="pick-grid">
+            {PICKS.map((p, i) => {
+              const known = snap?.index?.find((x) => x.ticker === p.t);
+              return (
+                <button key={p.t} className="pick" style={{ ["--d" as string]: `${i * 40}ms` }}
+                        data-tone={known ? SIGNAL_TONE[known.signal] : undefined}
+                        onClick={() => { setRole(p.r); setYear(p.y ?? ""); run(p.t, p.r, p.y); }}>
+                  <b className="num">{p.t}</b>
+                  <i>{p.why}</i>
+                </button>
+              );
+            })}
+            </div>
           </div>
         </Paper>
 
@@ -260,17 +283,34 @@ export default function Score() {
         {error && !busy && <Note tone="bad">{error}</Note>}
 
         {!result && !busy && !error && (
-          <div className="steps">
-            {STEPS.map(([n, t, d], i) => (
-              <div className="step" key={n} data-anim="rise" style={{ ["--delay" as string]: `${i * 90}ms` }}>
-                <span className="step-n num">{n}</span>
-                <span className="step-t">{t}</span>
-                <span className="step-d">{d}</span>
-                {i < 3 && <Arrow className="step-arrow" w={54} h={26} color="var(--ink-4)" />}
+          <>
+            <div className="steps">
+              {STEPS.map(([n, t, d, dd], i) => (
+                <div className="step" key={n} data-anim="rise" style={{ ["--delay" as string]: `${i * 90}ms` }}>
+                  <span className="step-top">
+                    <span className="step-n num">{n}</span>
+                    <Doodle name={dd} size={19} color="var(--gold-dk)" />
+                  </span>
+                  <span className="step-t">{t}</span>
+                  <span className="step-d">{d}</span>
+                  {i < 3 && <Arrow className="step-arrow" w={54} h={26} color="var(--ink-4)" />}
+                </div>
+              ))}
+            </div>
+
+            <aside className="deskfoot">
+              <Cow size={88} />
+              <div>
+                <h3>Green is rare on purpose</h3>
+                <p className="fine">
+                  Across a 52 name sweep of funds, Treasuries, mega caps and genuinely weak
+                  businesses, roughly a tenth clear amber plus and a third come back red. If
+                  everything scored well the score would not be telling you anything.
+                </p>
               </div>
-            ))}
-            <Spark size={20} className="steps-sp" />
-          </div>
+              <Doodle name="arrowCurl" size={30} color="var(--ink-4)" className="deskfoot-dd" />
+            </aside>
+          </>
         )}
       </div>
 

@@ -1102,3 +1102,336 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; background: v
 .rolechip:disabled:hover { border-color: var(--line-2); color: var(--ink-2); }
 input[type="range"]:disabled { opacity: 0.4; cursor: not-allowed; }
 input[type="range"]:disabled::-webkit-slider-thumb { background: var(--paper-deep); }
+
+/* ===========================================================================
+   The wider drawer of marks
+   =========================================================================== */
+
+.mk-pin { position: absolute; pointer-events: none; filter: drop-shadow(2px 3px 0 rgba(22,18,15,0.18)); }
+.mk-postmark { position: absolute; pointer-events: none; }
+.pm-ring { font-family: var(--mono); font-size: 7.6px; font-weight: 600; letter-spacing: 0.2em; }
+
+.mk-rosette { position: relative; display: inline-grid; place-items: center; flex: none; }
+.mk-rosette svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.mk-rosette-in {
+  position: relative; text-align: center; line-height: 1.05;
+  font-family: var(--display); font-weight: 700; padding: 0 14%;
+}
+
+.mk-tag { position: relative; display: inline-grid; place-items: center; min-width: 118px; height: 46px; }
+.mk-tag svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.mk-tag-in {
+  position: relative; padding-left: 14px;
+  font-family: var(--mono); font-size: 12.5px; font-weight: 600; letter-spacing: 0.02em;
+}
+
+.mk-hl { position: relative; display: inline-block; white-space: nowrap; }
+.mk-hl svg { position: absolute; inset: -6% -4% -12%; width: 108%; height: 124%; z-index: -1; mix-blend-mode: multiply; }
+.mk-hl > span { position: relative; }
+
+.mk-doodle { flex: none; }
+.mk-splat { position: absolute; pointer-events: none; mix-blend-mode: multiply; }
+.mk-paper { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+.mk-note {
+  position: absolute; display: flex; align-items: flex-start; gap: 4px;
+  max-width: 180px; pointer-events: none; z-index: 5;
+}
+.mk-note i {
+  font-family: var(--display); font-style: italic; font-size: 15px; line-height: 1.22;
+  color: var(--ink-3);
+}
+.mk-note-arrow-left { transform: scaleX(-1); }
+.mk-note-left { flex-direction: row-reverse; }
+
+.seam { display: block; width: 100%; height: 22px; line-height: 0; }
+.seam svg { display: block; width: 100%; height: 100%; }
+.seam-perf { height: 18px; }
+.seam-stitch { height: 16px; }
+
+/* --- odometer ---------------------------------------------------------------- */
+
+.odo { display: inline-flex; align-items: baseline; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.odo-fix { font-style: normal; }
+.odo-d { display: inline-block; height: 1em; overflow: hidden; line-height: 1; vertical-align: baseline; }
+.odo-reel {
+  display: flex; flex-direction: column; line-height: 1;
+  transition: transform 1.1s var(--pop);
+}
+.odo-reel b { font-weight: inherit; height: 1em; }
+.odo-sep { display: inline-block; }
+
+/* --- peel sticker ------------------------------------------------------------- */
+
+.peel {
+  position: relative; display: inline-block; padding: 9px 17px 10px;
+  border: 2px solid var(--ink); border-radius: 4px;
+  font-size: 13px; font-weight: 700;
+  rotate: var(--rot, -2deg);
+  box-shadow: var(--cast);
+  transition: rotate 0.3s var(--pop), translate 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+.peel-gold { background: var(--gold); }
+.peel-rose { background: var(--rose); }
+.peel-sage { background: var(--sage-hi); }
+.peel-ink { background: var(--ink); color: var(--paper); }
+.peel-paper { background: var(--paper-hi); }
+.peel:hover { rotate: 0deg; translate: 0 -3px; box-shadow: var(--cast-2); }
+.peel-corner {
+  position: absolute; right: -2px; bottom: -2px; width: 17px; height: 17px;
+  background: linear-gradient(135deg, transparent 48%, rgba(22,18,15,0.22) 50%, var(--paper-hi) 52%);
+  border-right: 2px solid var(--ink); border-bottom: 2px solid var(--ink);
+  border-bottom-right-radius: 4px;
+  transition: width 0.26s var(--pop), height 0.26s var(--pop);
+}
+.peel:hover .peel-corner { width: 26px; height: 26px; }
+
+/* --- wobble, flip, staggered type --------------------------------------------- */
+
+.wobble { display: inline-block; transition: rotate 0.3s var(--pop), scale 0.3s var(--pop); }
+.wobble:hover { rotate: var(--amt, 1.6deg); scale: 1.03; }
+
+.flip { perspective: 900px; display: block; width: 100%; text-align: left; }
+.flip-in {
+  position: relative; display: block; transform-style: preserve-3d;
+  transition: transform 0.65s var(--pop);
+}
+.flip.is-over .flip-in { transform: rotateY(180deg); }
+.flip-f, .flip-b { backface-visibility: hidden; display: block; }
+.flip-b { position: absolute; inset: 0; transform: rotateY(180deg); }
+
+.stag .stag-w { display: inline-block; opacity: 0; transform: translateY(0.4em) rotate(-2deg); }
+.stag[data-in="true"] .stag-w {
+  opacity: 1; transform: none;
+  transition: opacity 0.42s var(--ease) var(--d), transform 0.6s var(--pop) var(--d);
+}
+
+/* --- extra entrances ----------------------------------------------------------- */
+
+[data-anim="pop"] { opacity: 0; transform: scale(0.82) rotate(var(--rot, 0deg)); }
+[data-anim="pop"][data-in="true"] {
+  opacity: 1; transform: scale(1) rotate(var(--rot, 0deg));
+  transition: opacity 0.26s var(--ease) var(--delay), transform 0.6s var(--pop) var(--delay);
+}
+[data-anim="swing"] { opacity: 0; transform: rotate(-9deg) translateY(-16px); transform-origin: top left; }
+[data-anim="swing"][data-in="true"] {
+  opacity: 1; transform: rotate(var(--rot, 0deg)) translateY(0);
+  transition: opacity 0.3s var(--ease) var(--delay), transform 0.8s var(--pop) var(--delay);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .odo-reel { transition: none; }
+  .stag .stag-w { opacity: 1 !important; transform: none !important; }
+}
+
+/* ===========================================================================
+   The denser landing page
+   =========================================================================== */
+
+.cover-grid { opacity: 0.55; -webkit-mask-image: linear-gradient(180deg, #000 0, transparent 72%); mask-image: linear-gradient(180deg, #000 0, transparent 72%); }
+
+.cover-cred { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 26px; }
+.cover-cred .peel { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; }
+
+.cover-h .l1 { display: block; }
+.cover-h .l2 { display: block; margin-top: -0.04em; }
+
+.cover-badge {
+  position: absolute; left: -4%; bottom: 6%; z-index: 6;
+  translate: calc(var(--px, 0) * -16px) calc(var(--dy, 0px) + var(--py, 0) * -12px);
+  animation: bob 9s var(--ease) infinite;
+}
+.rz-1, .rz-2 { display: block; }
+.rz-1 { font-size: 15px; letter-spacing: 0.08em; }
+.rz-2 { font-size: 21px; letter-spacing: -0.01em; }
+.rz-s { font-size: 11px; letter-spacing: 0.06em; color: var(--paper); }
+
+.cover-pm { right: 2%; bottom: 20%; z-index: 2; opacity: 0.8; rotate: -11deg; }
+.cover-dd1 { position: absolute; top: 12%; right: 26%; opacity: 0.5; animation: spin 24s linear infinite; }
+.cover-dd2 { position: absolute; bottom: 30%; left: 6%; opacity: 0.7; }
+
+.fs { position: relative; }
+.fs-dd { position: absolute; top: 16px; right: 16px; opacity: 0.4; }
+.fs-f { font-family: var(--display); font-size: clamp(30px, 3.6vw, 48px); line-height: 1; font-weight: 700; }
+
+.strip-under { border-top: 1px solid rgba(246,236,217,0.16); margin-top: 10px; padding-top: 9px; }
+.strip-j {
+  display: inline-flex; align-items: center; gap: 16px; padding-right: 16px;
+  font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgba(246,236,217,0.5); white-space: nowrap;
+}
+.strip-j i { color: var(--gold); font-style: normal; }
+
+.brief-note { right: 2%; top: 46%; }
+
+/* --- the seven jobs ---------------------------------------------------------- */
+
+.jobs { padding: clamp(50px, 6vw, 86px) 0; }
+.jobsheet {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: clamp(14px, 2vw, 26px);
+}
+.job {
+  position: relative; display: grid; gap: 5px; justify-items: start;
+  padding: 18px 18px 20px;
+  background: var(--paper-hi);
+  border: 2px solid var(--ink); border-radius: 5px;
+  box-shadow: var(--cast);
+  rotate: var(--rot, 0deg);
+  transition: box-shadow 0.22s var(--ease);
+}
+.job:hover { box-shadow: var(--cast-2); }
+.job-peel { margin-bottom: 6px; }
+.job-peel b { font-size: 15px; letter-spacing: 0.08em; }
+.job-n { font-family: var(--display); font-size: 20px; font-weight: 700; line-height: 1.05; }
+.job-w { font-size: 12.5px; color: var(--ink-3); line-height: 1.38; }
+
+/* --- the two scores, with a mark between them -------------------------------- */
+
+.duo { display: grid; grid-template-columns: 1fr auto 1fr; gap: clamp(14px, 1.8vw, 26px); align-items: center; }
+.duo-vs {
+  display: grid; justify-items: center; gap: 5px;
+  font-family: var(--display); font-style: italic; font-size: 17px; color: var(--ink-3);
+}
+.duo-vs .mk-doodle { animation: bob 5s var(--ease) infinite; }
+
+.formula { position: relative; }
+.formula-tag { position: absolute; top: -22px; right: 26px; rotate: 5deg; }
+.formula-dd { position: absolute; right: 34px; bottom: 18px; opacity: 0.45; transform: scaleX(-1); }
+
+/* --- the board ---------------------------------------------------------------- */
+
+.boardsec { padding: clamp(46px, 5.5vw, 82px) 0; }
+.board { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: clamp(10px, 1.4vw, 18px); }
+.bd-card {
+  position: relative; display: grid; gap: 2px; text-align: left;
+  padding: 15px 16px 17px;
+  background: var(--paper-hi); border: 2px solid var(--ink); border-radius: 5px;
+  box-shadow: var(--cast); rotate: var(--rot, 0deg);
+  transition: translate 0.2s var(--ease), box-shadow 0.2s var(--ease), rotate 0.25s var(--ease);
+  overflow: hidden;
+}
+.bd-card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 6px; }
+.bd-card[data-tone="green"]::before { background: var(--green); }
+.bd-card[data-tone="amberplus"]::before { background: var(--amber); }
+.bd-card[data-tone="amber"]::before { background: #f0bf4b; }
+.bd-card[data-tone="red"]::before { background: var(--red); }
+.bd-card[data-tone="none"]::before { background: var(--ink-4); }
+.bd-card:hover { translate: 0 -5px; rotate: 0deg; box-shadow: var(--cast-2); }
+.bd-t { font-size: 17px; font-weight: 600; padding-left: 8px; }
+.bd-s { font-family: var(--display); font-size: 34px; font-weight: 700; line-height: 1; padding-left: 8px; }
+.bd-sig { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); padding-left: 8px; }
+.bd-n { font-size: 11.5px; color: var(--ink-3); padding-left: 8px; margin-top: 4px; line-height: 1.3;
+        overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+
+/* --- rules --------------------------------------------------------------------- */
+
+.refuse-list li { gap: 13px; }
+.prov { position: relative; }
+.prov-pm { right: -10px; bottom: -16px; opacity: 0.55; rotate: 9deg; }
+
+.closer-dd1 { position: absolute; top: 12%; right: 16%; opacity: 0.35; animation: twinkle 4.4s var(--ease) infinite; }
+.closer-dd2 { position: absolute; bottom: 22%; left: 14%; opacity: 0.3; animation: twinkle 5.8s var(--ease) infinite; }
+
+/* --- narrow -------------------------------------------------------------------- */
+
+@media (max-width: 1100px) {
+  .duo { grid-template-columns: 1fr; }
+  .duo-vs { flex-direction: row; }
+  .cover-badge { left: 0; bottom: 2%; }
+  .cover-pm { display: none; }
+}
+@media (max-width: 720px) {
+  .jobsheet { grid-template-columns: 1fr 1fr; }
+  .board { grid-template-columns: 1fr 1fr; }
+  .mk-note { display: none; }
+  .cover-badge { scale: 0.78; }
+}
+
+/* ===========================================================================
+   The desk, with something on it
+   =========================================================================== */
+
+.deskview { position: relative; overflow: hidden; }
+.deskview .mk-paper { opacity: 0.8; -webkit-mask-image: linear-gradient(180deg, #000 0, transparent 60%); mask-image: linear-gradient(180deg, #000 0, transparent 60%); }
+
+.desk-head { position: relative; }
+.desk-chips { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 18px; }
+.desk-chips .peel { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; padding: 7px 13px 8px; }
+.desk-pm { right: 0; top: -14px; opacity: 0.6; rotate: 8deg; }
+
+.desk { position: relative; }
+.desk-note { left: -164px; top: 92px; }
+
+.pick { position: relative; overflow: hidden; }
+.pick::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: transparent;
+}
+.pick[data-tone="green"]::after { background: var(--green); }
+.pick[data-tone="amberplus"]::after { background: var(--amber); }
+.pick[data-tone="amber"]::after { background: #f0bf4b; }
+.pick[data-tone="red"]::after { background: var(--red); }
+
+.step-top { display: flex; align-items: center; gap: 9px; }
+
+.deskfoot {
+  position: relative;
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 22px; align-items: center;
+  margin-top: clamp(34px, 4vw, 56px);
+  padding: clamp(20px, 2.4vw, 30px);
+  background: var(--paper-lo);
+  border: 2.5px solid var(--ink); border-radius: 10px;
+  box-shadow: var(--cast-2);
+  rotate: -0.4deg;
+}
+.deskfoot h3 { font-size: clamp(20px, 2vw, 26px); margin-bottom: 7px; }
+.deskfoot .fine { max-width: 72ch; }
+.deskfoot .cow { animation: bob 7s var(--ease) infinite; }
+.deskfoot-dd { position: absolute; right: 18px; top: 14px; opacity: 0.35; }
+
+@media (max-width: 1240px) { .desk-note { display: none; } }
+@media (max-width: 720px) {
+  .desk-pm { display: none; }
+  .deskfoot { grid-template-columns: 1fr; justify-items: start; }
+}
+
+/* --- alignment and fit corrections --------------------------------------------- */
+
+/* The postmark was hanging off the right edge of the viewport. */
+.desk-pm { right: 8px; top: 4px; }
+.deskview { overflow-x: clip; }
+
+/* The header is a headline with a note beside it, so the note hangs from the
+   headline's first line rather than floating against the bottom of the column. */
+.view-head { align-items: start; }
+.view-head > div:first-child { min-width: 0; }
+.view-sub { margin-top: clamp(14px, 2.4vw, 30px); }
+.desk-head .view-sub { margin-top: clamp(18px, 3vw, 38px); }
+
+/* Shortcuts read as one block rather than an uneven ragged pair of rows. */
+.desk-picks { align-items: stretch; }
+.pick-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  gap: 8px; width: 100%; margin-top: 10px;
+}
+.pick-grid .pick { width: 100%; }
+
+/* A button that cannot do anything yet should look deliberate, not broken. */
+.btn[disabled] {
+  opacity: 1; pointer-events: none;
+  background: var(--paper-lo); color: var(--ink-4);
+  border-color: var(--line-2); box-shadow: 3px 4px 0 var(--line-2);
+}
+
+/* Mono labels sit a touch high against the serif they caption. */
+.tag { line-height: 1.35; }
+.sec-head .tag, .view-head .tag { margin-bottom: 2px; }
+
+/* The stamp belongs on the rule under the header, not across the sentence. */
+.desk-pm { right: -6px; top: auto; bottom: -34px; z-index: 4; rotate: -7deg; }
+.desk-head .view-sub { padding-right: 96px; }
+@media (max-width: 900px) { .desk-head .view-sub { padding-right: 0; } }
+
+/* Seven stickers read as a deliberate 4 and 3 rather than a stranded last one. */
+@media (min-width: 1101px) { .jobsheet { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 721px) and (max-width: 1100px) { .jobsheet { grid-template-columns: repeat(3, 1fr); } }

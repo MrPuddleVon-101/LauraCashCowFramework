@@ -193,3 +193,95 @@ export function Note({ tone = "plain", children }: {
 }) {
   return <div className={`note note-${tone}`}>{children}</div>;
 }
+
+/* --- more furniture --------------------------------------------------------- */
+
+/**
+ * A figure on split-flap boards: each digit rolls into place.
+ *
+ * Counting a number up is one gesture. Rolling each column separately is a
+ * different one, and it suits a figure that is being read off a machine rather
+ * than growing. Used for the headline statistics, not for scores.
+ */
+export function Odometer({ value, prefix = "", suffix = "", className = "" }: {
+  value: string; prefix?: string; suffix?: string; className?: string;
+}) {
+  const { ref, inView } = useEnter<HTMLSpanElement>(0.4);
+  const chars = value.split("");
+  return (
+    <span ref={ref} className={`odo ${className}`} aria-label={`${prefix}${value}${suffix}`}>
+      {prefix && <i className="odo-fix">{prefix}</i>}
+      {chars.map((c, i) => (
+        <span key={i} className={/\d/.test(c) ? "odo-d" : "odo-sep"} aria-hidden="true">
+          {/\d/.test(c) ? (
+            <span className="odo-reel" style={{
+              transform: inView ? `translateY(-${Number(c) * 10}%)` : "translateY(0)",
+              transitionDelay: `${i * 70}ms`,
+            }}>
+              {"0123456789".split("").map((d) => <b key={d}>{d}</b>)}
+            </span>
+          ) : c}
+        </span>
+      ))}
+      {suffix && <i className="odo-fix">{suffix}</i>}
+    </span>
+  );
+}
+
+/** A sticker whose corner lifts when you reach for it. */
+export function Peel({ children, tone = "gold", rotate = -2, className = "", onClick }: {
+  children: React.ReactNode; tone?: string; rotate?: number;
+  className?: string; onClick?: () => void;
+}) {
+  const Tag: any = onClick ? "button" : "span";
+  return (
+    <Tag className={`peel peel-${tone} ${className}`} onClick={onClick}
+         style={{ ["--rot" as string]: `${rotate}deg` }}>
+      <span className="peel-face">{children}</span>
+      <i className="peel-corner" aria-hidden="true" />
+    </Tag>
+  );
+}
+
+/** Nudges on hover, the way a pinned card does when you brush past it. */
+export function Wobble({ children, className = "", amount = 1.6 }: {
+  children: React.ReactNode; className?: string; amount?: number;
+}) {
+  return (
+    <span className={`wobble ${className}`} style={{ ["--amt" as string]: `${amount}deg` }}>
+      {children}
+    </span>
+  );
+}
+
+/** Two faces on one card. Clicking turns it over. */
+export function Flip({ front, back, className = "" }: {
+  front: React.ReactNode; back: React.ReactNode; className?: string;
+}) {
+  const [over, setOver] = useState(false);
+  return (
+    <button className={`flip${over ? " is-over" : ""} ${className}`}
+            onClick={() => setOver(!over)} aria-pressed={over}>
+      <span className="flip-in">
+        <span className="flip-f">{front}</span>
+        <span className="flip-b">{back}</span>
+      </span>
+    </button>
+  );
+}
+
+/** A line of type that assembles itself word by word when it arrives. */
+export function Stagger({ text, className = "", step = 55, as: As = "span" }: {
+  text: string; className?: string; step?: number; as?: any;
+}) {
+  const { ref } = useEnter<HTMLElement>(0.3);
+  return (
+    <As ref={ref as any} className={`stag ${className}`} data-anim="stag">
+      {text.split(" ").map((w, i) => (
+        <span key={i} className="stag-w" style={{ ["--d" as string]: `${i * step}ms` }}>
+          {w}{i < text.split(" ").length - 1 ? " " : ""}
+        </span>
+      ))}
+    </As>
+  );
+}
