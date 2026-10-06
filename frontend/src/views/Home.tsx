@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { api, snapshotMeta, type Snapshot } from "../api";
 import { asset } from "../lib/asset";
 import { useDrift, useTilt } from "../lib/motion";
-import { Btn, Marquee, Odometer, Paper as Card, Peel, Stagger, Wobble } from "../ui/Kit";
+import { Marquee, Odometer, Paper as Card, Peel, Stagger, Wobble } from "../ui/Kit";
 import {
-  Arrow, Cow, Doodle, Halftone, Mark, Note, Paper as Grid, Pin, Postmark,
+  Cow, Doodle, Halftone, Mark, Note, Paper as Grid, Pin, Postmark,
   PriceTag, Ring, Rosette, Seam, Spark, Splat, Tear, Underline,
 } from "../ui/Marks";
 import Engine from "./Engine";
@@ -61,6 +61,17 @@ const CARDS: Card4[] = [
     ],
     rows: [["Willingness", "high"], ["Capacity", "depends on the dollar"], ["Protection mode", "shortfall × 1.35"]],
   },
+];
+
+/* --- four we would hand somebody first ------------------------------------- */
+
+/* Each of these is in the snapshot, so the button lands on a real verdict
+   rather than on an error about a ticker this build cannot reach. */
+const TRY: [string, string][] = [
+  ["AVUS", "the core"],
+  ["IBTM", "dated 2033"],
+  ["NVDA", "one name"],
+  ["SGOV", "dry powder"],
 ];
 
 /* --- the seven jobs -------------------------------------------------------- */
@@ -135,10 +146,17 @@ const SIGNAL_TONE: Record<string, string> = {
   GREEN: "green", AMBER_PLUS: "amberplus", AMBER: "amber", RED: "red", INSUFFICIENT_DATA: "none",
 };
 
+/** What the pointer's ring should answer in. The ladder has five rungs and the
+ *  mark has three colours, so amber plus borrows amber and no call stays ink. */
+const CURSOR_TONE: Record<string, string> = {
+  GREEN: "green", AMBER_PLUS: "amber", AMBER: "amber", RED: "red", INSUFFICIENT_DATA: "",
+};
+
 /* --- page ------------------------------------------------------------------ */
 
-export default function Home({ go }: { go: (v: View) => void }) {
+export default function Home({ go }: { go: (v: View, ticker?: string) => void }) {
   const [open, setOpen] = useState<Card4 | null>(null);
+  const [hunt, setHunt] = useState("");
   const [policy, setPolicy] = useState<Policy | null>(null);
   const [board, setBoard] = useState<Snapshot | null>(null);
   const stage = useTilt<HTMLDivElement>(1);
@@ -182,21 +200,49 @@ export default function Home({ go }: { go: (v: View) => void }) {
             </h1>
 
             <p className="lede cover-lede">
-              It cares whether the thing still pays Laura <Mark color="var(--gold-hi)">$50,000 in 2036</Mark>.
-              So every candidate gets scored twice, and her half counts for more.
+              It cares whether it still pays her <Mark color="var(--gold-hi)">$50,000 in 2036</Mark>.
+              So everything is scored twice, and her half weighs more.
             </p>
 
-            <div className="cover-cta">
-              <Btn kind="go" size="lg" arrow onClick={() => go("score")}>Score a ticker</Btn>
-              <Btn size="lg" onClick={() => document.getElementById("client")?.scrollIntoView({ behavior: "smooth" })}>
-                Meet Laura first
-              </Btn>
+            <form
+              className="hunt"
+              onSubmit={(e) => { e.preventDefault(); if (hunt.trim()) go("score", hunt.trim().toUpperCase()); }}
+            >
+              <label className="hunt-f">
+                <span className="hunt-k">Ticker</span>
+                <input
+                  value={hunt}
+                  onChange={(e) => setHunt(e.target.value.toUpperCase())}
+                  placeholder="AVUS"
+                  spellCheck={false}
+                  autoComplete="off"
+                  maxLength={8}
+                  aria-label="Ticker to score"
+                />
+              </label>
+              <button className="hunt-go" type="submit" data-cursor="score it" data-cursor-tone="gold">
+                <span>Score it</span>
+                <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true">
+                  <path d="M2.5 9h12M10 4l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            </form>
+
+            <div className="tries">
+              <span className="tries-k">Or one of ours</span>
+              {TRY.map(([t, why], i) => (
+                <button key={t} className="tryk" data-cursor={t} onClick={() => go("score", t)}
+                        style={{ ["--rot" as string]: `${(i % 2 ? 1 : -1) * 1.4}deg` }}>
+                  <b className="num">{t}</b>
+                  <i>{why}</i>
+                </button>
+              ))}
             </div>
 
-            <span className="cover-hint">
-              <Arrow w={76} h={34} color="var(--ink-3)" rotate={-152} />
-              type a ticker, get a verdict
-            </span>
+            <button className="cover-alt" onClick={() => document.getElementById("client")?.scrollIntoView({ behavior: "smooth" })}>
+              <Doodle name="arrowCurl" size={22} color="var(--ink-4)" />
+              Meet Laura first
+            </button>
           </div>
 
           <div className="cover-stage" ref={stage}>
@@ -320,8 +366,8 @@ export default function Home({ go }: { go: (v: View) => void }) {
             </div>
             <p className="fine">
               A Treasury dated to 2034 and a growth stock are never measured against the same
-              objective. The job decides which model runs and how it is weighted, which is what
-              stops the whole thing collapsing into one league table.
+              objective. The job picks the model and the weights. Without one, the whole thing
+              collapses into a single league table.
             </p>
           </header>
 
@@ -337,6 +383,14 @@ export default function Home({ go }: { go: (v: View) => void }) {
                 </span>
               </Wobble>
             ))}
+
+            <span className="job job-rule" data-anim="pop" style={{ ["--delay" as string]: "400ms" }}>
+              <Doodle name="cross" size={26} color="var(--red)" />
+              <span className="job-n">No job, no score</span>
+              <span className="job-w">
+                The engine refuses a ticker it has not been told the purpose of.
+              </span>
+            </span>
           </div>
         </div>
       </section>
@@ -396,9 +450,9 @@ export default function Home({ go }: { go: (v: View) => void }) {
               composite = 100 × (<em>quality</em>/100)<sup>0.45</sup> × (<em>fit</em>/100)<sup>0.55</sup>
             </p>
             <p className="formula-say">
-              A geometric mean, not an average, and tilted toward her. The difference matters: a 96
-              that suits her badly cannot buy its way out of a 60, because multiplying by a small
-              number stays small. An average would have let it.
+              A geometric mean, not an average, and tilted toward her. A 96 that suits her badly
+              cannot buy its way out of a 60: multiplying by a small number stays small. An
+              average would have let it.
             </p>
             <Doodle name="arrowCurl" size={34} color="var(--ink-4)" className="formula-dd" />
           </div>
@@ -461,8 +515,9 @@ export default function Home({ go }: { go: (v: View) => void }) {
               <div className="board">
                 {board.index.slice(0, 10).map((r, i) => (
                   <button key={r.ticker + i} className="bd-card" data-tone={SIGNAL_TONE[r.signal] ?? "amber"}
+                          data-cursor={r.ticker} data-cursor-tone={CURSOR_TONE[r.signal] ?? ""}
                           data-anim="pop" style={{ ["--delay" as string]: `${i * 45}ms`, ["--rot" as string]: `${(i % 3 - 1) * 1.1}deg` }}
-                          onClick={() => go("score")}>
+                          onClick={() => go("score", r.ticker)}>
                     <span className="bd-t num">{r.ticker}</span>
                     <span className="bd-s num">{r.composite.toFixed(0)}</span>
                     <span className="bd-sig">{r.signal.replace("_", " ").toLowerCase()}</span>
@@ -489,7 +544,7 @@ export default function Home({ go }: { go: (v: View) => void }) {
             <span className="tag">The rules</span>
             <h2>Locked before anything was scored</h2>
             <p className="lede">
-              Change a weight and you get a new version number and a full rescore. That is what
+              Change a weight, you get a new version number and a full rescore. That is what
               stops a weight being nudged until a favourite wins.
             </p>
           </header>
@@ -532,12 +587,48 @@ export default function Home({ go }: { go: (v: View) => void }) {
         <Splat size={110} seed={3} color="var(--rose-dk)" opacity={0.18} style={{ top: "8%", left: "6%" }} />
         <Splat size={80} seed={27} color="var(--sage-dk)" opacity={0.16} style={{ bottom: "10%", right: "8%" }} />
         <div className="wrap closer-in">
-          <h2><Stagger text="Go on. Throw something at it." /></h2>
-          <p className="lede">A ticker and a job. You get a verdict, the reasoning, and every source it leaned on.</p>
-          <div className="closer-cta">
-            <Btn kind="ink" size="lg" arrow onClick={() => go("score")}>Score a ticker</Btn>
+          <div className="closer-copy">
+            <span className="tag">Your turn</span>
+            <h2><Stagger text="Go on. Throw something at it." /></h2>
+            <p className="lede">
+              A ticker and a job. Back comes a verdict, the reasoning, and every source it leaned on.
+            </p>
+
+            <form
+              className="hunt hunt-ink"
+              onSubmit={(e) => { e.preventDefault(); if (hunt.trim()) go("score", hunt.trim().toUpperCase()); }}
+            >
+              <label className="hunt-f">
+                <span className="hunt-k">Ticker</span>
+                <input
+                  value={hunt}
+                  onChange={(e) => setHunt(e.target.value.toUpperCase())}
+                  placeholder="SGOV"
+                  spellCheck={false}
+                  autoComplete="off"
+                  maxLength={8}
+                  aria-label="Ticker to score"
+                />
+              </label>
+              <button className="hunt-go" type="submit" data-cursor="score it" data-cursor-tone="gold">
+                <span>Score it</span>
+                <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true">
+                  <path d="M2.5 9h12M10 4l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            </form>
+
+            <p className="closer-fine">
+              Green is rare on purpose. Most things come back amber, and the page will tell you why.
+            </p>
           </div>
-          <Cow size={150} />
+
+          <div className="closer-mark">
+            <Cow size={210} />
+            <Postmark top="SCORED TWICE" bottom="GREEN IS RARE" size={104}
+                      className="closer-pm" color="var(--ink)" />
+          </div>
+
           <Doodle name="star" size={26} color="var(--ink)" className="closer-dd1" />
           <Doodle name="star" size={18} color="var(--ink)" className="closer-dd2" />
         </div>

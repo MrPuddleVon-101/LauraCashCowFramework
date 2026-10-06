@@ -12,7 +12,7 @@ export const SECTIONS: [string, string][] = [
   ["rules", "The rules"],
 ];
 
-export function Nav({ view, go }: { view: View; go: (v: View) => void }) {
+export function Nav({ view, go }: { view: View; go: (v: View, ticker?: string) => void }) {
   const [stuck, setStuck] = useState(false);
   const [here, setHere] = useState<string>("");
 

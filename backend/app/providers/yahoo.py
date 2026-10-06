@@ -363,3 +363,88 @@ def ttm(ticker: str) -> TTM:
 
     _write(f"yft_{sym}.json", out.to_dict())
     return out
+
+
+# --- what the fund looks like today -------------------------------------------
+
+#: Yahoo's own label for each sector bucket, mapped onto the names the registry
+#: was transcribed with. Yahoo spells them in snake case and splits financials
+#: and real estate differently to most factsheets.
+SECTOR_ALIASES: dict[str, str] = {
+    "technology": "Technology",
+    "financial_services": "Financials",
+    "consumer_cyclical": "Consumer Discretionary",
+    "consumer_defensive": "Consumer Staples",
+    "healthcare": "Health Care",
+    "industrials": "Industrials",
+    "communication_services": "Communication Services",
+    "energy": "Energy",
+    "basic_materials": "Materials",
+    "realestate": "Real Estate",
+    "utilities": "Utilities",
+}
+
+
+def fund_facts(ticker: str) -> dict[str, Any] | None:
+    """What Yahoo currently says a fund holds, for comparison with the registry.
+
+    Only the fields Yahoo actually gets right. Total net assets is deliberately
+    not read: for AVUS it comes back as the category average repeated verbatim,
+    which is not a number anybody should be comparing against.
+
+    Returns None when the read fails or the ticker is not a fund, because this
+    exists to flag a stale transcription and an absent second opinion is not
+    evidence that the transcription is wrong.
+    """
+    sym = ticker.strip().upper()
+    cached = _cache(f"yff_{sym}.json", FUNDAMENTAL_TTL)
+    if cached is not None:
+        return cached or None
+
+    out: dict[str, Any] = {}
+    try:
+        import yfinance as yf
+
+        fd = yf.Ticker(sym).funds_data
+
+        try:
+            ops = fd.fund_operations
+            if ops is not None and sym in ops.columns:
+                er = _num(ops.loc["Annual Report Expense Ratio", sym]) if \
+                    "Annual Report Expense Ratio" in ops.index else None
+                tn = _num(ops.loc["Annual Holdings Turnover", sym]) if \
+                    "Annual Holdings Turnover" in ops.index else None
+                # Yahoo reports both as fractions. The registry keeps percentages.
+                out["expense_ratio_pct"] = None if er is None else round(er * 100, 4)
+                out["turnover_pct"] = None if tn is None else round(tn * 100, 2)
+        except Exception:
+            pass
+
+        try:
+            th = fd.top_holdings
+            if th is not None and not th.empty and "Holding Percent" in th.columns:
+                pct = th["Holding Percent"].head(10)
+                out["top10_weight"] = round(float(pct.sum()) * 100, 2)
+                out["largest_holding_weight"] = round(float(pct.iloc[0]) * 100, 3)
+                out["largest_holding"] = str(th.index[0])
+                out["top_holdings"] = [
+                    [str(s), round(float(w) * 100, 3)]
+                    for s, w in zip(th.index[:10], pct)
+                ]
+        except Exception:
+            pass
+
+        try:
+            sw = fd.sector_weightings
+            if isinstance(sw, dict) and sw:
+                out["sector_weights"] = {
+                    SECTOR_ALIASES.get(k, k.replace("_", " ").title()): round(float(v) * 100, 2)
+                    for k, v in sw.items() if _num(v) is not None
+                }
+        except Exception:
+            pass
+    except Exception:
+        out = {}
+
+    _write(f"yff_{sym}.json", out)
+    return out or None
