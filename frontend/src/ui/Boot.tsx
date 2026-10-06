@@ -5,9 +5,10 @@
  * weights fill to 45 and 55, and then the whole field is torn off the top of
  * the page to reveal the paper underneath.
  *
- * It runs once per session, it is skippable with any key or click, and it
- * does not run at all for a reader who has asked for less motion. A splash a
- * reader cannot get past is a splash that gets resented on the second visit.
+ * It runs on every load, because the stamp landing is the best thing the site
+ * does and burying it behind a session flag meant almost nobody saw it twice.
+ * It is skippable with any key or click, and it does not run at all for a
+ * reader who has asked for less motion.
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -15,28 +16,10 @@ import { asset } from "../lib/asset";
 import { inkEllipse, tornEdge } from "../lib/draw";
 import { reduced } from "../lib/motion";
 
-const KEY = "lccf-booted";
-
 /** 0 dark, 1 stamped, 2 drawn, 3 weighed, 4 tearing, 5 gone. */
 type Phase = 0 | 1 | 2 | 3 | 4 | 5;
 
 const BEATS: [Phase, number][] = [[1, 90], [2, 430], [3, 880], [4, 1880], [5, 2560]];
-
-/**
- * Whether this session has already seen the bootup.
- *
- * Once per session is right for a reader, and useless for anyone reviewing the
- * thing, who reloads and never sees it again. #boot or ?boot forces a replay.
- */
-export function hasBooted() {
-  try {
-    const url = new URL(window.location.href);
-    if (url.hash === "#boot" || url.searchParams.has("boot")) return false;
-    return sessionStorage.getItem(KEY) === "1";
-  } catch {
-    return false;
-  }
-}
 
 export default function Boot({ onDone }: { onDone?: () => void }) {
   const [phase, setPhase] = useState<Phase>(0);
@@ -44,7 +27,6 @@ export default function Boot({ onDone }: { onDone?: () => void }) {
 
   useEffect(() => {
     const finish = () => {
-      try { sessionStorage.setItem(KEY, "1"); } catch { /* a private window still gets the show */ }
       document.documentElement.removeAttribute("data-booting");
       onDone?.();
     };

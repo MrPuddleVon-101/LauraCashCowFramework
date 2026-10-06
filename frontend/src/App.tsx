@@ -4,7 +4,7 @@ import { engineIsLive, snapshotMeta, type Snapshot } from "./api";
 import { useRevealAll } from "./lib/motion";
 import { Nav, Progress, type View } from "./ui/Nav";
 import { Tear } from "./ui/Marks";
-import Boot, { hasBooted } from "./ui/Boot";
+import Boot from "./ui/Boot";
 import Cursor from "./ui/Cursor";
 import Home from "./views/Home";
 import Score from "./views/Score";
@@ -18,7 +18,8 @@ export default function App() {
   // A ticker handed over from the overview, so pressing score there lands on a
   // verdict rather than on an empty field you have to fill in a second time.
   const [seed, setSeed] = useState<string>("");
-  const [booting, setBooting] = useState(() => !hasBooted());
+  // Every load, not once per session. Reduced motion still skips it outright.
+  const [booting, setBooting] = useState(true);
 
   useEffect(() => {
     let alive = true;
