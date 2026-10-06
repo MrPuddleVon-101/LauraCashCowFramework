@@ -24,13 +24,13 @@
   /* ink */
   --ink: #16120f;
   --ink-2: #3f362c;
-  --ink-3: #776957;
-  --ink-4: #a5947c;
+  --ink-3: #665847;   /* 5.9 on paper, 5.1 on paper-lo */
+  --ink-4: #80705a;   /* 4.1 on paper, 3.6 on paper-lo */
 
   /* the drawing */
   --gold: #eba618;
   --gold-hi: #ffcf55;
-  --gold-dk: #97670b;
+  --gold-dk: #7d5406;  /* 5.7 on paper */
   --rose: #ef9179;
   --rose-hi: #f9c8b7;
   --rose-dk: #c1543d;

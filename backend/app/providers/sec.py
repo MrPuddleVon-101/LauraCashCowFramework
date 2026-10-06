@@ -381,6 +381,11 @@ class Fundamentals:
     period_end: str | None = None
     #: The fiscal year every ratio on this record was built from.
     reference_year: int | None = None
+    #: What the flow figures in `ratios` actually cover, in words, so nothing has
+    #: to guess whether a multiple describes this year or one that ended months ago.
+    flow_basis: str = ""
+    #: True when the flow figures are a real trailing twelve months.
+    flow_is_ttm: bool = False
     #: Lines the reference year does not contain, so the gap is reportable.
     lines_absent_in_reference: list[str] = field(default_factory=list)
 
@@ -415,7 +420,7 @@ class Fundamentals:
         return [{"year": y, "value": series[y]} for y in years]
 
 
-def _derive(f: Fundamentals) -> None:
+def _derive(f: Fundamentals, ttm: Any | None = None) -> None:
     years = sorted(set(f.ocf) & set(f.capex))
     f.fcf = {y: f.ocf[y] - abs(f.capex[y]) for y in years}
     if not f.fcf and f.ocf:
@@ -437,20 +442,46 @@ def _derive(f: Fundamentals) -> None:
     def at(series: dict[int, float]) -> float | None:
         return None if ref is None else series.get(ref)
 
-    rev = at(f.revenue)
-    opinc = at(f.operating_income)
-    ni = at(f.net_income)
-    ocf = at(f.ocf)
-    fcf = at(f.fcf)
-    assets = at(f.assets)
-    equity = at(f.equity)
-    cash = at(f.cash)
-    debt = at(f.total_debt)
+    # An annual filing is up to a year stale the day after it lands, and a multiple
+    # built on it describes a year that has already finished. NVIDIA's last annual
+    # diluted EPS was $4.90 against an actual trailing $7.91, which is the
+    # difference between a 48.8x price to earnings ratio and a 29.9x one. Where
+    # four quarters are on file the flow figures come from them; the balance sheet
+    # comes from the most recent quarter; growth rates stay annual, because that is
+    # what a year on year rate means.
+    tflow = (ttm.flow if (ttm and ttm.ok) else {}) or {}
+    tstock = (ttm.stock if (ttm and ttm.ok) else {}) or {}
+    f.flow_is_ttm = bool(tflow)
+    f.flow_basis = (
+        f"Trailing twelve months, four quarters to {ttm.end}." if f.flow_is_ttm
+        else (f"Fiscal year {ref}. No quarterly filings were available to build a "
+              f"trailing twelve month figure." if ref else "No usable period on file.")
+    )
+
+    def flow(key: str, series: dict[int, float]) -> float | None:
+        v = tflow.get(key)
+        return v if v is not None else at(series)
+
+    def stock(key: str, series: dict[int, float]) -> float | None:
+        v = tstock.get(key)
+        return v if v is not None else at(series)
+
+    rev = flow("revenue", f.revenue)
+    opinc = flow("operating_income", f.operating_income)
+    ni = flow("net_income", f.net_income)
+    ocf = flow("ocf", f.ocf)
+    fcf = flow("fcf", f.fcf)
+    assets = stock("assets", f.assets)
+    equity = stock("equity", f.equity)
+    cash = stock("cash", f.cash)
+    debt = stock("total_debt", f.total_debt)
     dna = at(f.dna)
     sbc = at(f.sbc)
-    interest = at(f.interest_expense)
-    tax = at(f.tax)
-    pretax = at(f.pretax)
+    interest = flow("interest_expense", f.interest_expense)
+    tax = flow("tax", f.tax)
+    pretax = flow("pretax", f.pretax)
+    if tflow.get("ebitda") is not None:
+        dna = None  # EBITDA comes straight from the quarterly statements below
 
     # Recorded so the audit trail can say which lines the reference year lacked
     # rather than leaving a reader to wonder why a metric went missing.
@@ -462,10 +493,12 @@ def _derive(f: Fundamentals) -> None:
             ("equity", f.equity), ("cash", f.cash), ("total_debt", f.total_debt),
             ("depreciation", f.dna), ("stock_comp", f.sbc),
             ("interest_expense", f.interest_expense), ("tax", f.tax), ("pretax", f.pretax),
-        ) if series and at(series) is None
+        ) if series and flow(name, series) is None and stock(name, series) is None
     )
 
-    ebitda = (opinc + dna) if (opinc is not None and dna is not None) else None
+    ebitda = tflow.get("ebitda")
+    if ebitda is None:
+        ebitda = (opinc + dna) if (opinc is not None and dna is not None) else None
     net_debt = (debt - cash) if (debt is not None and cash is not None) else None
 
     tax_rate = None
@@ -509,7 +542,7 @@ def _derive(f: Fundamentals) -> None:
         "fcf_growth": _growth(f.fcf),
         "fcf_margin": None if (fcf is None or not rev) else fcf / rev * 100,
         "operating_margin": None if (opinc is None or not rev) else opinc / rev * 100,
-        "gross_margin": None if (at(f.gross_profit) is None or not rev) else at(f.gross_profit) / rev * 100,
+        "gross_margin": None if (flow("gross_profit", f.gross_profit) is None or not rev) else flow("gross_profit", f.gross_profit) / rev * 100,
         "cash_conversion": None if (ocf is None or ni in (None, 0)) else ocf / ni * 100,
         "fcf_conversion": None if (fcf is None or opinc in (None, 0) or opinc < 0) else fcf / opinc * 100,
         "sbc_to_revenue": None if (sbc is None or not rev) else sbc / rev * 100,
@@ -520,8 +553,8 @@ def _derive(f: Fundamentals) -> None:
         "margin_trajectory": traj,
         "net_debt_to_ebitda": None if (net_debt is None or ebitda in (None, 0) or ebitda < 0) else net_debt / ebitda,
         "interest_coverage": None if (opinc is None or interest in (None, 0)) else opinc / abs(interest),
-        "cash_to_current_liabilities": _safe_div(cash, at(f.current_liabilities)),
-        "current_ratio": _safe_div(at(f.current_assets), at(f.current_liabilities)),
+        "cash_to_current_liabilities": _safe_div(cash, stock("current_liabilities", f.current_liabilities)),
+        "current_ratio": _safe_div(stock("current_assets", f.current_assets), stock("current_liabilities", f.current_liabilities)),
         "ebitda": ebitda,
         "net_debt": net_debt,
         "revenue": rev,
@@ -532,7 +565,10 @@ def _derive(f: Fundamentals) -> None:
         "cash": cash,
         "total_debt": debt,
         "diluted_shares": _latest(f.diluted_shares),
-        "eps_latest": _latest(f.eps),
+        # Earnings per share over the same trailing window as everything else, so the
+        # multiple built from it describes the business as it trades today rather
+        # than as it finished its last fiscal year.
+        "eps_latest": tflow.get("eps_diluted") if tflow.get("eps_diluted") else at(f.eps),
         "effective_tax_rate": tax_rate * 100,
     }
 
@@ -614,5 +650,15 @@ def get_company_fundamentals(ticker: str) -> Fundamentals | None:
         if ends:
             f.period_end = max(ends)
 
-    _derive(f)
+    # The filing is the primary record; the quarterly statements only supply the
+    # trailing window. Imported here so a provider outage cannot break this module
+    # at import time, and so sec.py has no hard dependency on the second source.
+    trailing = None
+    try:
+        from . import yahoo
+
+        trailing = yahoo.ttm(ticker)
+    except Exception:
+        trailing = None
+    _derive(f, trailing)
     return f

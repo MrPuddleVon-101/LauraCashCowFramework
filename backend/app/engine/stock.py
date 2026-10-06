@@ -352,7 +352,10 @@ def build(
             "earnings_multiple", "Price to earnings", 4.0, "valuation", trailing_pe,
             bands=[(6, 95), (11, 86), (16, 74), (21, 62), (28, 46), (40, 26), (60, 10), (90, 3)],
             higher_is_better=False, units="x", as_of=as_of, source=NASDAQ,
-            interpretation="Trailing twelve months, computed from filed diluted EPS and the last traded price.",
+            interpretation=(
+                f"{f.flow_basis} Diluted earnings per share of {eps:.2f} against the last "
+                f"traded price." if eps else f.flow_basis
+            ),
         )
         if is_financial or is_reit:
             # PRD 17 names price to book as the appropriate multiple here. Enterprise

@@ -233,3 +233,133 @@ def agreement(a: float | None, b: float | None, tolerance: float = 0.02) -> floa
         return 1.0
     # Full marks inside tolerance, nothing at ten times it, straight line between.
     return max(0.0, 1.0 - (diff - tolerance) / (tolerance * 9))
+
+
+# --- trailing twelve months -----------------------------------------------------
+
+#: Income and cash flow lines summed across four quarters.
+Q_FLOW = {
+    "Total Revenue": "revenue",
+    "Operating Income": "operating_income",
+    "Net Income": "net_income",
+    "EBITDA": "ebitda",
+    "Gross Profit": "gross_profit",
+    "Diluted EPS": "eps_diluted",
+    "Operating Cash Flow": "ocf",
+    "Capital Expenditure": "capex",
+    "Interest Expense": "interest_expense",
+    "Tax Provision": "tax",
+    "Pretax Income": "pretax",
+}
+
+#: Balance sheet lines taken from the most recent quarter, not summed.
+Q_STOCK = {
+    "Total Assets": "assets",
+    "Stockholders Equity": "equity",
+    "Cash And Cash Equivalents": "cash",
+    "Total Debt": "total_debt",
+    "Current Assets": "current_assets",
+    "Current Liabilities": "current_liabilities",
+    "Diluted Average Shares": "shares_diluted",
+}
+
+
+@dataclass
+class TTM:
+    """The last four reported quarters, added up.
+
+    An annual filing is up to a year old the day after it lands. For a company
+    whose earnings are still moving that is not a trailing twelve month figure,
+    and calling it one is how a price to earnings ratio ends up describing a year
+    that finished ten months ago. NVIDIA's last annual diluted EPS was $4.90 while
+    its actual trailing figure was $7.99: a 48.8x multiple reported for a business
+    trading at 29.9x.
+    """
+
+    ok: bool = False
+    quarters: int = 0
+    start: str | None = None
+    end: str | None = None
+    flow: dict[str, float] = field(default_factory=dict)
+    stock: dict[str, float] = field(default_factory=dict)
+    note: str = ""
+
+    def to_dict(self) -> dict:
+        return {"ok": self.ok, "quarters": self.quarters, "start": self.start,
+                "end": self.end, "flow": self.flow, "stock": self.stock, "note": self.note}
+
+
+def ttm(ticker: str) -> TTM:
+    """Trailing twelve months from the last four quarterly filings. Never raises."""
+    sym = ticker.strip().upper()
+    cached = _cache(f"yft_{sym}.json", FUNDAMENTAL_TTL)
+    if cached is not None:
+        return TTM(ok=cached.get("ok", False), quarters=cached.get("quarters", 0),
+                   start=cached.get("start"), end=cached.get("end"),
+                   flow=cached.get("flow") or {}, stock=cached.get("stock") or {},
+                   note=cached.get("note", ""))
+
+    out = TTM()
+    try:
+        import yfinance as yf
+
+        t = yf.Ticker(sym)
+        inc = t.quarterly_income_stmt
+        cfl = t.quarterly_cashflow
+        bal = t.quarterly_balance_sheet
+
+        if inc is None or inc.empty:
+            out.note = "No quarterly filings available, so no trailing figure."
+            _write(f"yft_{sym}.json", out.to_dict()); return out
+
+        cols = list(inc.columns)[:4]
+        if len(cols) < 4:
+            out.note = f"Only {len(cols)} quarters on file, so no trailing twelve month figure."
+            out.quarters = len(cols)
+            _write(f"yft_{sym}.json", out.to_dict()); return out
+
+        out.quarters = 4
+        out.end = str(cols[0])[:10]
+        out.start = str(cols[-1])[:10]
+
+        def gather(frame, label):
+            """Sum a line across the window, but only if every quarter has it."""
+            if frame is None or frame.empty or label not in frame.index:
+                return None
+            vals = []
+            for c in cols:
+                if c not in frame.columns:
+                    return None
+                v = _num(frame.loc[label, c])
+                if v is None:
+                    return None
+                vals.append(v)
+            return sum(vals)
+
+        for label, key in Q_FLOW.items():
+            v = gather(inc, label)
+            if v is None:
+                v = gather(cfl, label)
+            if v is not None:
+                out.flow[key] = v
+
+        if out.flow.get("ocf") is not None and out.flow.get("capex") is not None:
+            out.flow["fcf"] = out.flow["ocf"] - abs(out.flow["capex"])
+
+        if bal is not None and not bal.empty:
+            newest = bal.columns[0]
+            for label, key in Q_STOCK.items():
+                if label in bal.index:
+                    v = _num(bal.loc[label, newest])
+                    if v is not None:
+                        out.stock[key] = v
+
+        out.ok = bool(out.flow)
+        out.note = (f"Four quarters to {out.end}." if out.ok
+                    else "Quarterly filings exist but carry none of the lines we need.")
+    except Exception:
+        out.ok = False
+        out.note = "Quarterly data could not be retrieved."
+
+    _write(f"yft_{sym}.json", out.to_dict())
+    return out

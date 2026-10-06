@@ -188,10 +188,44 @@ def test_cagr_span() -> None:
           _cagr(sparse, 3) is None, f"got {_cagr(sparse, 3)} from four sparse observations")
 
 
+# --- F08, a trailing figure has to actually trail -------------------------------
+
+def test_trailing_window() -> None:
+    print("\nF08  a multiple describes the trailing window, not a finished fiscal year")
+    from app.providers.sec import Fundamentals, _derive
+    from app.providers.yahoo import TTM
+
+    f = Fundamentals(ticker="FIX", cik=1, name="Fixture")
+    f.revenue = {2024: 100.0, 2025: 120.0}
+    f.net_income = {2024: 10.0, 2025: 12.0}
+    f.eps = {2024: 1.0, 2025: 1.2}
+    f.equity = {2025: 60.0}
+
+    _derive(f, None)
+    check("with no quarters it falls back to the fiscal year",
+          f.ratios.get("eps_latest") == 1.2 and not f.flow_is_ttm, f"{f.ratios.get('eps_latest')}")
+    check("and says so plainly", "No quarterly filings" in f.flow_basis, f.flow_basis)
+
+    g = Fundamentals(ticker="FIX", cik=1, name="Fixture")
+    g.revenue = {2024: 100.0, 2025: 120.0}
+    g.net_income = {2024: 10.0, 2025: 12.0}
+    g.eps = {2024: 1.0, 2025: 1.2}
+    g.equity = {2025: 60.0}
+    trailing = TTM(ok=True, quarters=4, start="2025-10-31", end="2026-07-31",
+                   flow={"revenue": 300.0, "net_income": 30.0, "eps_diluted": 3.0},
+                   stock={"equity": 90.0})
+    _derive(g, trailing)
+    check("four quarters on file take precedence over the fiscal year",
+          g.ratios.get("eps_latest") == 3.0 and g.flow_is_ttm, f"{g.ratios.get('eps_latest')}")
+    check("and the basis names the window", "2026-07-31" in g.flow_basis, g.flow_basis)
+    check("the balance sheet comes from the latest quarter too",
+          abs((g.ratios.get("roe") or 0) - (30.0 / 90.0 * 100)) < 0.01, f"roe={g.ratios.get('roe')}")
+
+
 def main() -> int:
     for fn in (test_fund_identities, test_date_eligibility, test_protection_mode,
                test_normalisation, test_liability_ledger, test_funding_accounting,
-               test_period_alignment, test_cagr_span):
+               test_period_alignment, test_cagr_span, test_trailing_window):
         try:
             fn()
         except Exception as exc:  # a missing helper is itself a failure to report

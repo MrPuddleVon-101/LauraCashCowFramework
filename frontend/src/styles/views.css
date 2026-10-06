@@ -1435,3 +1435,46 @@ input[type="range"]:disabled::-webkit-slider-thumb { background: var(--paper-dee
 /* Seven stickers read as a deliberate 4 and 3 rather than a stranded last one. */
 @media (min-width: 1101px) { .jobsheet { grid-template-columns: repeat(4, 1fr); } }
 @media (min-width: 721px) and (max-width: 1100px) { .jobsheet { grid-template-columns: repeat(3, 1fr); } }
+
+/* ===========================================================================
+   Legibility and alignment
+   =========================================================================== */
+
+/* Half-opacity cream on near black measured 4.1, under the 4.5 small-text bar. */
+.strip-j { color: rgba(246, 236, 217, 0.72); }
+.foot-s, .foot-src { color: rgba(246, 236, 217, 0.72); }
+.vd-px .fine { color: rgba(246, 236, 217, 0.68); }
+.st-l { color: rgba(246, 236, 217, 0.76); }
+.st-gate-note { color: rgba(246, 236, 217, 0.68); }
+.engine-head .lede { color: rgba(246, 236, 217, 0.82); }
+.duo-q .duo-l { color: rgba(246, 236, 217, 0.84); }
+.duo-q .duo-list span { color: rgba(246, 236, 217, 0.72); }
+.band-ink .caption, .band-ink .note { color: rgba(246, 236, 217, 0.84); }
+.band-ink .tag, .band-ink .fine { color: rgba(246, 236, 217, 0.72); }
+
+/* A margin note is an aside, not a whisper. */
+.mk-note i { color: var(--ink-3); font-size: 15.5px; }
+
+/* The rule in a tag sat on the text baseline instead of its optical centre,
+   which left the label looking a line too high next to the heading under it. */
+.tag { align-items: baseline; }
+.tag::before { transform: translateY(-0.32em); }
+.tag.bare::before { display: none; }
+
+/* A counter mixes a serif prefix with mono digits, so the two have to share a
+   baseline rather than each finding their own. */
+.odo { align-items: baseline; }
+.odo-d { vertical-align: baseline; transform: translateY(0.015em); }
+
+/* Figures and their captions line up on the left edge of the figure, not on the
+   optical edge of whatever glyph happens to start the line. */
+.fs-f, .pv-v, .bd-s, .card-f { font-feature-settings: "tnum" 1; letter-spacing: -0.015em; }
+
+/* Small mono labels were set tight enough that the tracking closed the counters. */
+.bd-sig, .pv-t, .src-t, .t-peer { letter-spacing: 0.1em; }
+.bd-n { color: var(--ink-2); font-size: 12px; }
+.job-w { color: var(--ink-2); }
+.card-fn, .fs-s, .step-d { color: var(--ink-2); }
+
+/* Captions under a heading hang from the heading, not from the grid row. */
+.sec-head-row .fine { align-self: start; padding-top: 0.5em; }

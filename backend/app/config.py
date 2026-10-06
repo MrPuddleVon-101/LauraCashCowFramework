@@ -11,19 +11,16 @@ from __future__ import annotations
 from dataclasses import dataclass, field, asdict
 from typing import Literal
 
-FRAMEWORK_VERSION = "LCCF-1.3.0"
+FRAMEWORK_VERSION = "LCCF-1.4.0"
 FRAMEWORK_AUTHOR = "Cash Cows investment team"
 FRAMEWORK_LOCKED_ON = "2026-10-06"
 FRAMEWORK_CHANGE_REASON = (
-    "Every ratio is now built from one reporting period. A line a company has "
-    "stopped filing makes its metric missing instead of reaching back years for a "
-    "denominator, which was publishing 33.8x interest coverage for a company that "
-    "last reported interest expense two years earlier. A three year growth rate now "
-    "has to span three years. Fund liquidity is dollars traded a day rather than "
-    "years of price history mislabelled as months. Cross-source agreement is measured "
-    "against Yahoo Finance instead of asserted. The composite floor was overruling the "
-    "component floors and has been reconciled with them. Scores from earlier versions "
-    "are not comparable with these."
+    "Multiples and margins are built from a real trailing twelve months, assembled "
+    "from the last four quarterly filings, with the balance sheet taken from the most "
+    "recent quarter. They were built from the last completed fiscal year while being "
+    "labelled trailing, which reported NVIDIA at 48.8 times earnings when it was "
+    "trading at 30.2. Growth rates stay annual, because that is what a year on year "
+    "rate means. Scores from earlier versions are not comparable with these."
 )# Year 0 is 2026. Subtract 2026 from a calendar year to get its year number.
 BASE_YEAR = 2026
 
