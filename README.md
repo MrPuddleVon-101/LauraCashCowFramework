@@ -53,6 +53,7 @@ than filled in.
 | Prices, quotes, bid-ask | Nasdaq market data | 1 |
 | Treasury yield curve | U.S. Treasury daily par yield curve | 1 |
 | Fund holdings, fees, maturities | Issuer factsheets, transcribed to `backend/data/etf_registry.json` | 2 |
+| Prices, market capitalisation, traded volume | Yahoo Finance via yfinance, as a second, independent read | 2 |
 | Analyst estimates | Not wired in. Metrics that need them are reported missing. | n/a |
 
 Foreign private issuers file under IFRS rather than US GAAP, so the EDGAR adapter reads
@@ -62,6 +63,44 @@ read as missing and the look-through engine would have nothing to work with.
 The fund registry is the one place facts are transcribed by hand. It is deliberately
 treated as tier 2 rather than tier 1, every row carries the issuer URL it should be
 checked against, and the interface says so. Refresh it before a committee decision.
+
+## Two sources, and what each one is for
+
+SEC EDGAR is primary and stays primary: it is the filing itself, it is tier 1,
+and measured against an independent read its revenue, margins, earnings
+multiples and market capitalisation already come out right. Apple's price and
+market capitalisation agree with Yahoo to seven significant figures.
+
+Yahoo Finance, through `yfinance`, is the second read. It does three jobs EDGAR
+cannot do alone:
+
+- **Statements indexed by period end date.** EDGAR facts arrive as a pile of
+  values that have to be bucketed into fiscal years, and that is where ratios
+  used to mix periods.
+- **Market data the filings do not contain.** Traded volume, the 52 week range,
+  shares outstanding today rather than a past weighted average. The fund
+  liquidity metric used to be the number of years of price history multiplied by
+  twenty and labelled months; it is now dollars traded a day.
+- **Corroboration.** Data confidence used to assert 100% cross-source agreement
+  whenever a quote and a price history were both present, even though both came
+  from the same provider and were never compared. Price and market capitalisation
+  are now actually compared against Yahoo, and the result is whatever the
+  comparison says. Where Yahoo has nothing, agreement is recorded as unknown and
+  scored below verified rather than as though it were verified.
+
+`yfinance` scrapes an undocumented endpoint, so it breaks, it rate limits, and
+Yahoo's own figures carry errors. Every call returns nothing on trouble and the
+engine carries on with the filing. No score depends on it being up.
+
+### The period bug it exposed
+
+Each ratio used to take the most recent value of each line independently. Apple
+last reported interest expense for fiscal 2023. The engine divided that into
+fiscal 2025 operating income and published 33.8x interest coverage as a current
+figure. Every ratio is now built from one reference period, a line absent from
+that period makes its metric missing rather than reaching backwards, and the
+absence is listed on the record. Coca-Cola still reports interest expense, so
+its 8.3x coverage is untouched: the fix removes fabrications, not data.
 
 ## Rebuilding the peer data
 

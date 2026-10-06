@@ -10,7 +10,7 @@ from __future__ import annotations
 from datetime import date, datetime, timezone
 
 from ..config import CLIENT, FRAMEWORK_VERSION, POLICY, ROLES, ROLE_BUCKET, ROLE_DESCRIPTIONS, risk_state
-from ..providers import market, sec
+from ..providers import market, sec, yahoo
 from . import composite as comp
 from . import fit, funds, liability, lookthrough, simulate, stock
 from .normalize import data_confidence
@@ -281,13 +281,46 @@ def evaluate(
         source_tiers.append(1)
     if summary:
         source_tiers.append(1)
+    # Cross-source verification, actually performed.
+    #
+    # This used to be a flat 1.0 whenever a quote and a price history both
+    # existed, even though both came from the same provider and were never
+    # compared against each other. Two endpoints from one source agreeing with
+    # themselves is not corroboration. Yahoo is a genuinely separate read, so the
+    # figures that both sources carry are compared and the result is whatever the
+    # comparison says. Where Yahoo has nothing, agreement is unknown, and unknown
+    # is scored below verified rather than as though it were verified.
+    checks: list[dict] = []
+    agree_scores: list[float] = []
+    try:
+        ymkt = yahoo.market_only(ticker)
+    except Exception:
+        ymkt = {}
+    for label, ours, theirs in (
+        ("Price", (quote or {}).get("price"), ymkt.get("price")),
+        ("Market capitalisation", (summary or {}).get("market_cap"), ymkt.get("market_cap")),
+    ):
+        a = yahoo.agreement(ours, theirs, tolerance=0.02)
+        checks.append({
+            "field": label, "ours": ours, "theirs": theirs,
+            "agreement": None if a is None else round(a, 3),
+            "verdict": "not checked" if a is None else ("agrees" if a >= 0.99 else
+                       ("close" if a >= 0.6 else "disagrees")),
+            "against": yahoo.SOURCE_NAME,
+        })
+        if a is not None:
+            agree_scores.append(a)
+
+    agreement = sum(agree_scores) / len(agree_scores) if agree_scores else 0.6
+
     dcs = data_confidence(
         sqs,
         source_tiers=source_tiers,
         freshest_as_of=freshest,
-        cross_source_agreement=1.0 if (quote and rp) else 0.75,
+        cross_source_agreement=agreement,
         peer_group_size=peer_n,
     )
+    dcs["cross_checks"] = checks
 
     # --- gate, composite, signal --------------------------------------------------
     gate = comp.red_gate(

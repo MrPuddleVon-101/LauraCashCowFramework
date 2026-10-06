@@ -326,10 +326,21 @@ def _latest(series: dict[int, float], n: int = 1) -> float | None:
 
 
 def _cagr(series: dict[int, float], years: int = 3) -> float | None:
-    if len(series) < years + 1:
+    """Compound growth over exactly `years` of calendar time, or nothing.
+
+    This used to take the observation `years` places back in the list rather than
+    `years` back in time. With filings for 2018, 2020, 2024 and 2025 it raised
+    seven years of growth to the power of a third and called it a three year
+    CAGR. If the year at the far end of the window was never filed, there is no
+    three year figure to report and the metric is missing.
+    """
+    if len(series) < 2:
         return None
     ordered = sorted(series)
-    end_y, start_y = ordered[-1], ordered[-1 - years]
+    end_y = ordered[-1]
+    start_y = end_y - years
+    if start_y not in series:
+        return None
     end_v, start_v = series[end_y], series[start_y]
     if start_v is None or start_v <= 0 or end_v is None:
         return None
@@ -368,6 +379,10 @@ class Fundamentals:
     exchange: str = ""
     fiscal_year: int | None = None
     period_end: str | None = None
+    #: The fiscal year every ratio on this record was built from.
+    reference_year: int | None = None
+    #: Lines the reference year does not contain, so the gap is reportable.
+    lines_absent_in_reference: list[str] = field(default_factory=list)
 
     # Raw annual series, kept so the audit trail can show the working.
     revenue: dict[int, float] = field(default_factory=dict)
@@ -408,20 +423,47 @@ def _derive(f: Fundamentals) -> None:
         # free cash flow, so we leave FCF empty rather than overstate it.
         f.fcf = {}
 
-    rev = _latest(f.revenue)
-    opinc = _latest(f.operating_income)
-    ni = _latest(f.net_income)
-    ocf = _latest(f.ocf)
-    fcf = _latest(f.fcf)
-    assets = _latest(f.assets)
-    equity = _latest(f.equity)
-    cash = _latest(f.cash)
-    debt = _latest(f.total_debt)
-    dna = _latest(f.dna)
-    sbc = _latest(f.sbc)
-    interest = _latest(f.interest_expense)
-    tax = _latest(f.tax)
-    pretax = _latest(f.pretax)
+    # One reference period, and every ratio is built from it.
+    #
+    # Each line used to take the newest year of its own series, so a company that
+    # stopped breaking out a figure silently contributed an older one to a current
+    # ratio. Apple last reported interest expense for fiscal 2023; the engine
+    # divided it into fiscal 2025 operating income and published 33.8x coverage as
+    # though it were this year's. A line that is absent for the reference year is
+    # absent, and the metric that needs it is reported missing.
+    ref = max(f.revenue) if f.revenue else (max(f.operating_income) if f.operating_income else None)
+    f.reference_year = ref
+
+    def at(series: dict[int, float]) -> float | None:
+        return None if ref is None else series.get(ref)
+
+    rev = at(f.revenue)
+    opinc = at(f.operating_income)
+    ni = at(f.net_income)
+    ocf = at(f.ocf)
+    fcf = at(f.fcf)
+    assets = at(f.assets)
+    equity = at(f.equity)
+    cash = at(f.cash)
+    debt = at(f.total_debt)
+    dna = at(f.dna)
+    sbc = at(f.sbc)
+    interest = at(f.interest_expense)
+    tax = at(f.tax)
+    pretax = at(f.pretax)
+
+    # Recorded so the audit trail can say which lines the reference year lacked
+    # rather than leaving a reader to wonder why a metric went missing.
+    f.lines_absent_in_reference = sorted(
+        name for name, series in (
+            ("revenue", f.revenue), ("operating_income", f.operating_income),
+            ("net_income", f.net_income), ("operating_cash_flow", f.ocf),
+            ("free_cash_flow", f.fcf), ("total_assets", f.assets),
+            ("equity", f.equity), ("cash", f.cash), ("total_debt", f.total_debt),
+            ("depreciation", f.dna), ("stock_comp", f.sbc),
+            ("interest_expense", f.interest_expense), ("tax", f.tax), ("pretax", f.pretax),
+        ) if series and at(series) is None
+    )
 
     ebitda = (opinc + dna) if (opinc is not None and dna is not None) else None
     net_debt = (debt - cash) if (debt is not None and cash is not None) else None
@@ -467,7 +509,7 @@ def _derive(f: Fundamentals) -> None:
         "fcf_growth": _growth(f.fcf),
         "fcf_margin": None if (fcf is None or not rev) else fcf / rev * 100,
         "operating_margin": None if (opinc is None or not rev) else opinc / rev * 100,
-        "gross_margin": None if (_latest(f.gross_profit) is None or not rev) else _latest(f.gross_profit) / rev * 100,
+        "gross_margin": None if (at(f.gross_profit) is None or not rev) else at(f.gross_profit) / rev * 100,
         "cash_conversion": None if (ocf is None or ni in (None, 0)) else ocf / ni * 100,
         "fcf_conversion": None if (fcf is None or opinc in (None, 0) or opinc < 0) else fcf / opinc * 100,
         "sbc_to_revenue": None if (sbc is None or not rev) else sbc / rev * 100,
@@ -478,8 +520,8 @@ def _derive(f: Fundamentals) -> None:
         "margin_trajectory": traj,
         "net_debt_to_ebitda": None if (net_debt is None or ebitda in (None, 0) or ebitda < 0) else net_debt / ebitda,
         "interest_coverage": None if (opinc is None or interest in (None, 0)) else opinc / abs(interest),
-        "cash_to_current_liabilities": _safe_div(cash, _latest(f.current_liabilities)),
-        "current_ratio": _safe_div(_latest(f.current_assets), _latest(f.current_liabilities)),
+        "cash_to_current_liabilities": _safe_div(cash, at(f.current_liabilities)),
+        "current_ratio": _safe_div(at(f.current_assets), at(f.current_liabilities)),
         "ebitda": ebitda,
         "net_debt": net_debt,
         "revenue": rev,

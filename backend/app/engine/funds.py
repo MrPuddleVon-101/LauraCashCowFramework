@@ -19,7 +19,16 @@ from typing import Any
 
 from ..providers import sec
 from ..providers.market import RiskProfile
+from ..providers import yahoo
 from .normalize import ScoreCard, Source, score_against_bands
+
+
+def _traded(ticker: str) -> dict:
+    """Volume and price from the second source. Never fatal if it is unavailable."""
+    try:
+        return yahoo.market_only(ticker)
+    except Exception:
+        return {}
 from .registry import fund_source, get_fund
 
 ISSUER = Source(
@@ -31,6 +40,13 @@ ISSUER = Source(
 NASDAQ = Source(
     name="Nasdaq market data", url="https://www.nasdaq.com/market-activity",
     source_type="exchange", authority_tier=1,
+)
+
+YAHOO = Source(
+    name="Yahoo Finance, via yfinance",
+    url="https://finance.yahoo.com/quote/",
+    source_type="aggregator",
+    authority_tier=2,
 )
 SEC_LOOKTHROUGH = Source(
     name="SEC EDGAR company facts, aggregated across fund holdings",
@@ -115,7 +131,8 @@ def lookthrough_fundamentals(top_holdings: list[list], limit: int = 10) -> dict:
 # --- shared metric blocks ----------------------------------------------------------
 
 def _cost_and_liquidity(card: ScoreCard, fund: dict, quote: dict | None, rp: RiskProfile | None,
-                        as_of: str, cost_cat: str, liq_cat: str, weights: dict[str, float]) -> None:
+                        as_of: str, cost_cat: str, liq_cat: str, weights: dict[str, float],
+                        market_stats: dict | None = None) -> None:
     card.measure(
         "expense_ratio", "Expense ratio", weights["expense"], cost_cat,
         fund.get("expense_ratio"),
@@ -156,12 +173,27 @@ def _cost_and_liquidity(card: ScoreCard, fund: dict, quote: dict | None, rp: Ris
         units="$bn", as_of=as_of, source=ISSUER,
         interpretation="Scale reduces the chance of closure and generally tightens spreads.",
     )
+    # How much actually trades, in dollars a day.
+    #
+    # This used to be the number of years of price history multiplied by twenty
+    # and labelled months, so five years of history became "100 months" and an
+    # old illiquid fund outranked a young heavily traded one. Liquidity is volume
+    # and price, and both are now available, so it is measured instead of stood in
+    # for. Where volume genuinely is not available the metric is missing.
+    dollar_volume_m = None
+    if market_stats:
+        vol = market_stats.get("volume_3m") or market_stats.get("volume_10d")
+        px = market_stats.get("price")
+        if vol and px:
+            dollar_volume_m = vol * px / 1e6
     card.measure(
-        "market_depth", "Trading liquidity", weights["depth"], liq_cat,
-        None if not rp else (rp.years_covered * 20 if rp.years_covered else None),
-        bands=[(5, 20), (20, 45), (40, 62), (60, 76), (80, 88), (100, 96)],
-        units="months of price history", as_of=as_of, source=NASDAQ,
-        interpretation="Length of continuous trading history, used as a standing proxy until issuer volume data is wired in.",
+        "market_depth", "Trading liquidity", weights["depth"], liq_cat, dollar_volume_m,
+        bands=[(0.2, 12), (1, 32), (5, 52), (20, 70), (80, 85), (300, 95), (1000, 100)],
+        units="$m traded a day", as_of=as_of, source=YAHOO,
+        interpretation=(
+            "Three month average daily volume at the last price. Depth is what lets a "
+            "position be unwound without moving the price against you."
+        ),
     )
 
 
@@ -343,7 +375,7 @@ def build_broad_etf(ticker: str, fund: dict, rp: RiskProfile | None, quote: dict
                  as_of=as_of, interpretation="Requires a category valuation history series that is not in the local registry.")
 
     # E, F. Cost and liquidity
-    _cost_and_liquidity(card, fund, quote, rp, as_of, "cost", "liquidity", {
+    _cost_and_liquidity(card, fund, quote, rp, as_of, "cost", "liquidity", market_stats=_traded(ticker), weights={
         "expense": 5.0, "tracking_diff": 5.0, "tracking_err": 3.0, "turnover": 2.0,
         "spread": 4.0, "aum": 3.0, "depth": 3.0,
     })
@@ -459,7 +491,7 @@ def build_international_etf(ticker: str, fund: dict, rp: RiskProfile | None, quo
         higher_is_better=False, units="HHI", as_of=as_of, source=src,
     )
 
-    _cost_and_liquidity(card, fund, quote, rp, as_of, "cost", "liquidity", {
+    _cost_and_liquidity(card, fund, quote, rp, as_of, "cost", "liquidity", market_stats=_traded(ticker), weights={
         "expense": 4.0, "tracking_diff": 2.0, "tracking_err": 1.0, "turnover": 1.0,
         "spread": 3.0, "aum": 2.0, "depth": 1.0,
     })

@@ -11,16 +11,19 @@ from __future__ import annotations
 from dataclasses import dataclass, field, asdict
 from typing import Literal
 
-FRAMEWORK_VERSION = "LCCF-1.2.0"
+FRAMEWORK_VERSION = "LCCF-1.3.0"
 FRAMEWORK_AUTHOR = "Cash Cows investment team"
-FRAMEWORK_LOCKED_ON = "2026-10-05"
+FRAMEWORK_LOCKED_ON = "2026-10-06"
 FRAMEWORK_CHANGE_REASON = (
-    "Audit remediation. Dedicated ladder capital is no longer counted as spendable; "
-    "liability matching compares real cash-arrival dates rather than calendar years; "
-    "the three dated Treasury fund identities were corrected; protection mode now makes "
-    "a risky holding score worse rather than better; a balance sheet ratio is no longer "
-    "read as a trading spread; peer ties are neutral and nonfinite inputs are rejected. "
-    "Scores from earlier versions are not comparable with these."
+    "Every ratio is now built from one reporting period. A line a company has "
+    "stopped filing makes its metric missing instead of reaching back years for a "
+    "denominator, which was publishing 33.8x interest coverage for a company that "
+    "last reported interest expense two years earlier. A three year growth rate now "
+    "has to span three years. Fund liquidity is dollars traded a day rather than "
+    "years of price history mislabelled as months. Cross-source agreement is measured "
+    "against Yahoo Finance instead of asserted. The composite floor was overruling the "
+    "component floors and has been reconciled with them. Scores from earlier versions "
+    "are not comparable with these."
 )# Year 0 is 2026. Subtract 2026 from a calendar year to get its year number.
 BASE_YEAR = 2026
 
@@ -92,7 +95,12 @@ class TeamPolicy:
     green_min_dcs: float = 85.0
     amber_plus_min_ccs: float = 78.0
     amber_plus_min_component: float = 72.0
-    amber_min_ccs: float = 66.0
+    # The composite floor has to agree with the component floors, not overrule
+    # them. Two scores sitting exactly on the 60 component floor produce a 60
+    # composite, so a 66 composite floor silently rejected fourteen names in a 47
+    # name sweep whose components both cleared, and made red_max_sqs dead letter.
+    # This is a backstop for odd combinations, not a second and stricter gate.
+    amber_min_ccs: float = 60.0
     # Below the median company on a weighted basis. Reject.
     red_max_sqs: float = 60.0
     red_max_lpfs: float = 60.0

@@ -147,9 +147,51 @@ def test_funding_accounting() -> None:
           f"median facility={out['facility_capacity']['median']}")
 
 
+# --- F08, ratios must not mix reporting periods --------------------------------
+
+def test_period_alignment() -> None:
+    print("\nF08  every ratio is built from one reporting period")
+    from app.providers.sec import Fundamentals, _derive
+
+    f = Fundamentals(ticker="FIX", cik=1, name="Fixture")
+    # Revenue and operating income filed through 2025; interest expense stops in
+    # 2023, exactly as Apple's filings do.
+    f.revenue = {2022: 100.0, 2023: 110.0, 2024: 120.0, 2025: 130.0}
+    f.operating_income = {2022: 20.0, 2023: 22.0, 2024: 24.0, 2025: 26.0}
+    f.interest_expense = {2022: 2.0, 2023: 2.0}
+    f.ocf = {2025: 30.0}
+    f.capex = {2025: 5.0}
+    _derive(f)
+    r = f.ratios
+
+    check("the reference period is the latest complete year", f.reference_year == 2025,
+          f"reference_year={f.reference_year}")
+    check("a line absent from that year cannot produce a ratio",
+          r.get("interest_coverage") is None, f"interest_coverage={r.get('interest_coverage')}")
+    check("the absence is recorded, not hidden",
+          "interest_expense" in f.lines_absent_in_reference, f"{f.lines_absent_in_reference}")
+    check("lines present in that year still compute",
+          r.get("operating_margin") is not None and abs(r["operating_margin"] - 20.0) < 0.01,
+          f"operating_margin={r.get('operating_margin')}")
+
+
+def test_cagr_span() -> None:
+    print("\nF08  a three year CAGR has to span three years")
+    from app.providers.sec import _cagr
+
+    dense = {2022: 100.0, 2023: 110.0, 2024: 120.0, 2025: 133.1}
+    check("a complete window computes", _cagr(dense, 3) is not None)
+    check("and computes correctly", abs(_cagr(dense, 3) - 10.0) < 0.1, f"{_cagr(dense, 3)}")
+
+    sparse = {2018: 50.0, 2020: 70.0, 2024: 120.0, 2025: 130.0}
+    check("a window missing its start year reports nothing",
+          _cagr(sparse, 3) is None, f"got {_cagr(sparse, 3)} from four sparse observations")
+
+
 def main() -> int:
     for fn in (test_fund_identities, test_date_eligibility, test_protection_mode,
-               test_normalisation, test_liability_ledger, test_funding_accounting):
+               test_normalisation, test_liability_ledger, test_funding_accounting,
+               test_period_alignment, test_cagr_span):
         try:
             fn()
         except Exception as exc:  # a missing helper is itself a failure to report
