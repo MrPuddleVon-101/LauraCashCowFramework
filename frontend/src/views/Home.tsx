@@ -157,6 +157,9 @@ const CURSOR_TONE: Record<string, string> = {
 export default function Home({ go }: { go: (v: View, ticker?: string) => void }) {
   const [open, setOpen] = useState<Card4 | null>(null);
   const [hunt, setHunt] = useState("");
+  // The label used to read "LCCF v1.2" while the engine answered 2.0.0. A
+  // version printed on the page has to be the one that produced the numbers.
+  const [version, setVersion] = useState("LCCF");
   const [policy, setPolicy] = useState<Policy | null>(null);
   const [board, setBoard] = useState<Snapshot | null>(null);
   const stage = useTilt<HTMLDivElement>(1);
@@ -171,8 +174,16 @@ export default function Home({ go }: { go: (v: View, ticker?: string) => void })
 
   useEffect(() => {
     let live = true;
-    api.framework().then((f) => live && setPolicy(f?.policy ?? null)).catch(() => {});
-    snapshotMeta().then((m) => live && setBoard(m)).catch(() => {});
+    api.framework().then((f) => {
+      if (!live) return;
+      setPolicy(f?.policy ?? null);
+      if (f?.version) setVersion(f.version);
+    }).catch(() => {});
+    snapshotMeta().then((m) => {
+      if (!live) return;
+      setBoard(m);
+      if (m?.framework_version) setVersion((v) => (v === "LCCF" ? m.framework_version : v));
+    }).catch(() => {});
     return () => { live = false; };
   }, []);
 
@@ -189,7 +200,7 @@ export default function Home({ go }: { go: (v: View, ticker?: string) => void })
           <div className="cover-copy">
             <div className="cover-cred">
               <Peel tone="paper" rotate={-2.4}>Wharton GHSIC · 2026 / 27</Peel>
-              <Peel tone="gold" rotate={1.8}>LCCF v1.2</Peel>
+              <Peel tone="gold" rotate={1.8}>{version}</Peel>
             </div>
 
             <h1 className="cover-h">
