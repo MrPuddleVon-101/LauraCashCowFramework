@@ -348,13 +348,30 @@ def build_broad_etf(ticker: str, fund: dict, rp: RiskProfile | None, quote: dict
         bands=[(100, 30), (500, 55), (1500, 78), (3000, 92), (5000, 100)],
         units="holdings", as_of=as_of, source=src,
     )
-    country_weights = list((fund.get("country_weights") or {}).values())
+    # A broad U.S. equity ETF was being scored on country Herfindahl, where being
+    # wholly American scores 10 out of 100. That judges the fund for not being an
+    # international fund: breadth across countries is not its mandate, and the
+    # question of what it adds to Laura's country mix is asked, properly and
+    # incrementally, by the fit model. What belongs here is whether it does the
+    # job it claims: a U.S. core holding that has drifted abroad is the defect,
+    # not one that has stayed home.
+    countries = fund.get("country_weights") or {}
+    country_weights = list(countries.values())
+    us_weight = None
+    if countries:
+        us_weight = float(sum(
+            w for k, w in countries.items()
+            if str(k).strip().lower() in {"united states", "usa", "us", "u.s.", "united states of america"}
+        ))
     card.measure(
-        "geographic_breadth", "Geographic breadth", 3.0, "diversification",
-        hhi(country_weights) if country_weights else None,
-        bands=[(800, 100), (1500, 86), (3000, 66), (5000, 44), (7500, 24), (10000, 10)],
-        higher_is_better=False, units="HHI", as_of=as_of, source=src,
-        interpretation="A single country fund scores 10000 here by construction, which is the point.",
+        "mandate_adherence", "Mandate adherence", 3.0, "diversification",
+        us_weight,
+        bands=[(60, 20), (75, 45), (85, 68), (92, 85), (97, 96), (100, 100)],
+        units="% U.S.", as_of=as_of, source=src,
+        interpretation=(
+            "A broad U.S. fund should hold U.S. equities. This asks whether it does, "
+            "not whether it is diversified across countries, which is a different fund's job."
+        ),
     )
 
     # C. Underlying fundamental quality, 20

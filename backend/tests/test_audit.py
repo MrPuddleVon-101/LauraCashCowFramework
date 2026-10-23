@@ -99,10 +99,25 @@ def test_normalisation() -> None:
     card.measure("b", "b", 40.0, "unresolved", None, not_applicable=True, na_reason="n/a")
     card.measure("c", "c", 10.0, "unresolved", None)
     out = card.finalise()
-    check("a wholly unresolved category keeps its weight",
-          abs(out["points_available"] - 100.0) < 1e-6, f"available={out['points_available']}")
-    check("the unresolved half is charged to missing",
-          out["missing_weight_share"] >= 0.49, f"missing={out['missing_weight_share']}")
+
+    # LCCF-2.0.0 changed this deliberately. A category nothing resolved in used
+    # to keep its full weight by scoring the missing metric neutral, which put
+    # unobserved evidence above a measured median. It now carries no points, the
+    # score is built only from what was observed, and the two separate facts are
+    # reported separately: what we failed to observe, and how much of the model
+    # the score actually rests on.
+    check("a wholly unresolved category carries no points",
+          abs(out["points_available"] - 50.0) < 1e-6, f"available={out['points_available']}")
+    check("only the genuinely absent metric is charged to data confidence",
+          abs(out["missing_weight_share"] - 0.10) < 1e-6, f"missing={out['missing_weight_share']}")
+    check("coverage reports how much of the model was observed",
+          abs(out["coverage_pct"] - 50.0) < 1e-6, f"coverage={out['coverage_pct']}")
+    missing = [m for m in out["categories"][1]["metrics"] if m["status"] == "MISSING"]
+    check("a missing metric carries no score at all",
+          bool(missing) and missing[0]["score"] is None,
+          f"{missing[0] if missing else 'none'}")
+    check("and contributes nothing to the total",
+          all(m["effective_weight"] == 0 for m in missing), f"{missing}")
 
 
 # --- F15, the liability ledger --------------------------------------------------
@@ -222,13 +237,13 @@ def test_trailing_window() -> None:
           abs((g.ratios.get("roe") or 0) - (30.0 / 90.0 * 100)) < 0.01, f"roe={g.ratios.get('roe')}")
 
 
-# --- registry drift, reported and never scored ---------------------------------
+# --- registry drift, charged to data confidence ---------------------------------
 
 
 def test_registry_drift() -> None:
     from app.engine import drift
 
-    print("\nregistry drift is reported, not scored")
+    print("\nregistry drift is reported and charged to confidence")
 
     fund = {
         "expense_ratio": 0.15, "top10_weight": 24.5,
@@ -250,7 +265,10 @@ def test_registry_drift() -> None:
     check("turnover is judged relatively, so 6 against 2 is drift",
           by["Turnover"]["status"] == "drifted", str(by["Turnover"]))
     check("the fund is marked stale", moved["stale"] is True)
-    check("and the reading is explicitly not scored", moved["scored"] is False)
+    # LCCF-2.0.0 changed this: a drifted row is charged to data freshness. A
+    # warning that leaves confidence untouched scores a stale figure at full
+    # confidence, which is the defect rather than the fix.
+    check("and the reading is scored, not merely displayed", moved["scored"] is True)
 
     steady = drift.compare("VTI", {
         "expense_ratio": 0.03, "top10_weight": 33.0,
