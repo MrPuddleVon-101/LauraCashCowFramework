@@ -13,6 +13,7 @@ import { useEffect, useRef } from "react";
 import { ScrollTrigger, gsap, prefersReduced } from "../lib/scroll";
 import { useTilt3D } from "../lib/fx";
 import { Doodle, Mark } from "./Marks";
+import JobMark from "./JobMark";
 import { Peel } from "./Kit";
 
 const JOBS: [string, string, string, string][] = [
@@ -34,7 +35,9 @@ function JobCard({ code, name, tone, what, index }: {
       <article className="jobcard" data-cursor={code} data-tone={tone}>
         <div className="jobcard-top">
           {/* The code, set at the size of the card. It is the thing you track
-              as the rail goes past, and it reads before the name does. */}
+              as the rail goes past, and it reads before the name does. The
+              mark behind it is the job's mechanism, drawn in the same ink. */}
+          <JobMark name={code} size={118} className="jobcard-mark" />
           <b className="jobcard-code num" aria-hidden="true">{code}</b>
           <span className="jobcard-n num">{String(index + 1).padStart(2, "0")}</span>
         </div>
@@ -115,8 +118,8 @@ export default function JobRail() {
             <div className="rail-cell">
               <article className="jobcard jobcard-rule" data-tone="ink">
                 <div className="jobcard-top">
+                  <JobMark name="NO" size={118} className="jobcard-mark" />
                   <b className="jobcard-code num" aria-hidden="true">00</b>
-                  <Doodle name="cross" size={30} color="var(--red)" />
                 </div>
                 <div className="jobcard-body">
                   <h3>No job, no score</h3>

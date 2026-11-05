@@ -2532,8 +2532,25 @@ input[type="range"]:disabled::-webkit-slider-thumb { background: var(--paper-dee
 .duo-q::before { background: linear-gradient(to bottom, var(--sage), var(--sky)); }
 .duo-f::before { background: linear-gradient(to bottom, var(--gold), var(--clay)); }
 
-.duo-q { background: linear-gradient(150deg, rgba(166, 210, 182, 0.4), var(--paper-hi) 58%); }
-.duo-f { background: linear-gradient(150deg, rgba(255, 207, 85, 0.44), var(--paper-hi) 58%); }
+/* These two were a dark card and a gold card, which is the right pair: the
+   contrast between them is the argument. An earlier pass washed both pale and
+   left the cream type rules behind, so the first card's heading was cream on
+   cream and could not be read at all. The pair goes back to dark against gold,
+   with the colour pushed harder than it was. */
+.duo-q {
+  background:
+    radial-gradient(120% 90% at 0% 0%, rgba(95, 163, 125, 0.4) 0%, transparent 58%),
+    var(--night);
+  color: var(--on-night);
+}
+.duo-f {
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgba(255, 207, 85, 0.85) 0%, transparent 62%),
+    var(--gold);
+  color: var(--ink);
+}
+.duo-q h3, .duo-q .duo-list b { color: var(--on-night); }
+.duo-q .duo-l, .duo-q .duo-list span { color: var(--on-night-2); }
 
 /* The numeral stops being a label and becomes the thing you see first. */
 .duo-n {
@@ -2543,8 +2560,8 @@ input[type="range"]:disabled::-webkit-slider-thumb { background: var(--paper-dee
   letter-spacing: -0.04em;
   opacity: 1 !important;
 }
-.duo-q .duo-n { color: var(--sage-dk); }
-.duo-f .duo-n { color: var(--gold-dk); }
+.duo-q .duo-n { color: var(--sage-hi); }
+.duo-f .duo-n { color: #6b4705; }
 
 .duo-w {
   display: inline-block;
@@ -2554,8 +2571,8 @@ input[type="range"]:disabled::-webkit-slider-thumb { background: var(--paper-dee
   letter-spacing: 0.04em;
   color: var(--ink);
 }
-.duo-q .duo-w { background: var(--sage-hi); box-shadow: 3px 4px 0 var(--sage-dk); }
-.duo-f .duo-w { background: var(--gold-hi); box-shadow: 3px 4px 0 var(--gold-dk); }
+.duo-q .duo-w { background: var(--sage-hi); color: var(--ink); box-shadow: 3px 4px 0 var(--sage-dk); }
+.duo-f .duo-w { background: var(--paper-hi); color: var(--ink); box-shadow: 3px 4px 0 #6b4705; }
 
 .duo-vs i { color: var(--clay); font-weight: 700; }
 
@@ -2794,3 +2811,284 @@ input[type="range"]:disabled::-webkit-slider-thumb { background: var(--paper-dee
   .hero-seal { left: 0; bottom: 8%; }
   .hero-seal .mk-rosette { --size: 104px; }
 }
+
+/* ============================================================================
+   CONTRAST REPAIRS
+   ----------------------------------------------------------------------------
+   Measured, not eyeballed: every one of these was below 4.5:1 for body text or
+   3:1 for large text, and most were introduced by the colour pass above when a
+   background changed underneath type that had been set for the old one.
+   ========================================================================== */
+
+/* Gold-on-gold: the formula went dark, but its highlighted terms kept a gold
+   marker behind gold text. The marker goes, the colour stays. */
+.formula-eq em {
+  background: none;
+  color: var(--gold-hi);
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 207, 85, 0.45);
+  text-underline-offset: 4px;
+}
+.formula-eq .mk-hl svg { display: none; }
+
+/* The version sticker is gold, so it cannot inherit the cover's cream. */
+.hero-cred .peel-gold, .hero-cred .peel-gold .peel-face { color: var(--ink); }
+
+/* Clay on paper-lo measured 2.77:1. The darker clay clears 4.5. */
+.sec-head .tag { color: #a1440b; }
+.duo-vs i { color: #a1440b; }
+
+/* The rail's index numeral was set in each card's own mid tone, which never
+   had the contrast to be read against that card's field. It takes ink at low
+   opacity instead, which works on all four tones. */
+.jobcard-n { color: var(--ink); opacity: 0.58; }
+.jobcard-rule .jobcard-n { color: var(--paper); opacity: 0.7; }
+
+/* Cream on white inside the rosette. */
+.rz-s { color: var(--ink); }
+
+/* Ink-4 on rose measured 2.95:1. */
+.band-rose .fine, .band-rose i { color: #4a3b33; }
+
+/* The last two, both just under the line: 4.34 and 3.69 against a 4.5 bar. */
+.duo-f .duo-list span, .duo-f .duo-l { color: #513a06; }
+.st-gate-pass { color: #1d6138; }
+
+/* ============================================================================
+   THE RUN
+   ----------------------------------------------------------------------------
+   A pinned corridor. The stage carries the perspective and each panel arrives
+   from 1500px behind the screen and leaves 760px past it, so the sequence has
+   somewhere to come from and somewhere to go. Panels stack in the same grid
+   cell, which is what lets them pass through each other.
+   ========================================================================== */
+
+.run {
+  position: relative;
+  background: var(--night);
+  color: var(--on-night);
+}
+.run-wait { min-height: 60vh; }
+
+.run-sticky {
+  position: relative;
+  height: 100svh;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  align-content: center;
+  padding: clamp(84px, 11vh, 130px) var(--gut) clamp(40px, 7vh, 80px);
+}
+
+.run-wash {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(64% 46% at 50% 54%, rgba(235, 166, 24, 0.22) 0%, transparent 70%),
+    radial-gradient(40% 36% at 16% 86%, rgba(239, 145, 121, 0.14) 0%, transparent 72%);
+  pointer-events: none;
+}
+
+.run-head { position: relative; z-index: 3; text-align: center; }
+.run-head .tag { color: var(--gold); }
+.run-sub { margin: 6px 0 0; color: var(--on-night-2); font-size: 14px; }
+
+/* The spine. Five ticks down the left, one lit at a time. */
+.run-spine {
+  position: absolute;
+  left: var(--gut);
+  top: 50%;
+  translate: 0 -50%;
+  z-index: 4;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 18px;
+}
+.run-tick { display: flex; align-items: center; gap: 11px; }
+.run-tick i {
+  width: 9px; height: 9px; border-radius: 50%;
+  border: 1.5px solid var(--night-line-2);
+  background: transparent;
+  transition: background 0.3s var(--ease), border-color 0.3s var(--ease), scale 0.3s var(--pop);
+}
+.run-tick span {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.17em;
+  text-transform: uppercase; color: rgba(243, 231, 210, 0.34);
+  transition: color 0.3s var(--ease);
+}
+.run-tick.is-on i { background: var(--gold); border-color: var(--gold); scale: 1.35; }
+.run-tick.is-on span { color: var(--gold-hi); }
+
+/* The corridor itself. */
+.run-stage {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  perspective: 1150px;
+  perspective-origin: 50% 46%;
+  transform-style: preserve-3d;
+}
+
+.run-slide {
+  grid-area: 1 / 1;
+  width: min(620px, 100%);
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  text-align: center;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, opacity, filter;
+}
+
+.run-step {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.3em;
+  color: var(--gold); opacity: 0.8;
+}
+.run-h {
+  margin: 0;
+  font-size: clamp(30px, 4.2vw, 56px);
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  font-variation-settings: "SOFT" 30, "WONK" 1;
+  color: var(--on-night);
+}
+.run-say { margin: 0; max-width: 46ch; color: var(--on-night-2); font-size: 15.5px; }
+.run-fine {
+  margin: 0; max-width: 52ch; font-size: 12.5px; line-height: 1.5;
+  color: rgba(243, 231, 210, 0.44);
+}
+
+/* The candidate's own card, turning across the whole run. */
+.run-chip {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  padding: 20px 34px 22px;
+  background: rgba(243, 231, 210, 0.07);
+  border: 1px solid var(--night-line-2);
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  transform-style: preserve-3d;
+}
+.run-chip b { font-size: clamp(42px, 5.4vw, 70px); font-weight: 700; letter-spacing: 0.02em; color: var(--gold); line-height: 1; }
+.run-chip span { font-family: var(--display); font-size: 17px; }
+.run-chip i { font-family: var(--mono); font-style: normal; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--on-night-2); }
+
+.run-job {
+  display: grid; justify-items: center; gap: 8px;
+  padding: 18px 28px 20px;
+  border-left: 3px solid var(--gold);
+  background: rgba(243, 231, 210, 0.05);
+}
+.run-job b { font-size: clamp(26px, 3.2vw, 40px); font-weight: 700; color: var(--gold-hi); letter-spacing: -0.01em; }
+.run-job p { margin: 0; max-width: 44ch; font-size: 14.5px; color: var(--on-night-2); }
+
+/* The gate. A stamp, not a badge. */
+.run-gate {
+  display: grid; place-items: center;
+  width: clamp(150px, 19vw, 210px); aspect-ratio: 1.9;
+  border: 4px solid var(--green);
+  border-radius: 6px;
+  rotate: -6deg;
+  box-shadow: 0 0 44px rgba(42, 138, 83, 0.4);
+}
+.run-gate b {
+  font-family: var(--mono); font-size: clamp(30px, 3.8vw, 46px); font-weight: 700;
+  letter-spacing: 0.14em; color: var(--green);
+}
+.run-gate-fail { border-color: var(--red); box-shadow: 0 0 44px rgba(207, 63, 38, 0.4); }
+.run-gate-fail b { color: var(--red); }
+
+/* The two scores, side by side and counting. */
+.run-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(18px, 3vw, 44px); width: 100%; }
+.run-score { display: grid; justify-items: center; gap: 4px; padding: 16px 10px 18px; border-top: 2px solid; }
+.run-score-q { border-color: var(--sage); }
+.run-score-f { border-color: var(--gold); }
+.run-score b { font-size: clamp(46px, 6.4vw, 86px); font-weight: 700; line-height: 0.9; letter-spacing: -0.03em; }
+.run-score-q b { color: var(--sage-hi); }
+.run-score-f b { color: var(--gold-hi); }
+.run-score span { font-family: var(--display); font-size: 15.5px; }
+.run-score i { font-family: var(--mono); font-style: normal; font-size: 9.5px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--on-night-2); }
+
+.run-out { display: grid; justify-items: center; gap: 10px; }
+.run-out b {
+  font-size: clamp(74px, 11vw, 150px); font-weight: 700; line-height: 0.86;
+  letter-spacing: -0.045em; color: var(--gold);
+  text-shadow: 0 0 60px rgba(235, 166, 24, 0.45);
+}
+.run-sig {
+  padding: 8px 20px 9px; border-radius: 999px;
+  background: var(--amber); color: var(--ink);
+  font-family: var(--mono); font-size: 11.5px; font-weight: 600;
+  letter-spacing: 0.16em; text-transform: uppercase;
+}
+
+/* Below the pin it is five short panels in source order, which reads fine and
+   needs no pinning at all. */
+@media (max-width: 999px), (prefers-reduced-motion: reduce) {
+  .run-sticky { height: auto; display: block; padding-block: clamp(70px, 10vh, 110px); }
+  .run-spine { display: none; }
+  .run-stage { display: grid; perspective: none; gap: clamp(54px, 9vh, 90px); }
+  .run-slide { grid-area: auto; opacity: 1 !important; transform: none !important; filter: none !important; width: 100%; }
+  .run-pair { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+}
+
+/* ============================================================================
+   IMAGE SHARPNESS
+   ----------------------------------------------------------------------------
+   Measured against each file's real pixel dimensions. laura-suit.png is only
+   252x510, so at the wall's full column width on a 2x display it was being
+   asked for roughly three times the detail it has. It takes the small frame.
+   The overscan that drives the parallax was 118%, which upscaled every picture
+   by a further fifth before the browser even started; 108% gives the same
+   movement over a shorter travel without the cost.
+   ========================================================================== */
+
+.film-img { height: 108%; }
+
+/* The suit frame is sized to the file, not to the grid. */
+.film-shot-3 { max-width: 62%; justify-self: end; }
+.film-shot-3 .film-img-w { aspect-ratio: 1 / 1.35; }
+
+/* laura-hero is 706px square, so it gets the narrower of the two tall frames. */
+.film-shot-1 { max-width: 88%; }
+
+@media (max-width: 560px) {
+  .film-shot-3 { max-width: 100%; justify-self: stretch; }
+  .film-shot-1 { max-width: 100%; }
+}
+
+/* laura-suit.png is 252px wide and nothing can change that, so it is sized to
+   what it actually holds: a small pinned print rather than a wall panel. At
+   126 CSS pixels it is sharp on a 2x display, and reading as deliberately
+   small is better than reading as soft. */
+.film-shot-3 { max-width: 126px; justify-self: end; align-self: center; }
+.film-shot-3 .film-img-w { aspect-ratio: 252 / 420; border-width: 3px; }
+.film-shot-3 figcaption { font-size: 11px; }
+.film-shot-3 figcaption b { font-size: 13px; }
+.film-shot-3 figcaption i { font-size: 8.5px; letter-spacing: 0.1em; }
+
+@media (max-width: 560px) {
+  .film-shot-3 { max-width: 126px; justify-self: center; }
+}
+
+/* The job's mark, drawn large and low in its colour field, with the code over
+   it. The mark carries the meaning and the code carries the recognition, so
+   they are deliberately not competing for the same weight. */
+.jobcard-mark {
+  position: absolute;
+  right: -10px;
+  bottom: -14px;
+  color: var(--tone-dk, var(--ink));
+  opacity: 0.3;
+  pointer-events: none;
+  transition: opacity 0.3s var(--ease), translate 0.4s var(--ease), rotate 0.5s var(--ease);
+}
+.jobcard:hover .jobcard-mark { opacity: 0.52; translate: -4px -4px; rotate: -5deg; }
+.jobcard-rule .jobcard-mark { color: var(--red); opacity: 0.45; }
+.jobcard-code { position: relative; z-index: 2; }

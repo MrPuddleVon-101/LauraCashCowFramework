@@ -72,8 +72,8 @@ export default function LauraFilm() {
         // The picture moves against its own frame, which is what sells it as a
         // window rather than a rectangle with a photo in it.
         if (img) {
-          gsap.fromTo(img, { yPercent: -9 }, {
-            yPercent: 9, ease: "none",
+          gsap.fromTo(img, { yPercent: -3.6 }, {
+            yPercent: 3.6, ease: "none",
             scrollTrigger: { trigger: shot, start: "top bottom", end: "bottom top", scrub: true },
           });
         }

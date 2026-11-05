@@ -7,10 +7,10 @@ import {
   Cow, Doodle, Halftone, Mark, Note, Paper as Grid, Pin, Postmark,
   PriceTag, Ring, Rosette, Seam, Spark, Splat, Tear, Underline,
 } from "../ui/Marks";
-import Engine from "./Engine";
 import Hero from "../ui/Hero";
 import JobRail from "../ui/JobRail";
 import LauraFilm from "../ui/LauraFilm";
+import TheRun from "../ui/TheRun";
 import { TiltStage } from "../ui/Kit";
 import type { View } from "../ui/Nav";
 
@@ -325,7 +325,7 @@ export default function Home({ go }: { go: (v: View, ticker?: string) => void })
       <Tear fill="var(--ink)" seed={61} />
 
       {/* ================= THE ENGINE ================= */}
-      <section className="band band-ink" id="engine"><Engine /></section>
+      <TheRun />
 
       <Tear fill="var(--paper)" seed={9} />
 
