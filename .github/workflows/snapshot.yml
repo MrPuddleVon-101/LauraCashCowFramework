@@ -1,0 +1,70 @@
+# Refresh the frozen fallback that GitHub Pages serves.
+#
+# Pages has no Python, so the published interface reads the engine's own saved
+# output. That output goes stale, and a stale file that calls itself current is
+# the thing this whole refresh exists to prevent.
+#
+# The build is all-or-nothing: scripts/build_snapshot.py stages into a temporary
+# directory and refuses to publish if any ticker fails, so a provider outage
+# leaves yesterday's complete snapshot in place rather than committing a partial
+# one over it.
+
+name: Refresh snapshot
+
+on:
+  schedule:
+    # 06:20 UTC daily, after the US close and the Treasury curve update.
+    - cron: "20 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: snapshot
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r backend/requirements.txt
+
+      # Offline checks first. A snapshot built by an engine that is failing its
+      # own regressions is worse than no refresh at all.
+      - run: python -m tests.test_audit
+        working-directory: backend
+      - run: python -m tests.test_v2
+        working-directory: backend
+
+      - name: Build the snapshot
+        working-directory: backend
+        env:
+          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+          TWELVE_DATA_API_KEY: ${{ secrets.TWELVE_DATA_API_KEY }}
+          OPENFIGI_API_KEY: ${{ secrets.OPENFIGI_API_KEY }}
+        run: python -m scripts.build_snapshot
+
+      - name: Commit only a complete refresh
+        run: |
+          set -euo pipefail
+          if ! git diff --quiet -- frontend/public/data; then
+            # manifest.json is written on every successful run, so its presence
+            # with a changed tree means the staging swap actually happened.
+            test -f frontend/public/data/manifest.json
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add frontend/public/data
+            git commit -m "Refresh the frozen snapshot
+
+          Rebuilt by the scheduled job. The build refuses to publish unless every
+          ticker scored, so this is a complete replacement rather than a patch."
+            git push
+          else
+            echo "No change in the snapshot; nothing to commit."
+          fi

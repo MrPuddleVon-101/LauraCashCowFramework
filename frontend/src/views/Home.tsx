@@ -7,7 +7,11 @@ import {
   Cow, Doodle, Halftone, Mark, Note, Paper as Grid, Pin, Postmark,
   PriceTag, Ring, Rosette, Seam, Spark, Splat, Tear, Underline,
 } from "../ui/Marks";
-import Engine from "./Engine";
+import Hero from "../ui/Hero";
+import JobRail from "../ui/JobRail";
+import LauraFilm from "../ui/LauraFilm";
+import TheRun from "../ui/TheRun";
+import { TiltStage } from "../ui/Kit";
 import type { View } from "../ui/Nav";
 
 /* --- the four facts -------------------------------------------------------- */
@@ -157,6 +161,9 @@ const CURSOR_TONE: Record<string, string> = {
 export default function Home({ go }: { go: (v: View, ticker?: string) => void }) {
   const [open, setOpen] = useState<Card4 | null>(null);
   const [hunt, setHunt] = useState("");
+  // The label used to read "LCCF v1.2" while the engine answered 2.0.0. A
+  // version printed on the page has to be the one that produced the numbers.
+  const [version, setVersion] = useState("LCCF");
   const [policy, setPolicy] = useState<Policy | null>(null);
   const [board, setBoard] = useState<Snapshot | null>(null);
   const stage = useTilt<HTMLDivElement>(1);
@@ -171,134 +178,23 @@ export default function Home({ go }: { go: (v: View, ticker?: string) => void })
 
   useEffect(() => {
     let live = true;
-    api.framework().then((f) => live && setPolicy(f?.policy ?? null)).catch(() => {});
-    snapshotMeta().then((m) => live && setBoard(m)).catch(() => {});
+    api.framework().then((f) => {
+      if (!live) return;
+      setPolicy(f?.policy ?? null);
+      if (f?.version) setVersion(f.version);
+    }).catch(() => {});
+    snapshotMeta().then((m) => {
+      if (!live) return;
+      setBoard(m);
+      if (m?.framework_version) setVersion((v) => (v === "LCCF" ? m.framework_version : v));
+    }).catch(() => {});
     return () => { live = false; };
   }, []);
 
   return (
     <>
       {/* ================= COVER ================= */}
-      <section className="band band-paper cover">
-        <Grid kind="dot" size={24} color="rgba(193,84,61,0.16)" className="cover-grid" />
-        <Halftone className="cover-dots" color="var(--rose-dk)" opacity={0.18} size={11} />
-        <Splat size={120} seed={7} color="var(--gold)" opacity={0.16} style={{ top: "6%", left: "-3%" }} />
-        <Splat size={70} seed={19} color="var(--sage)" opacity={0.14} style={{ bottom: "12%", right: "4%" }} />
-
-        <div className="wrap cover-in">
-          <div className="cover-copy">
-            <div className="cover-cred">
-              <Peel tone="paper" rotate={-2.4}>Wharton GHSIC · 2026 / 27</Peel>
-              <Peel tone="gold" rotate={1.8}>LCCF v1.2</Peel>
-            </div>
-
-            <h1 className="cover-h">
-              <Stagger as="span" className="l1" text="The cow doesn't care" />
-              <span className="l2">
-                how <span className="ring-host"><em>good</em><Ring seed={4} /></span> it is.
-              </span>
-            </h1>
-
-            <p className="lede cover-lede">
-              It cares whether it still pays her <Mark color="var(--gold-hi)">$50,000 in 2036</Mark>.
-              So everything is scored twice, and her half weighs more.
-            </p>
-
-            <form
-              className="hunt"
-              onSubmit={(e) => { e.preventDefault(); if (hunt.trim()) go("score", hunt.trim().toUpperCase()); }}
-            >
-              <label className="hunt-f">
-                <span className="hunt-k">Ticker</span>
-                <input
-                  value={hunt}
-                  onChange={(e) => setHunt(e.target.value.toUpperCase())}
-                  placeholder="AVUS"
-                  spellCheck={false}
-                  autoComplete="off"
-                  maxLength={8}
-                  aria-label="Ticker to score"
-                />
-              </label>
-              <button className="hunt-go" type="submit" data-cursor="score it" data-cursor-tone="gold">
-                <span>Score it</span>
-                <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true">
-                  <path d="M2.5 9h12M10 4l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
-            </form>
-
-            <div className="tries">
-              <span className="tries-k">Or one of ours</span>
-              {TRY.map(([t, why], i) => (
-                <button key={t} className="tryk" data-cursor={t} onClick={() => go("score", t)}
-                        style={{ ["--rot" as string]: `${(i % 2 ? 1 : -1) * 1.4}deg` }}>
-                  <b className="num">{t}</b>
-                  <i>{why}</i>
-                </button>
-              ))}
-            </div>
-
-            <button className="cover-alt" onClick={() => document.getElementById("client")?.scrollIntoView({ behavior: "smooth" })}>
-              <Doodle name="arrowCurl" size={22} color="var(--ink-4)" />
-              Meet Laura first
-            </button>
-          </div>
-
-          <div className="cover-stage" ref={stage}>
-            <div className="cover-orbit" aria-hidden="true">
-              <svg viewBox="0 0 400 400"><ellipse cx="200" cy="200" rx="188" ry="74" fill="none" stroke="var(--gold)" strokeWidth="2.5" /></svg>
-            </div>
-            <div className="cover-orbit cover-orbit-2" aria-hidden="true">
-              <svg viewBox="0 0 400 400"><ellipse cx="200" cy="200" rx="172" ry="58" fill="none" stroke="var(--rose-dk)" strokeWidth="1.6" strokeDasharray="5 9" /></svg>
-            </div>
-
-            <div className="cover-stack" ref={stack}>
-              <div className="pol pol-back"><img src={asset("brand/laura-books.webp")} alt="" /></div>
-              <div className="pol pol-front">
-                <img src={asset("brand/laura-cutout.png")} alt="Laura Gao" />
-                <span className="pol-cap">the client</span>
-                <Pin size={24} color="var(--red)" style={{ top: -14, left: "50%", marginLeft: -12 }} />
-              </div>
-            </div>
-
-            <div className="cover-cow"><Cow size={300} /></div>
-
-            <div className="cover-badge" ref={badge}>
-              <Rosette size={116} fill="var(--gold)">
-                <span className="rz-1">NO</span>
-                <span className="rz-2">VIBES</span>
-              </Rosette>
-            </div>
-
-            <Postmark top="SCORED TWICE" bottom="GREEN IS RARE" size={96}
-                      className="cover-pm" color="var(--rose-dk)" />
-
-            <Spark size={30} className="cover-sp1 twinkle" />
-            <Spark size={19} className="cover-sp2 twinkle" color="var(--rose-dk)" />
-            <Spark size={23} className="cover-sp3 twinkle" color="var(--sage-dk)" />
-            <Spark size={15} className="cover-sp4 twinkle" color="#8e4f86" />
-            <Doodle name="spiral" size={30} color="var(--ink-4)" className="cover-dd1" />
-            <Doodle name="coin" size={24} color="var(--gold-dk)" className="cover-dd2" />
-          </div>
-        </div>
-
-        <div className="wrap figstrip">
-          {([
-            ["450,000", "$", "", "she puts in", "two cheques, 2027 and 2028, then nothing", "coin"],
-            ["500,000", "$", "", "she owes", "ten payments, 2033 through 2042", "exclaim"],
-            ["1,608", "", "", "companies to beat", "the whole SEC universe, not five lookalikes", "eye"],
-            ["95", "", "%", "certainty, minimum", "the funding floor we will not go under", "check"],
-          ] as [string, string, string, string, string, string][]).map(([v, pre, suf, l, s2, dd], i) => (
-            <div className="fs" key={l} data-anim="rise" style={{ ["--delay" as string]: `${i * 90}ms` }}>
-              <Doodle name={dd} size={20} color="var(--ink-4)" className="fs-dd" />
-              <Odometer className="fs-f" value={v} prefix={pre} suffix={suf} />
-              <span className="fs-l">{l}</span>
-              <span className="fs-s">{s2}</span>
-            </div>
-          ))}
-        </div>
-      </section>
+      <Hero go={go} hunt={hunt} setHunt={setHunt} version={version} />
 
       <Tear fill="var(--ink)" seed={41} />
 
@@ -321,6 +217,8 @@ export default function Home({ go }: { go: (v: View, ticker?: string) => void })
       <Seam kind="zig" fill="var(--rose)" />
 
       {/* ================= THE CLIENT ================= */}
+      <LauraFilm />
+
       <section className="band band-rose brief" id="client">
         <Grid kind="grid" size={32} color="rgba(22,18,15,0.055)" />
         <div className="wrap">
@@ -333,8 +231,9 @@ export default function Home({ go }: { go: (v: View, ticker?: string) => void })
 
           <div className="cards">
             {CARDS.map((c, i) => (
-              <Card key={c.k} seed={i * 7 + 2} className="card" delay={i * 70} onClick={() => setOpen(c)}
-                    tape={i % 2 ? "right" : false}>
+              <TiltStage key={c.k}>
+              <Card seed={i * 7 + 2} className="card" delay={i * 70} onClick={() => setOpen(c)}
+                    tape={i % 2 ? "right" : false} cursor="read">
                 {i % 2 === 0 && <Pin size={22} color={c.pin} style={{ top: -12, left: 22 }} />}
                 <span className="card-k">{c.label}</span>
                 <span className="card-f serif" style={{ color: c.tint }}>{c.fig}</span>
@@ -348,6 +247,7 @@ export default function Home({ go }: { go: (v: View, ticker?: string) => void })
                   </svg>
                 </span>
               </Card>
+              </TiltStage>
             ))}
           </div>
         </div>
@@ -356,44 +256,7 @@ export default function Home({ go }: { go: (v: View, ticker?: string) => void })
       <Seam kind="zig" fill="var(--paper)" flip />
 
       {/* ================= THE SEVEN JOBS ================= */}
-      <section className="band band-paper jobs">
-        <Grid kind="dot" size={30} color="rgba(22,18,15,0.06)" />
-        <div className="wrap">
-          <header className="sec-head sec-head-row">
-            <div>
-              <span className="tag">Before any number</span>
-              <h2>Everything gets a <Mark color="var(--sage-hi)">job</Mark> first</h2>
-            </div>
-            <p className="fine">
-              A Treasury dated to 2034 and a growth stock are never measured against the same
-              objective. The job picks the model and the weights. Without one, the whole thing
-              collapses into a single league table.
-            </p>
-          </header>
-
-          <div className="jobsheet">
-            {JOBS.map(([code, name, tone, what], i) => (
-              <Wobble key={code} amount={i % 2 ? 1.8 : -1.8}>
-                <span className="job" data-anim="pop" style={{ ["--delay" as string]: `${i * 55}ms`, ["--rot" as string]: `${(i % 3 - 1) * 1.6}deg` }}>
-                  <Peel tone={tone} rotate={0} className="job-peel">
-                    <b className="num">{code}</b>
-                  </Peel>
-                  <span className="job-n">{name}</span>
-                  <span className="job-w">{what}</span>
-                </span>
-              </Wobble>
-            ))}
-
-            <span className="job job-rule" data-anim="pop" style={{ ["--delay" as string]: "400ms" }}>
-              <Doodle name="cross" size={26} color="var(--red)" />
-              <span className="job-n">No job, no score</span>
-              <span className="job-w">
-                The engine refuses a ticker it has not been told the purpose of.
-              </span>
-            </span>
-          </div>
-        </div>
-      </section>
+      <JobRail />
 
       <Tear fill="var(--paper-lo)" seed={29} />
 
@@ -462,7 +325,7 @@ export default function Home({ go }: { go: (v: View, ticker?: string) => void })
       <Tear fill="var(--ink)" seed={61} />
 
       {/* ================= THE ENGINE ================= */}
-      <section className="band band-ink" id="engine"><Engine /></section>
+      <TheRun />
 
       <Tear fill="var(--paper)" seed={9} />
 

@@ -1,11 +1,17 @@
 import { asset } from "./lib/asset";
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { engineIsLive, snapshotMeta, type Snapshot } from "./api";
 import { useRevealAll } from "./lib/motion";
+import { ScrollTrigger, lockScroll, startScroll, stopScroll } from "./lib/scroll";
 import { Nav, Progress, type View } from "./ui/Nav";
 import { Tear } from "./ui/Marks";
 import Boot from "./ui/Boot";
 import Cursor from "./ui/Cursor";
+// three is around half a megabyte and nothing on the page depends on it, so
+// it is fetched after the first paint. Until it lands, every band carries its
+// own background and the page is complete without the world behind it.
+const ChartWorld = lazy(() => import("./ui/ChartWorld"));
+import Dock from "./ui/Dock";
 import Home from "./views/Home";
 import Score from "./views/Score";
 
@@ -20,6 +26,22 @@ export default function App() {
   const [seed, setSeed] = useState<string>("");
   // Every load, not once per session. Reduced motion still skips it outright.
   const [booting, setBooting] = useState(true);
+
+  // Smooth scrolling starts once, for the life of the app.
+  useEffect(() => {
+    startScroll();
+    return () => stopScroll();
+  }, []);
+
+  // The page cannot be scrolled out from under the loader.
+  useEffect(() => { lockScroll(booting); }, [booting]);
+
+  // A view swap replaces the whole document body, so every trigger measured
+  // against the old one is now pointing at nothing.
+  useEffect(() => {
+    const id = requestAnimationFrame(() => ScrollTrigger.refresh());
+    return () => cancelAnimationFrame(id);
+  }, [view]);
 
   useEffect(() => {
     let alive = true;
@@ -45,9 +67,11 @@ export default function App() {
   return (
     <>
       {booting && <Boot onDone={() => setBooting(false)} />}
+      <Suspense fallback={null}><ChartWorld /></Suspense>
       <Cursor />
       <Nav view={view} go={go} />
       <Progress />
+      {view === "home" && <Dock go={go} />}
 
       <main key={view} className="main">
         {view === "home" ? <Home go={go} /> : <Score seed={seed} />}

@@ -10,7 +10,7 @@ from __future__ import annotations
 from datetime import date, datetime, timezone
 
 from ..config import CLIENT, FRAMEWORK_VERSION, POLICY, ROLES, ROLE_BUCKET, ROLE_DESCRIPTIONS, risk_state
-from ..providers import market, sec, yahoo
+from ..providers import market, sec, treasury, yahoo
 from . import composite as comp
 from . import drift, fit, funds, liability, lookthrough, simulate, stock
 from .normalize import data_confidence
@@ -107,6 +107,78 @@ def _explanation(ticker: str, asset_type: str, role: str, sqs: dict, lpfs: dict,
         "why_the_score_is_what_it_is": why_high,
         "what_could_go_wrong": what_wrong,
         "why_laura_should_care": laura,
+    }
+
+
+#: Asset types whose money behaves like equity in the funding model. A dated
+#: Treasury and a cash fund do not, which is the whole reason the ladder works.
+_EQUITY_TYPES = {"stock", "broad_us_equity", "international_equity", "thematic_sector"}
+
+
+def _post_trade_funding(
+    *,
+    funding: dict,
+    asset_type: str,
+    role: str,
+    position_pct: float,
+    equity_weight: float,
+    payments_secured: int | None,
+    portfolio_value: float,
+    target_payment_year: int | None,
+) -> dict:
+    """Re-run the funding projection with the candidate actually in the book.
+
+    Returns the same shape the gate needs plus what moved, so the interface can
+    show the effect instead of asserting it. The projection is seeded, so the
+    two runs differ only by their inputs.
+    """
+    w = max(0.0, min(1.0, position_pct / 100.0))
+    candidate_equity = 1.0 if asset_type in _EQUITY_TYPES else 0.0
+    # Funded pro rata from the existing book.
+    new_equity = equity_weight * (1.0 - w) + candidate_equity * w
+
+    secured_before = funding.get("ladder_payments_secured")
+    if secured_before is None:
+        secured_before = POLICY.payments_targeted_for_early_matching
+    secured_after = int(secured_before)
+    basis = ["Funded pro rata from the existing book."]
+
+    if candidate_equity:
+        basis.append(f"Equity weight moves from {equity_weight:.0%} to {new_equity:.0%}.")
+    else:
+        basis.append(f"Non-equity, so equity weight falls to {new_equity:.0%}.")
+
+    # A dated matcher only secures a rung if it is actually big enough to buy
+    # that payment at today's curve. Claiming the rung on role alone is how a
+    # $5,000 position gets credited with a $50,000 liability.
+    if role == "LM" and target_payment_year is not None and portfolio_value > 0:
+        years = list(range(CLIENT.first_payment_year, CLIENT.last_payment_year + 1))
+        if target_payment_year in years:
+            rung = years.index(target_payment_year)
+            position_value = portfolio_value * w
+            try:
+                pv = liability.present_value(target_payment_year, 2027, treasury.get_curve())
+                needed = pv["present_value"]
+            except Exception:
+                needed = CLIENT.annual_operating_payment
+            if rung >= secured_after and position_value >= needed:
+                secured_after = rung + 1
+                basis.append(
+                    f"Covers the {target_payment_year} payment outright "
+                    f"(${position_value:,.0f} against ${needed:,.0f} needed), securing rung {rung + 1}."
+                )
+            elif rung >= secured_after:
+                basis.append(
+                    f"Too small to secure {target_payment_year}: ${position_value:,.0f} "
+                    f"against ${needed:,.0f} needed."
+                )
+
+    after = simulate.project(equity_weight=new_equity, ladder_payments_secured=secured_after)
+    return {
+        "funding_probability": after["funding_probability"],
+        "equity_weight": round(new_equity, 4),
+        "payments_secured": secured_after,
+        "basis": basis,
     }
 
 
@@ -261,9 +333,29 @@ def evaluate(
         candidate_adds_to_top = top_issuer in candidate_issuers or top_issuer == ticker
 
     # --- funding model ------------------------------------------------------------
+    #
+    # Two runs, not one. The gate asks whether the trade leaves funding below
+    # policy, and that question is unanswerable if the candidate is handed the
+    # pre-trade figure: it was, so a trade could never fail on its own effect.
+    #
+    # The trade is modelled as funded pro rata from the existing book, which is
+    # the ordinary "rebalance into this" assumption and the only one the engine
+    # has the inputs to make honestly. Equity weight moves toward the candidate's
+    # own equity share, and a dated matcher large enough to buy its payment
+    # outright secures one more rung of the ladder.
     funding = simulate.project(
         equity_weight=equity_weight,
         ladder_payments_secured=payments_secured,
+    )
+    post = _post_trade_funding(
+        funding=funding,
+        asset_type=asset_type,
+        role=role,
+        position_pct=position_pct,
+        equity_weight=equity_weight,
+        payments_secured=payments_secured,
+        portfolio_value=(trade.get("before") or {}).get("total_value") or 0.0,
+        target_payment_year=target_payment_year,
     )
 
     # --- fit ----------------------------------------------------------------------
@@ -313,12 +405,17 @@ def evaluate(
 
     agreement = sum(agree_scores) / len(agree_scores) if agree_scores else 0.6
 
+    # Computed before confidence, because confidence depends on it.
+    registry_drift = drift.check(ticker, fund)
+    drift_count = int((registry_drift or {}).get("drifted_count") or 0)
+
     dcs = data_confidence(
         sqs,
         source_tiers=source_tiers,
         freshest_as_of=freshest,
         cross_source_agreement=agreement,
         peer_group_size=peer_n,
+        registry_drift_count=drift_count,
     )
     dcs["cross_checks"] = checks
 
@@ -327,7 +424,7 @@ def evaluate(
         asset_type=asset_type, role=role, fund=fund, dcs=dcs["score"],
         missing_weight_share=sqs["missing_weight_share"],
         funding_probability=funding["funding_probability"],
-        post_trade_funding_probability=funding["funding_probability"],
+        post_trade_funding_probability=post["funding_probability"],
         position_pct=position_pct,
         lookthrough_issuer_pct=largest_issuer_pct,
         target_payment_year=target_payment_year,
@@ -348,11 +445,6 @@ def evaluate(
     risks = _top_metrics(sqs, 3, best=False)
     state, state_reason = risk_state(as_of_year, funding["funding_probability"])
 
-    # Whether the transcribed registry still matches the fund as it is today.
-    # Deliberately computed after the scores and deliberately not passed to any
-    # of them: it is an observation about the input, not a judgement about the
-    # security, and wiring it into data confidence would move verdicts.
-    registry_drift = drift.check(ticker, fund)
 
     return {
         "ticker": ticker,
@@ -390,6 +482,15 @@ def evaluate(
         "risk_profile": rp.to_dict() if rp else None,
         "portfolio_impact": trade,
         "funding": {k: v for k, v in funding.items() if not k.startswith("_")},
+        "funding_after_trade": {
+            "funding_probability": post["funding_probability"],
+            "delta": round(post["funding_probability"] - funding["funding_probability"], 4),
+            "equity_weight_before": round(equity_weight, 4),
+            "equity_weight_after": post["equity_weight"],
+            "payments_secured_before": funding.get("ladder_payments_secured"),
+            "payments_secured_after": post["payments_secured"],
+            "basis": post["basis"],
+        },
         "sponsor_range": simulate.sponsor_range(funding),
 
         "strengths": strengths,

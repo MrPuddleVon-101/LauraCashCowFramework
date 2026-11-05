@@ -13,9 +13,14 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
+import os
+from datetime import date, datetime, timezone
+
 from . import store
 from .config import BUCKETS, CLIENT, FRAMEWORK_VERSION, POLICY, ROLES, ROLE_DESCRIPTIONS, framework_manifest
 from .engine import evaluate as ev
+from .engine import fixedincome
+from .providers import router
 from .engine import liability, lookthrough, simulate
 from .engine.peers import _peers
 from .engine.registry import ASSET_TYPE_LABELS, list_funds, registry_meta
@@ -28,9 +33,20 @@ app = FastAPI(
     description="Laura Cash Cow Framework decision engine",
     version=FRAMEWORK_VERSION,
 )
+#: The Pages origin is fixed and is named exactly rather than by wildcard, so a
+#: deployed backend is reachable from the published interface and from nowhere
+#: unexpected. Extra origins can be added for a preview deployment through
+#: ALLOWED_ORIGINS, comma separated.
+ALLOWED_ORIGINS = [
+    "https://mrpuddlevon-101.github.io",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:4173",
+] + [o.strip() for o in os.environ.get("ALLOWED_ORIGINS", "").split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:4173"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -137,7 +153,11 @@ class EvaluateRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-    ticker: str = Field(min_length=1, max_length=12, pattern=r"^[A-Za-z0-9.\-]+$")
+    # 12 characters excluded every fixed-income identifier the competition uses,
+    # starting with B-T-4.375-15112039. An exchange-qualified ticker (7203:TSE)
+    # and an ISIN do not fit either. The pattern still refuses anything that is
+    # not a plausible identifier.
+    ticker: str = Field(min_length=1, max_length=64, pattern=r"^[A-Za-z0-9.:\-]+$")
     role: Literal["CG", "SG", "ID", "LM", "LR", "LG", "DA"] | None = None
     position_pct: float = Field(default=5.0, ge=0, le=100)
     portfolio: str = Field(default="competition", max_length=64)
@@ -334,20 +354,126 @@ def get_decisions(limit: int = 100, portfolio: str | None = None) -> dict:
 
 @app.get("/api/health")
 def health() -> dict:
+    """What this engine can actually do right now.
+
+    The interface reads this to decide what to enable. A capability that is not
+    listed here is one the interface must not offer, which is the difference
+    between a degraded service and a dishonest one.
+    """
     curve = treasury.get_curve()
     peers = _peers()
+    routed = router.status()
+    sec_ready = sec._read_cache("sec_tickers.json", sec.TICKER_TTL) is not None
     return {
         "status": "ok",
+        "mode": "LIVE",
         "framework_version": FRAMEWORK_VERSION,
+        "server_time": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "providers": {
-            "sec_edgar": sec._read_cache("sec_tickers.json", sec.TICKER_TTL) is not None,
+            "sec_edgar": sec_ready,
+            "sec_user_agent_set": bool(os.environ.get("SEC_USER_AGENT")),
             "treasury_curve_as_of": curve.get("as_of"),
             "treasury_degraded": curve.get("degraded", False),
             "peer_groups": len(peers.get("groups", {})),
             "peer_data_generated": peers.get("generated_at"),
             "registry_as_of": registry_meta().get("as_of"),
         },
+        "routed_providers": routed["providers"],
+        "capabilities": {
+            **routed["capabilities"],
+            "us_fundamentals": sec_ready,
+            "treasury_curve": not curve.get("degraded", False),
+            "fixed_income_maths": True,
+        },
+        "coverage": {
+            "global_search": routed["global_search"],
+            "global_quotes": routed["global_quotes"],
+            "identifier_resolution": routed["identifier_resolution"],
+        },
+        "degraded": routed["degraded"],
+        "cache": {
+            "directory_present": sec.CACHE_DIR.exists() if hasattr(sec, "CACHE_DIR") else None,
+            "treasury_as_of": curve.get("as_of"),
+        },
     }
+
+
+@app.get("/api/resolve")
+def resolve_identifier(q: str = Query(..., min_length=1), exchange: str = "") -> dict:
+    """Turn an identifier into one instrument, or report that it is ambiguous."""
+    bond = fixedincome.parse_wins_identifier(q)
+    if bond is not None:
+        return {
+            "resolved": {
+                "display_symbol": bond.identifier,
+                "qualified_symbol": bond.identifier,
+                "name": f"{bond.issuer} {bond.coupon_rate}% {bond.maturity.isoformat()}",
+                "asset_class": bond.security_type,
+                "currency": bond.currency,
+                "country": "US" if bond.security_type == "treasury" else "",
+                "provider": "instrument terms",
+            },
+            "ambiguous": False,
+            "candidates": [],
+            "note": "Parsed from the identifier itself. No provider is involved.",
+        }
+    return router.resolve(q, exchange=exchange)
+
+
+class BondRequest(BaseModel):
+    """An individual bond, described by its terms rather than by a ticker."""
+
+    model_config = {"extra": "forbid"}
+
+    identifier: str = Field(min_length=1, max_length=64)
+    face_value: float = Field(default=100_000.0, gt=0)
+    price_pct_of_par: float = Field(default=100.0, gt=0, le=1000)
+    settlement: date | None = None
+    coupon_rate: float | None = Field(default=None, ge=0, le=100)
+    maturity: date | None = None
+    frequency: int = Field(default=2, ge=1, le=12)
+    currency: str = Field(default="USD", max_length=8)
+    issuer: str = Field(default="", max_length=120)
+    cusip: str | None = Field(default=None, max_length=12)
+    isin: str | None = Field(default=None, max_length=12)
+    callable: bool = False
+    credit_quality: str = Field(default="US_TREASURY", max_length=32)
+
+
+@app.post("/api/fixed-income/describe")
+def describe_bond(req: BondRequest) -> dict:
+    """Schedule, cost, yield, duration and which payments the cash can reach."""
+    terms = fixedincome.parse_wins_identifier(req.identifier)
+    if terms is None:
+        if req.coupon_rate is None or req.maturity is None:
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    f"{req.identifier} is not a WInS bond identifier, so its coupon "
+                    "and maturity have to be given explicitly."
+                ),
+            )
+        terms = fixedincome.BondTerms(
+            identifier=req.identifier.upper(),
+            issuer=req.issuer or "Unknown issuer",
+            coupon_rate=req.coupon_rate,
+            maturity=req.maturity,
+            security_type="corporate_bond",
+            credit_quality=req.credit_quality,
+        )
+    terms.face_value = req.face_value
+    terms.price_pct_of_par = req.price_pct_of_par
+    terms.settlement = req.settlement or date.today()
+    terms.frequency = req.frequency
+    terms.currency = req.currency
+    terms.callable = req.callable
+    terms.cusip = req.cusip
+    terms.isin = req.isin
+    if req.issuer:
+        terms.issuer = req.issuer
+    years = list(range(CLIENT.first_payment_year, CLIENT.last_payment_year + 1))
+    return fixedincome.describe(terms, payment_years=years,
+                                payment_amount=CLIENT.annual_operating_payment)
 
 
 # --- serving the built interface ------------------------------------------------

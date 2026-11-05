@@ -4,6 +4,7 @@ import { Btn, Note, Paper, Peel, Stagger, Working } from "../ui/Kit";
 import {
   Arrow, Cow, Doodle, Mark, Note as Margin, Paper as Grid, Pin, Postmark, Splat,
 } from "../ui/Marks";
+import { ModeBadge, useMode } from "../ui/Mode";
 import Verdict from "./Verdict";
 
 const ROLES: [string, string, string][] = [
@@ -157,6 +158,7 @@ export default function Score({ seed = "" }: { seed?: string }) {
   }
 
   const wantsYear = role === "LM" && live !== false;
+  const mode = useMode();
   const frozen = live === false;
 
   return (
@@ -171,7 +173,9 @@ export default function Score({ seed = "" }: { seed?: string }) {
             <h1 className="view-h"><Stagger text="Throw a ticker at it" /></h1>
             <div className="desk-chips">
               <Peel tone="gold" rotate={-2}>SEC filings</Peel>
-              <Peel tone="sage" rotate={1.6}>live prices</Peel>
+              <Peel tone={frozen ? "paper" : "sage"} rotate={1.6}>
+                {frozen ? "frozen prices" : "live prices"}
+              </Peel>
               <Peel tone="paper" rotate={-1.2}>1,608 peers</Peel>
             </div>
           </div>
@@ -181,6 +185,8 @@ export default function Score({ seed = "" }: { seed?: string }) {
           </p>
           <Postmark top="NOTHING PASSES" bottom="ON CHARM" size={92} className="desk-pm" color="var(--rose-dk)" />
         </header>
+
+        <ModeBadge state={mode} className="desk-mode" />
 
         {frozen && (
           <Note tone="warn">
@@ -195,7 +201,9 @@ export default function Score({ seed = "" }: { seed?: string }) {
 
         <Paper seed={3} tilt={0.5} className="desk" anim="rise" tape="both">
           <Pin size={23} color="var(--red)" style={{ top: -13, left: "50%", marginLeft: -11 }} />
-          <Margin side="left" rotate={-5} className="desk-note">any US ticker, not just ours</Margin>
+          <Margin side="left" rotate={-5} className="desk-note">
+            {frozen ? "only the saved set" : "any ticker the providers reach"}
+          </Margin>
           <div className="desk-main" ref={box}>
             <label className="field">
               <span className="field-k">Symbol</span>
@@ -244,13 +252,24 @@ export default function Score({ seed = "" }: { seed?: string }) {
             </div>
 
             <div className="opt opt-slide">
-              <span className="opt-k">How big a slice</span>
-              <div className="slide">
+              <span className="opt-k">
+                How big a slice{frozen ? `, fixed at ${snap ? snap.position_pct.toFixed(0) : "8"}%` : ", of the whole portfolio"}
+              </span>
+              <div className={`slide${frozen ? " is-frozen" : ""}`}>
                 <input type="range" min={0} max={30} step={0.5} value={position}
                        aria-label="Position size, percent of the portfolio"
+                       disabled={frozen}
                        onChange={(e) => setPosition(Number(e.target.value))} />
                 <span className="slide-v num">{position.toFixed(1)}<small>%</small></span>
               </div>
+              <ModeBadge state={mode} className="desk-mode" />
+
+        {frozen && (
+                <span className="frozen-why">
+                  Moving this cannot change a saved result, so it is disabled rather
+                  than left live and ignored.
+                </span>
+              )}
             </div>
 
             {wantsYear && (

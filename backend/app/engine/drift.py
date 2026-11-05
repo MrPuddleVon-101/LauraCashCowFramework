@@ -10,11 +10,10 @@ rebalances, its top ten drifts, and the transcribed concentration figures go on
 being scored as though they were current. This module reads the same fund from
 Yahoo and says where the two disagree.
 
-It reports. It does not score. Concentration feeds Security Quality, so letting
-a drift reading move data confidence would change verdicts, and under the locked
-framework rule that needs a version bump and a full rescore. Until somebody
-decides it is worth that, this is an observation printed next to the number, and
-the number is unchanged.
+Under LCCF-2.0.0 it scores. A drifted row is charged to data freshness inside
+data confidence, because reporting that a figure is stale while still scoring it
+at full confidence is the defect, not the fix. The version bump and the full
+rescore that this needed have both happened.
 """
 
 from __future__ import annotations
@@ -134,12 +133,12 @@ def compare(ticker: str, fund: dict, obs: dict) -> dict[str, Any] | None:
         "rows": rows,
         "drifted_count": len(drifted),
         "stale": bool(drifted),
-        "scored": False,
+        "scored": True,
         "note": (
-            "Reported, not scored. These figures still come from the transcribed "
-            "registry and the scores above are unchanged. Yahoo is tier 2 and "
-            "unofficial, so a disagreement is a prompt to re-read the issuer "
-            "factsheet, not a correction in its own right."
+            "Charged to data confidence, not to the score itself. The figures above "
+            "still come from the transcribed registry; what drift changes is how much "
+            "the engine claims to trust them. Yahoo is tier 2, so a disagreement is a "
+            "prompt to re-read the issuer factsheet, not a correction in its own right."
             if drifted else
             "The transcribed registry still matches an independent read of the fund."
         ),

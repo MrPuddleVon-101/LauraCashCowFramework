@@ -11,7 +11,13 @@ from __future__ import annotations
 from dataclasses import dataclass, field, asdict
 from typing import Literal
 
-FRAMEWORK_VERSION = "LCCF-1.4.0"
+#: LCCF-2.0.0. A major bump because scores are no longer comparable with 1.x:
+#: missing metrics are excluded from the score instead of being held at a
+#: neutral 62, a broad U.S. fund is no longer judged for being American, and the
+#: candidate trade now actually moves the funding projection. Every verdict
+#: under 1.x has to be re-run; the thresholds below were set against the new
+#: distribution rather than carried over.
+FRAMEWORK_VERSION = "LCCF-2.0.0"
 FRAMEWORK_AUTHOR = "Cash Cows investment team"
 FRAMEWORK_LOCKED_ON = "2026-10-06"
 FRAMEWORK_CHANGE_REASON = (
@@ -86,22 +92,22 @@ class TeamPolicy:
     # 52 name spread of funds, Treasuries, mega caps and genuinely weak businesses,
     # the figures below give roughly 10% amber plus, 54% amber and 37% red, and green
     # stays rare without being arithmetically impossible.
-    green_min_sqs: float = 85.0
-    green_min_lpfs: float = 85.0
-    green_min_ccs: float = 85.0
-    green_min_dcs: float = 85.0
-    amber_plus_min_ccs: float = 78.0
-    amber_plus_min_component: float = 72.0
+    green_min_sqs: float = 80.0
+    green_min_lpfs: float = 80.0
+    green_min_ccs: float = 80.0
+    green_min_dcs: float = 75.0
+    amber_plus_min_ccs: float = 72.0
+    amber_plus_min_component: float = 68.0
     # The composite floor has to agree with the component floors, not overrule
     # them. Two scores sitting exactly on the 60 component floor produce a 60
     # composite, so a 66 composite floor silently rejected fourteen names in a 47
     # name sweep whose components both cleared, and made red_max_sqs dead letter.
     # This is a backstop for odd combinations, not a second and stricter gate.
-    amber_min_ccs: float = 60.0
+    amber_min_ccs: float = 58.0
     # Below the median company on a weighted basis. Reject.
-    red_max_sqs: float = 60.0
-    red_max_lpfs: float = 60.0
-    insufficient_data_dcs: float = 70.0
+    red_max_sqs: float = 55.0
+    red_max_lpfs: float = 55.0
+    insufficient_data_dcs: float = 60.0
 
     # Composite exponents (PRD 41). Laura fit is deliberately weighted above raw quality.
     sqs_exponent: float = 0.45

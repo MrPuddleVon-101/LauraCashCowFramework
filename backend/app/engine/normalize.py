@@ -147,6 +147,8 @@ class Metric:
 
     @property
     def contribution(self) -> float:
+        if self.score is None or self.status != "OK":
+            return 0.0
         return self.effective_weight * self.score / 100.0
 
     def to_dict(self) -> dict:
@@ -156,8 +158,10 @@ class Metric:
             "category": self.category,
             "weight": round(self.weight, 4),
             "effective_weight": round(self.effective_weight, 4),
-            "score": round(self.score, 1),
-            "band": score_band(self.score),
+            # None where the metric was never observed. A number here would be
+            # an opinion about evidence that does not exist.
+            "score": None if self.score is None else round(self.score, 1),
+            "band": None if self.score is None else score_band(self.score),
             "value": self.value,
             "units": self.units,
             "status": self.status,
@@ -316,8 +320,10 @@ class ScoreCard:
             m = Metric(
                 key=key, label=label, weight=weight, category=category, value=None,
                 units=units, status="MISSING", higher_is_better=higher_is_better,
-                score=NEUTRAL, as_of=as_of, source=source,
-                note="Not available from a source we trust. Scored neutral and charged against data confidence.",
+                score=None, as_of=as_of, source=source,
+                note=("Not available from a source we trust. Excluded from the score and "
+                      "charged against data confidence, so an absent figure cannot flatter "
+                      "the security."),
             )
             return self.add(m)
 
@@ -379,8 +385,8 @@ class ScoreCard:
         PRD 60 draws a hard line between two cases. A metric that is genuinely not
         applicable, such as P/E for a company with negative earnings, gives its weight
         back to the related metrics in its own category. A metric that is simply
-        missing keeps its weight at a neutral 50 and is charged against data
-        confidence instead, so an absent number can never flatter a security.
+        missing is excluded from the score entirely and charged against data
+        confidence and coverage, so an absent number can never flatter a security.
         """
         by_cat: dict[str, list[Metric]] = {}
         for m in self.metrics:
@@ -400,34 +406,37 @@ class ScoreCard:
                 elif m.status == "OK" and observed_weight > 0:
                     m.effective_weight = m.weight + na_weight * (m.weight / observed_weight)
                 else:
-                    m.effective_weight = m.weight
+                    # MISSING. It scores nothing and occupies no share of the
+                    # model. Scoring it neutral at 62 put unobserved evidence
+                    # above a measured median, so a security could be made to
+                    # look better by failing to report. The absence is carried
+                    # by data confidence and by coverage instead.
+                    m.effective_weight = 0.0
             if not observed:
                 # Nothing in this category resolved. The released weight has to stay
                 # inside the category, or the model silently shrinks: a 50 point
                 # category of 40 not-applicable plus 10 missing used to contribute
                 # only 10 points, which magnified every category that did resolve and
                 # understated how much evidence was actually absent.
-                declared = self.categories.get(cat, sum(m.weight for m in metrics))
-                missing = [m for m in metrics if m.status == "MISSING"]
-                if missing:
-                    missing_weight = sum(m.weight for m in missing) or 1.0
-                    for m in missing:
-                        m.effective_weight = declared * (m.weight / missing_weight)
-                else:
-                    # Every metric in the category is genuinely inapplicable. Holding
-                    # the weight at neutral would invent an opinion, so the category
-                    # is recorded as carrying no points and the fact is reported.
-                    for m in metrics:
-                        m.effective_weight = 0.0
-                    self.empty_categories.append(cat)
+                # Nothing here resolved, whether missing or inapplicable. Either
+                # way the category carries no points: inventing one would be an
+                # opinion about evidence we do not have.
+                for m in metrics:
+                    m.effective_weight = 0.0
+                self.empty_categories.append(cat)
 
         total = sum(m.contribution for m in self.metrics)
         available = sum(m.effective_weight for m in self.metrics)
         total_score = (total / available * 100.0) if available else NEUTRAL
 
-        missing_weight = sum(m.effective_weight for m in self.metrics if m.status == "MISSING")
+        # Declared weight, not effective: a missing metric now has no effective
+        # weight, and reading that would report perfect completeness.
+        missing_weight = sum(m.weight for m in self.metrics if m.status == "MISSING")
         declared = sum(self.categories.values()) or 100.0
         missing_share = missing_weight / declared if declared else 0.0
+        observed_share = sum(
+            m.weight for m in self.metrics if m.status == "OK"
+        ) / declared if declared else 0.0
 
         categories = []
         for cat, points in self.categories.items():
@@ -451,6 +460,8 @@ class ScoreCard:
             "points_earned": round(total, 2),
             "points_available": round(available, 2),
             "missing_weight_share": round(missing_share, 4),
+            "observed_weight_share": round(observed_share, 4),
+            "coverage_pct": round(observed_share * 100.0, 1),
             "inapplicable_categories": list(self.empty_categories),
             "categories": categories,
             "metrics": [m.to_dict() for m in self.metrics],
@@ -464,6 +475,7 @@ def data_confidence(
     freshest_as_of: str | None,
     cross_source_agreement: float = 1.0,
     peer_group_size: int = 0,
+    registry_drift_count: int = 0,
     today: date | None = None,
 ) -> dict:
     """PRD 10. Data confidence is independent of the investment scores.
@@ -500,6 +512,20 @@ def data_confidence(
     else:
         freshness = 35.0
 
+    # A transcribed registry row that no longer matches an independent read is a
+    # freshness failure, and that is where it is charged. Reporting the drift and
+    # leaving confidence untouched would let a stale figure be scored at full
+    # confidence while a warning sat beside it, which is the defect this fixes.
+    drift_note = ""
+    if registry_drift_count > 0:
+        penalty = min(40.0, 12.0 * registry_drift_count)
+        freshness = max(0.0, freshness - penalty)
+        drift_note = (
+            f"{registry_drift_count} transcribed figure"
+            f"{'' if registry_drift_count == 1 else 's'} no longer "
+            f"match an independent read, costing {penalty:.0f} points here."
+        )
+
     consistency = max(0.0, min(1.0, cross_source_agreement)) * 100
 
     peer_adequacy = score_against_bands(
@@ -519,7 +545,8 @@ def data_confidence(
         "components": [
             {"key": "completeness", "label": "Data completeness", "weight": 30, "score": round(completeness, 1)},
             {"key": "authority", "label": "Source authority", "weight": 25, "score": round(authority, 1)},
-            {"key": "freshness", "label": "Data freshness", "weight": 20, "score": round(freshness, 1)},
+            {"key": "freshness", "label": "Data freshness", "weight": 20,
+             "score": round(freshness, 1), "note": drift_note or None},
             {"key": "consistency", "label": "Cross-source consistency", "weight": 15, "score": round(consistency, 1)},
             {"key": "peers", "label": "Peer-group adequacy", "weight": 10, "score": round(peer_adequacy, 1)},
         ],

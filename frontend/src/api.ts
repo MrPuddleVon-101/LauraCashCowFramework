@@ -115,7 +115,36 @@ export type Evaluation = {
   message?: string;
 };
 
-const BASE = "/api";
+/** Where the API lives.
+ *
+ * Same origin in the Docker image, which serves both. The GitHub Pages build
+ * has no backend of its own, so VITE_API_BASE_URL is baked in at build time and
+ * points at the deployed engine. It is a URL, never a key: nothing secret is
+ * allowed into a bundle that ships to a browser.
+ */
+export const API_BASE = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
+const BASE = `${API_BASE}/api`;
+
+/** How current what you are looking at actually is. */
+export type Mode = "LIVE" | "CACHED" | "STALE" | "SNAPSHOT";
+
+export type Health = {
+  status: string;
+  mode: string;
+  framework_version: string;
+  server_time: string;
+  providers: Record<string, unknown>;
+  capabilities: Record<string, unknown>;
+  coverage: { global_search: boolean; global_quotes: boolean; identifier_resolution: boolean };
+  degraded: string[];
+};
+
+let healthCache: Health | null = null;
+
+/** The engine's own description of itself, or null when it cannot be reached. */
+export function health(): Health | null {
+  return healthCache;
+}
 
 /* --- live engine, or a frozen snapshot of it --------------------------------
  *
@@ -154,12 +183,17 @@ export function engineIsLive(): Promise<boolean> {
   if (!probe) {
     probe = (async () => {
       const stop = new AbortController();
-      const timer = setTimeout(() => stop.abort(), 4000);
+      // A free-tier backend that has idled takes longer than four seconds to
+      // wake, and timing out early is what pins the interface into snapshot
+      // mode for a reader who actually has a live engine.
+      const timer = setTimeout(() => stop.abort(), 20000);
       try {
         const r = await fetch(`${BASE}/health`, { signal: stop.signal });
         if (!r.ok) return false;
         const body = await r.json();
-        return body?.status === "ok" && typeof body?.framework_version === "string";
+        const ok = body?.status === "ok" && typeof body?.framework_version === "string";
+        if (ok) healthCache = body as Health;
+        return ok;
       } catch {
         return false;
       } finally {

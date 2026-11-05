@@ -1,0 +1,13 @@
+{
+  "ticker": "AVUS",
+  "name": "Avantis U.S. Equity ETF",
+  "category": "broad_us_equity",
+  "expense_ratio": 0.15,
+  "holdings_count": 2100,
+  "top10_weight": 30.8,
+  "largest_holding_weight": 5.86,
+  "turnover_pct": 2,
+  "country_weights": { "United States": 100.0 },
+  "sector_weights": { "Technology": 31.4, "Financials": 15.5, "Industrials": 10.2 },
+  "_note": "Recorded so the mandate test runs without a provider or the registry."
+}
