@@ -10,17 +10,13 @@
  * the argument and it should land like one.
  */
 
-import { Suspense, lazy, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import { asset } from "../lib/asset";
 import { gsap, prefersReduced, scrollTo } from "../lib/scroll";
 import { useMagnetic } from "../lib/fx";
 import { Doodle, Halftone, Mark, Pin, Ring, Rosette, Spark } from "./Marks";
 import { Peel } from "./Kit";
-// three is around half a megabyte and nothing on the page depends on it, so
-// it is fetched after the cover has already painted. Until it lands the hero
-// is the collage and the bloom, which is a finished picture on its own.
-const Stage3D = lazy(() => import("./Stage3D"));
 import type { View } from "./Nav";
 
 /** Four we would hand somebody first. Each is in the snapshot. */
@@ -110,7 +106,6 @@ export default function Hero({
         <div className="hero-vig" />
       </div>
 
-      <Suspense fallback={null}><Stage3D /></Suspense>
 
       <div className="wrap hero-in">
         <div className="hero-copy">

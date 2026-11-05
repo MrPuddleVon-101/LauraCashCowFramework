@@ -1,5 +1,5 @@
 import { asset } from "./lib/asset";
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { engineIsLive, snapshotMeta, type Snapshot } from "./api";
 import { useRevealAll } from "./lib/motion";
 import { ScrollTrigger, lockScroll, startScroll, stopScroll } from "./lib/scroll";
@@ -7,6 +7,11 @@ import { Nav, Progress, type View } from "./ui/Nav";
 import { Tear } from "./ui/Marks";
 import Boot from "./ui/Boot";
 import Cursor from "./ui/Cursor";
+// three is around half a megabyte and nothing on the page depends on it, so
+// it is fetched after the first paint. Until it lands, every band carries its
+// own background and the page is complete without the world behind it.
+const ChartWorld = lazy(() => import("./ui/ChartWorld"));
+import Dock from "./ui/Dock";
 import Home from "./views/Home";
 import Score from "./views/Score";
 
@@ -62,9 +67,11 @@ export default function App() {
   return (
     <>
       {booting && <Boot onDone={() => setBooting(false)} />}
+      <Suspense fallback={null}><ChartWorld /></Suspense>
       <Cursor />
       <Nav view={view} go={go} />
       <Progress />
+      {view === "home" && <Dock go={go} />}
 
       <main key={view} className="main">
         {view === "home" ? <Home go={go} /> : <Score seed={seed} />}

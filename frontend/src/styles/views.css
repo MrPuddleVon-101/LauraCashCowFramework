@@ -3092,3 +3092,275 @@ input[type="range"]:disabled::-webkit-slider-thumb { background: var(--paper-dee
 .jobcard:hover .jobcard-mark { opacity: 0.52; translate: -4px -4px; rotate: -5deg; }
 .jobcard-rule .jobcard-mark { color: var(--red); opacity: 0.45; }
 .jobcard-code { position: relative; z-index: 2; }
+
+/* ============================================================================
+   THE WORLD
+   ----------------------------------------------------------------------------
+   One scene behind the whole document. It is fixed, so scrolling does not move
+   it: the camera inside it moves instead, which is what makes the climb read
+   as travel rather than as a background sliding past.
+
+   The page alternates over it. Dark bands go to glass so the chart shows
+   through and the reader is inside the world; cream bands stay opaque so
+   there is somewhere to actually read. Surfacing and diving is the rhythm.
+   ========================================================================== */
+
+.world {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: var(--night);
+}
+.world-c { display: block; width: 100%; height: 100%; }
+
+/* Everything the reader touches sits above the world. The bar, the cursor and
+   the loader are already positioned; only their stacking is set here, because
+   giving them `position: relative` unpins the bar from the top of the window. */
+.main, .foot { position: relative; z-index: 1; }
+.nav { z-index: 800; }
+.prog { z-index: 810; }
+.cursor { z-index: 9000; }
+.boot { z-index: 9500; }
+
+/* The glass bands. The world is the background, so these carry none of their
+   own, only enough wash to keep type off the brightest parts of the chart. */
+.hero, .run, .film {
+  background: transparent !important;
+}
+.hero::before, .run::before, .film::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 78% at 24% 48%, rgba(12, 9, 8, 0.92) 0%, rgba(12, 9, 8, 0.5) 46%, rgba(12, 9, 8, 0) 76%);
+}
+.run::before {
+  background:
+    radial-gradient(90% 62% at 50% 50%, rgba(12, 9, 8, 0.9) 0%, rgba(12, 9, 8, 0.62) 50%, rgba(12, 9, 8, 0.1) 82%);
+}
+.film::before {
+  background: linear-gradient(to bottom,
+    rgba(12, 9, 8, 0.1) 0%, rgba(12, 9, 8, 0.86) 22%, rgba(12, 9, 8, 0.86) 78%, rgba(12, 9, 8, 0.1) 100%);
+}
+.hero > *, .run > *, .film > * { position: relative; z-index: 2; }
+
+/* The cover's own bloom and vignette are the world's job now. */
+.hero-glow, .hero-vig, .run-wash, .film .film-bleed { opacity: 0.55; }
+
+/* Cream bands stay solid: the page has to be readable, and a wall of glass
+   from top to bottom is exactly the "effects without hierarchy" trap. */
+.band-paper, .band-deep, .band-rose, .band-sage, .band-gold, .band-ink, .foot {
+  position: relative;
+  z-index: 1;
+}
+
+/* The foot of the page opens back onto the world, so the climb is the last
+   thing you see rather than a solid block. */
+.foot { background: rgba(12, 9, 8, 0.86); }
+
+@media (max-width: 760px) {
+  /* A phone is doing enough work. The world stays, at a lower pixel ratio set
+     in the component, and the glass gets heavier so type always wins. */
+  .hero::before { background: linear-gradient(to bottom, rgba(12,9,8,0.35) 0%, rgba(12,9,8,0.9) 34%, rgba(12,9,8,0.96) 100%); }
+  .run::before { background: rgba(12, 9, 8, 0.9); }
+}
+
+/* The cover's wash was built for a scene that only filled the right-hand
+   column. The world fills the frame, so the wash pulls back to the column the
+   type actually occupies and lets the chart carry the rest. */
+.hero::before {
+  background: linear-gradient(100deg,
+    rgba(12, 9, 8, 0.95) 0%,
+    rgba(12, 9, 8, 0.88) 34%,
+    rgba(12, 9, 8, 0.3) 62%,
+    rgba(12, 9, 8, 0.1) 100%);
+}
+
+/* ============================================================================
+   THE BAR, REBUILT
+   ----------------------------------------------------------------------------
+   Glass over a moving world rather than paper over a page, with a marker that
+   travels between the links and a ring reporting how far up the climb the
+   reader has flown.
+   ========================================================================== */
+
+.nav.is-night {
+  background: rgba(12, 9, 8, 0.42);
+  backdrop-filter: saturate(1.2) blur(16px);
+  border-bottom: 1px solid rgba(243, 231, 210, 0.1);
+}
+.nav.is-night.is-stuck {
+  background: rgba(12, 9, 8, 0.82);
+  border-bottom-color: rgba(235, 166, 24, 0.34);
+}
+.nav-in { gap: 14px; }
+
+/* The links, and the one marker that moves between them. */
+.nav.is-night .tabs { position: relative; display: flex; align-items: center; gap: 2px; }
+.tab-mark {
+  position: absolute;
+  inset: 50% auto auto 0;
+  height: 32px;
+  translate: 0 -50%;
+  border-radius: 999px;
+  background: rgba(235, 166, 24, 0.17);
+  border: 1px solid rgba(235, 166, 24, 0.45);
+  transition: transform 0.42s var(--ease), width 0.42s var(--ease);
+  pointer-events: none;
+}
+.nav.is-night .tab {
+  position: relative;
+  z-index: 1;
+  padding: 7px 14px 8px;
+  border-radius: 999px;
+  color: rgba(243, 231, 210, 0.66);
+  transition: color 0.2s var(--ease);
+}
+.nav.is-night .tab:hover { color: var(--on-night); }
+.nav.is-night .tab[aria-current="true"] { color: var(--gold-hi); }
+
+/* The climb. A ring that fills as the reader flies up the chart. */
+.nav-climb {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  margin-left: auto;
+  flex: none;
+}
+.nav-climb svg { position: absolute; inset: 0; width: 100%; height: 100%; rotate: -90deg; }
+.nav-climb circle { fill: none; stroke-width: 2.5; }
+.nav-climb-t { stroke: rgba(243, 231, 210, 0.16); }
+.nav-climb-v { stroke: var(--gold); stroke-linecap: round; transition: stroke-dashoffset 0.25s linear; }
+.nav-climb b {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--gold-hi);
+}
+
+/* The call to action carries the only solid fill in the bar, so it is never
+   in competition with anything. */
+.nav.is-night .nav-cta {
+  background: var(--gold);
+  color: var(--ink);
+  border-color: transparent;
+  box-shadow: 0 0 0 1px rgba(255, 207, 85, 0.5), 0 6px 26px rgba(235, 166, 24, 0.42);
+}
+.nav.is-night .nav-cta:hover {
+  background: var(--gold-hi);
+  box-shadow: 0 0 0 1px rgba(255, 207, 85, 0.8), 0 8px 34px rgba(235, 166, 24, 0.6);
+}
+
+@media (max-width: 860px) {
+  .nav-climb { display: none; }
+}
+
+/* ============================================================================
+   THE DOCK
+   ----------------------------------------------------------------------------
+   The cover's field, following the reader down the page. Closed it is one
+   button; reached for, it becomes the field. It never appears over the closing
+   band, which asks the same question with more room.
+   ========================================================================== */
+
+.dock {
+  position: fixed;
+  right: clamp(16px, 3vw, 38px);
+  bottom: clamp(16px, 3vh, 34px);
+  z-index: 820;
+  opacity: 0;
+  translate: 0 90px;
+  will-change: transform, opacity;
+}
+
+.dock-in {
+  display: flex;
+  align-items: stretch;
+  border-radius: 999px;
+  background: rgba(12, 9, 8, 0.86);
+  border: 1px solid rgba(235, 166, 24, 0.5);
+  backdrop-filter: saturate(1.2) blur(14px);
+  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 207, 85, 0.12);
+  transition: box-shadow 0.25s var(--ease);
+}
+.dock-in:focus-within { box-shadow: 0 14px 44px rgba(0, 0, 0, 0.6), 0 0 0 2px var(--gold); }
+
+/* Closed, the field has no width and no tab stop; it opens on reach. */
+.dock-f {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0;
+  width: 0;
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  transition: width 0.42s var(--ease), padding 0.42s var(--ease);
+}
+.dock.is-open .dock-f { width: clamp(118px, 15vw, 168px); padding: 7px 2px 8px 20px; }
+
+.dock-k {
+  font-family: var(--mono); font-size: 8.5px; font-weight: 500;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold);
+  white-space: nowrap;
+}
+.dock-f input {
+  width: 100%;
+  border: 0; background: none; outline: none;
+  font-family: var(--mono); font-size: 19px; font-weight: 600;
+  letter-spacing: 0.05em; color: var(--on-night);
+}
+.dock-f input::placeholder { color: rgba(243, 231, 210, 0.3); }
+
+.dock-go {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin: 5px;
+  padding: 0 20px;
+  height: 42px;
+  border-radius: 999px;
+  background: var(--gold);
+  border: 0;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  transition: background 0.18s var(--ease), gap 0.2s var(--ease);
+}
+.dock-go svg { width: 16px; height: 16px; transition: transform 0.22s var(--ease); }
+.dock-go:hover { background: var(--gold-hi); }
+.dock-go:hover svg { transform: translateX(4px); }
+
+/* A slow pulse while it is closed, so it reads as live rather than parked. */
+.dock:not(.is-open) .dock-go { animation: dockPulse 3.4s var(--ease) infinite; }
+@keyframes dockPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(235, 166, 24, 0); }
+  40% { box-shadow: 0 0 0 9px rgba(235, 166, 24, 0.14); }
+  70% { box-shadow: 0 0 0 14px rgba(235, 166, 24, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dock:not(.is-open) .dock-go { animation: none; }
+}
+
+@media (max-width: 560px) {
+  .dock { right: 12px; left: 12px; bottom: 12px; }
+  .dock-in { justify-content: center; }
+  .dock.is-open .dock-f { width: 100%; }
+}
+
+/* The rebuilt bar sets `.nav.is-night .tabs` to flex, which outranks the
+   earlier rule that hid the links on a phone, so they came back and printed
+   off the edge again. Restated at matching specificity, after it. */
+@media (max-width: 860px) {
+  .nav .tabs, .nav.is-night .tabs { display: none; }
+  .nav-in { justify-content: space-between; }
+  .nav.is-night .nav-cta span { display: none; }
+  .nav.is-night .nav-cta { padding: 0 14px; }
+}
