@@ -1875,3 +1875,269 @@ input[type="range"]:disabled::-webkit-slider-thumb { background: var(--paper-dee
 .frozen-why {
   display: block; margin-top: 6px; font-size: 12px; color: var(--ink-3); max-width: 46ch;
 }
+
+/* ===========================================================================
+   The cover, as layers
+   ---------------------------------------------------------------------------
+   Three planes that leave at different rates. The type is enormous because the
+   sentence is the product, and it arrives from under a mask one line at a time.
+   =========================================================================== */
+
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: grid;
+  align-content: center;
+  padding: clamp(96px, 12vh, 150px) 0 clamp(70px, 10vh, 120px);
+  overflow: clip;
+}
+
+.hero-bg { position: absolute; inset: -12% -4%; pointer-events: none; z-index: 0; will-change: transform; }
+.hero-grid { opacity: 0.8; }
+.hero-dots {
+  opacity: 0.26;
+  -webkit-mask-image: radial-gradient(76% 64% at 74% 10%, #000 0%, transparent 74%);
+  mask-image: radial-gradient(76% 64% at 74% 10%, #000 0%, transparent 74%);
+}
+
+.hero-in {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr);
+  gap: clamp(20px, 4vw, 64px);
+  align-items: center;
+}
+
+.hero-cred { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: clamp(18px, 2.4vw, 30px); }
+.hero-cred .peel {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 9px 23px 10px 15px;
+}
+
+/* The headline. Each line is a window; the words climb into it. */
+.hero-h {
+  margin: 0 0 clamp(18px, 2.6vw, 32px);
+  font-size: clamp(50px, 9.2vw, 142px);
+  line-height: 0.86;
+  letter-spacing: -0.035em;
+  font-weight: 700;
+  font-variation-settings: "SOFT" 28, "WONK" 1;
+}
+.hero-h .ln { display: block; overflow: hidden; padding-bottom: 0.06em; }
+.hero-h .ln > span { display: block; will-change: transform; }
+.hero-h em { font-style: italic; font-variation-settings: "SOFT" 90, "WONK" 1; }
+.hero-h .ring-host { font-style: normal; }
+
+.hero-lede { margin-bottom: clamp(22px, 2.8vw, 32px); max-width: 40ch; }
+
+/* The collage. A real stacking context so the planes can pass each other. */
+.hero-stage {
+  position: relative;
+  aspect-ratio: 1 / 1.02;
+  min-height: 340px;
+  display: grid;
+  place-items: center;
+  transform-style: preserve-3d;
+}
+.hero-orbit { position: absolute; inset: 2% 0 auto 0; height: 94%; }
+.hero-orbit svg { width: 100%; height: 100%; opacity: 0.9; transform-origin: 50% 50%; }
+.hero-orbit-2 svg { opacity: 0.68; }
+
+.hero-cow {
+  position: relative; z-index: 3;
+  filter: drop-shadow(14px 20px 0 rgba(22, 18, 15, 0.1));
+}
+.hero-cow .cow { --size: clamp(200px, 29vw, 340px); animation: bob 8s var(--ease) infinite; }
+
+.hero-pol {
+  position: absolute; z-index: 5; right: -2%; top: -2%;
+  width: clamp(118px, 15vw, 180px);
+  padding: 10px 10px 34px;
+  background: var(--paper-hi);
+  border: 1.5px solid var(--ink);
+  box-shadow: 10px 16px 0 rgba(22, 18, 15, 0.13);
+  rotate: 6deg;
+}
+.hero-pol img {
+  width: 100%; aspect-ratio: 1; object-fit: cover; object-position: 50% 22%;
+  display: block; filter: saturate(0.84) contrast(1.05) sepia(0.12);
+}
+
+.hero-seal { position: absolute; z-index: 6; left: -5%; bottom: 3%; }
+
+.hero-sp1 { top: 4%; left: 2%; }
+.hero-sp2 { bottom: 16%; left: 12%; }
+.hero-sp3 { bottom: 4%; right: 14%; }
+
+/* The cue. A wheel with something falling through it. */
+.hero-scroll {
+  position: absolute; left: 50%; bottom: clamp(18px, 3vh, 34px);
+  translate: -50% 0; z-index: 4;
+  display: grid; justify-items: center; gap: 9px;
+}
+.hero-scroll-r {
+  display: block; width: 23px; height: 37px;
+  border: 2px solid var(--ink-3); border-radius: 999px; position: relative;
+}
+.hero-scroll-r i {
+  position: absolute; left: 50%; top: 7px; width: 3.5px; height: 7px;
+  margin-left: -1.75px; border-radius: 2px; background: var(--gold-dk);
+  animation: wheel 1.9s var(--ease) infinite;
+}
+@keyframes wheel {
+  0% { transform: translateY(0); opacity: 0; }
+  28% { opacity: 1; }
+  70% { transform: translateY(13px); opacity: 0; }
+  100% { transform: translateY(13px); opacity: 0; }
+}
+.hero-scroll em {
+  font-family: var(--mono); font-style: normal; font-size: 9.5px;
+  letter-spacing: 0.26em; text-transform: uppercase; color: var(--ink-3);
+}
+.hero-scroll:hover .hero-scroll-r { border-color: var(--ink); }
+
+@media (max-width: 960px) {
+  .hero { min-height: 0; padding-top: 92px; }
+  .hero-in { grid-template-columns: 1fr; }
+  .hero-stage { order: -1; max-width: 340px; margin-inline: 0; aspect-ratio: 1 / 0.84; }
+  .hero-h { font-size: clamp(44px, 13vw, 88px); }
+  .hero-scroll { display: none; }
+  .hero-pol { width: clamp(96px, 26vw, 128px); right: 2%; }
+  .hero-seal { scale: 0.74; left: -9%; bottom: 0; }
+}
+
+/* The drawn ring was sized for a 108px headline and sits low and left against
+   a 142px one. At this scale it also wants a heavier stroke to stay readable. */
+.hero-h .ring-host { position: relative; display: inline-block; margin-right: 0.1em; }
+.hero-h .mk-ring {
+  position: absolute;
+  inset: -12% -9% -10% -8%;
+  width: 117%;
+  height: 122%;
+  overflow: visible;
+}
+.hero-h .mk-ring path { stroke-width: 4.5; }
+
+/* The marker swipe has to sit behind a much larger line of type. */
+.hero-lede .mk-hl { padding-inline: 0.06em; }
+
+/* Once the words have landed the window has done its job. Left clipping, it
+   crops the hand-drawn ring, which overhangs the type on purpose. */
+.hero-h.is-shown .ln { overflow: visible; }
+
+/* The headline was eating the fold and pushing the field, which is the actual
+   call to action, off the bottom of a 900px window. */
+.hero-h { font-size: clamp(46px, 7.5vw, 116px); }
+.hero { padding-top: clamp(86px, 10vh, 118px); }
+.hero-lede { margin-bottom: clamp(18px, 2.2vw, 26px); }
+.hero-cred { margin-bottom: clamp(14px, 1.8vw, 22px); }
+
+/* ===========================================================================
+   The job rail
+   ---------------------------------------------------------------------------
+   The section pins and the cards travel sideways. Order is the argument, so
+   the reader moves through it rather than scanning a grid.
+   =========================================================================== */
+
+.jobrail { position: relative; overflow: clip; }
+.jobrail-in {
+  min-height: 100svh;
+  display: grid;
+  align-content: center;
+  gap: clamp(26px, 4vh, 48px);
+  padding: clamp(60px, 8vh, 96px) 0;
+}
+
+.rail-head {
+  display: flex;
+  gap: clamp(24px, 4vw, 72px);
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.rail-head .fine { max-width: 44ch; align-self: flex-end; }
+
+.rail { overflow: visible; }
+.rail-track {
+  display: flex;
+  gap: clamp(16px, 1.8vw, 26px);
+  padding-inline: var(--gut);
+  width: max-content;
+  will-change: transform;
+}
+.rail-cell { flex: none; width: clamp(240px, 23vw, 330px); perspective: 1000px; }
+
+.jobcard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  min-height: clamp(210px, 26vh, 268px);
+  padding: 24px 22px 26px;
+  background: var(--paper-hi);
+  border: 2.5px solid var(--ink);
+  border-radius: 8px;
+  box-shadow: 8px 11px 0 rgba(22, 18, 15, 0.13);
+  transition: box-shadow 0.3s var(--ease), background 0.3s var(--ease);
+  transform-style: preserve-3d;
+}
+.jobcard:hover { box-shadow: 14px 18px 0 rgba(22, 18, 15, 0.15); background: #fff;  }
+.jobcard-n {
+  position: absolute; top: 14px; right: 16px;
+  font-size: 11px; letter-spacing: 0.18em; color: var(--ink-4);
+}
+.jobcard-peel { align-self: flex-start; }
+.jobcard-peel b { font-size: 15px; letter-spacing: 0.08em; }
+.jobcard h3 { font-size: clamp(20px, 1.9vw, 26px); line-height: 1.04; margin: 4px 0 0; }
+.jobcard p { font-size: 13.5px; line-height: 1.42; color: var(--ink-2); margin: 0; }
+
+.jobcard-rule { background: var(--ink); border-color: var(--ink); }
+.jobcard-rule h3 { color: var(--paper); }
+.jobcard-rule p { color: rgba(246, 236, 217, 0.78); }
+.jobcard-rule:hover { background: #211b16; }
+
+.rail-foot {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.rail-bar {
+  flex: 1;
+  height: 2.5px;
+  background: var(--line);
+  position: relative;
+  overflow: hidden;
+}
+.rail-bar i {
+  position: absolute; inset: 0;
+  background: var(--gold-dk);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+.rail-hint {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--ink-3); white-space: nowrap;
+}
+
+@media (max-width: 999px) {
+  .jobrail-in { min-height: 0; }
+  .rail { overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+  .rail::-webkit-scrollbar { display: none; }
+  .rail-track { width: max-content; }
+  .rail-cell { scroll-snap-align: center; width: min(76vw, 310px); }
+  .rail-bar { display: none; }
+}
+
+/* The track is max-content and 2900px wide, which was sizing the grid column
+   and pushing the centred header and the progress rule off to the right with
+   it. The column is pinned to the viewport; only the track overflows. */
+.jobrail-in { grid-template-columns: minmax(0, 1fr); }
+.jobrail-in > * { min-width: 0; }
+.rail { min-width: 0; }
+
+/* A card that leans toward the pointer needs somewhere to lean in. */
+.tilt { perspective: 1000px; display: flex; }
+.tilt > * { width: 100%; transform-style: preserve-3d; }
+.cards .tilt { min-width: 0; }

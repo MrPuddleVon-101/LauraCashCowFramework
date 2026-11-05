@@ -1,6 +1,7 @@
 import { asset } from "../lib/asset";
 import { useEffect, useState } from "react";
 import { onScroll } from "../lib/motion";
+import { useMagnetic } from "../lib/fx";
 
 export type View = "home" | "score";
 
@@ -13,6 +14,7 @@ export const SECTIONS: [string, string][] = [
 ];
 
 export function Nav({ view, go }: { view: View; go: (v: View, ticker?: string) => void }) {
+  const cta = useMagnetic<HTMLButtonElement>(0.34);
   const [stuck, setStuck] = useState(false);
   const [here, setHere] = useState<string>("");
 
@@ -62,7 +64,8 @@ export function Nav({ view, go }: { view: View; go: (v: View, ticker?: string) =
           </nav>
         )}
 
-        <button className="nav-cta" onClick={() => go("score")} data-quiet={view === "score" || undefined}>
+        <button className="nav-cta" ref={cta} onClick={() => go("score")} data-quiet={view === "score" || undefined}
+                data-cursor={view === "score" ? "new" : "score"}>
           <span>{view === "score" ? "New ticker" : "Score a ticker"}</span>
           <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2.3" aria-hidden="true">
             <path d="M2.5 9h12M10 4l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />

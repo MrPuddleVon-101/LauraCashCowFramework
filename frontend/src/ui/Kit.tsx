@@ -2,6 +2,7 @@ import { asset } from "../lib/asset";
 import { useEffect, useRef, useState } from "react";
 import { skew } from "../lib/draw";
 import { reduced, useEnter, useTally, useVelocity } from "../lib/motion";
+import { useTilt3D } from "../lib/fx";
 
 /* --- buttons --------------------------------------------------------------- */
 
@@ -76,7 +77,10 @@ function short(n: number) {
  */
 export function Paper({
   children, seed = 1, tape, className = "", tilt = 2.2, anim = "paste", delay = 0, onClick, style,
+  cursor,
 }: {
+  /** A word for the pointer to carry while it is over this piece of paper. */
+  cursor?: string;
   children: React.ReactNode;
   seed?: number;
   tape?: "left" | "right" | "both" | false;
@@ -93,6 +97,7 @@ export function Paper({
     <Tag
       className={`paper ${className}${onClick ? " is-live" : ""}`}
       onClick={onClick}
+      data-cursor={cursor}
       data-anim={anim || undefined}
       style={{
         ["--rot" as string]: `${rot}deg`,
@@ -284,4 +289,12 @@ export function Stagger({ text, className = "", step = 55, as: As = "span" }: {
       ))}
     </As>
   );
+}
+
+/** A perspective stage. Its single child leans toward the pointer. */
+export function TiltStage({ children, className = "", max = 12 }: {
+  children: React.ReactNode; className?: string; max?: number;
+}) {
+  const ref = useTilt3D<HTMLDivElement>(max);
+  return <div className={`tilt ${className}`} ref={ref}>{children}</div>;
 }
