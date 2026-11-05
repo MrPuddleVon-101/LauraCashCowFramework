@@ -10,6 +10,7 @@ import {
 import Engine from "./Engine";
 import Hero from "../ui/Hero";
 import JobRail from "../ui/JobRail";
+import LauraFilm from "../ui/LauraFilm";
 import { TiltStage } from "../ui/Kit";
 import type { View } from "../ui/Nav";
 
@@ -216,6 +217,8 @@ export default function Home({ go }: { go: (v: View, ticker?: string) => void })
       <Seam kind="zig" fill="var(--rose)" />
 
       {/* ================= THE CLIENT ================= */}
+      <LauraFilm />
+
       <section className="band band-rose brief" id="client">
         <Grid kind="grid" size={32} color="rgba(22,18,15,0.055)" />
         <div className="wrap">

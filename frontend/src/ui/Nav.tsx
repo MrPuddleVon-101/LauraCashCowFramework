@@ -34,7 +34,9 @@ export function Nav({ view, go }: { view: View; go: (v: View, ticker?: string) =
   };
 
   return (
-    <header className={`nav${stuck ? " is-stuck" : ""}`}>
+    // Over the dark cover the bar has to invert, or the wordmark sits black on
+    // black until the reader scrolls past it.
+    <header className={`nav${stuck ? " is-stuck" : ""}${!stuck && view === "home" ? " is-night" : ""}`}>
       <div className="nav-in">
         <button className="brand" onClick={() => go("home")}>
           <img src={asset("brand/lccf-logo.png")} alt="" draggable={false} />

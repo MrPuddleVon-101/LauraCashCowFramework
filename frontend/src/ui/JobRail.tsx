@@ -31,11 +31,18 @@ function JobCard({ code, name, tone, what, index }: {
   const stage = useTilt3D<HTMLDivElement>(10);
   return (
     <div className="rail-cell" ref={stage}>
-      <article className="jobcard" data-cursor={code}>
-        <span className="jobcard-n num">{String(index + 1).padStart(2, "0")}</span>
-        <Peel tone={tone} rotate={0} className="jobcard-peel"><b className="num">{code}</b></Peel>
-        <h3>{name}</h3>
-        <p>{what}</p>
+      <article className="jobcard" data-cursor={code} data-tone={tone}>
+        <div className="jobcard-top">
+          {/* The code, set at the size of the card. It is the thing you track
+              as the rail goes past, and it reads before the name does. */}
+          <b className="jobcard-code num" aria-hidden="true">{code}</b>
+          <span className="jobcard-n num">{String(index + 1).padStart(2, "0")}</span>
+        </div>
+        <div className="jobcard-body">
+          <Peel tone={tone} rotate={0} className="jobcard-peel"><b className="num">{code}</b></Peel>
+          <h3>{name}</h3>
+          <p>{what}</p>
+        </div>
       </article>
     </div>
   );
@@ -106,10 +113,15 @@ export default function JobRail() {
               <JobCard key={code} code={code} name={name} tone={tone} what={what} index={i} />
             ))}
             <div className="rail-cell">
-              <article className="jobcard jobcard-rule">
-                <Doodle name="cross" size={30} color="var(--red)" />
-                <h3>No job, no score</h3>
-                <p>The engine refuses a ticker it has not been told the purpose of.</p>
+              <article className="jobcard jobcard-rule" data-tone="ink">
+                <div className="jobcard-top">
+                  <b className="jobcard-code num" aria-hidden="true">00</b>
+                  <Doodle name="cross" size={30} color="var(--red)" />
+                </div>
+                <div className="jobcard-body">
+                  <h3>No job, no score</h3>
+                  <p>The engine refuses a ticker it has not been told the purpose of.</p>
+                </div>
               </article>
             </div>
           </div>

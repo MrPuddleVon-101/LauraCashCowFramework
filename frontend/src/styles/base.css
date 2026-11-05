@@ -47,6 +47,16 @@
   --red: #cf3f26;
   --slate: #6d7f88;
 
+  /* night: the cover and the closing field. The page runs dark, cream, dark,
+     so the cover is the thing you remember and the paper reads as relief. */
+  --night: #0c0908;
+  --night-2: #16110d;
+  --night-3: #221a14;
+  --night-line: rgba(246, 236, 217, 0.16);
+  --night-line-2: rgba(246, 236, 217, 0.3);
+  --on-night: #f3e7d2;
+  --on-night-2: rgba(243, 231, 210, 0.66);
+
   --line: rgba(22, 18, 15, 0.16);
   --line-2: rgba(22, 18, 15, 0.3);
   --line-3: rgba(22, 18, 15, 0.56);
@@ -180,6 +190,9 @@ p:last-child { margin-bottom: 0; }
 .band-rose { background: var(--rose); color: var(--ink); }
 .band-sage { background: var(--sage); color: var(--ink); }
 .band-gold { background: var(--gold); color: var(--ink); }
+.band-night { background: var(--night); color: var(--on-night); }
+.band-night .tag, .band-night .fine { color: var(--on-night-2); }
+.band-night a { color: var(--gold-hi); }
 
 .band-ink .tag, .band-ink .fine { color: rgba(246, 236, 217, 0.62); }
 .band-ink a { color: var(--gold-hi); }

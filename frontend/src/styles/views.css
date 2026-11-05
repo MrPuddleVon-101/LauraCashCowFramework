@@ -2141,3 +2141,656 @@ input[type="range"]:disabled::-webkit-slider-thumb { background: var(--paper-dee
 .tilt { perspective: 1000px; display: flex; }
 .tilt > * { width: 100%; transform-style: preserve-3d; }
 .cards .tilt { min-width: 0; }
+
+/* ============================================================================
+   THE COVER, DARK
+   ----------------------------------------------------------------------------
+   The page used to run cream from the first pixel to the last, which made the
+   cover a page rather than a cover. It now opens at night: the medallion is
+   lit metal against black, the bloom behind it is the only soft thing on the
+   page, and scrolling out into paper is a temperature change you feel.
+   ========================================================================== */
+
+.hero {
+  background: var(--night);
+  color: var(--on-night);
+  min-height: 100svh;
+  isolation: isolate;
+}
+
+/* The bloom. Two offset radials: one gold key behind the object, one rose
+   bounce low and left, which is where the point light sits in the scene. */
+.hero-glow {
+  position: absolute;
+  z-index: 0;
+  right: 4%;
+  top: 44%;
+  width: min(900px, 78vw);
+  aspect-ratio: 1;
+  translate: 0 -50%;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(235, 166, 24, 0.5) 0%,
+    rgba(210, 101, 31, 0.26) 32%,
+    rgba(12, 9, 8, 0) 68%);
+  filter: blur(26px);
+  will-change: transform, opacity;
+}
+.hero-glow-2 {
+  right: auto;
+  left: 2%;
+  top: 78%;
+  width: min(560px, 60vw);
+  background: radial-gradient(circle,
+    rgba(239, 145, 121, 0.3) 0%,
+    rgba(183, 101, 173, 0.16) 40%,
+    rgba(12, 9, 8, 0) 70%);
+}
+
+/* Grain over the bloom, so the gradient has a surface and does not read as
+   an airbrush. */
+.hero .hero-grain {
+  position: absolute;
+  inset: -10%;
+  z-index: 1;
+  mix-blend-mode: screen;
+}
+
+.hero-vig {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    radial-gradient(130% 92% at 50% 42%, rgba(12, 9, 8, 0) 42%, rgba(12, 9, 8, 0.82) 100%),
+    linear-gradient(to bottom, rgba(12, 9, 8, 0.7) 0%, rgba(12, 9, 8, 0) 22%);
+}
+
+/* The canvas. It sits over the right-hand column, under the type, and the
+   type never overlaps it at desktop width because the grid keeps them apart. */
+.stage3d {
+  position: absolute;
+  z-index: 3;
+  inset: 0 -2% 0 34%;
+  pointer-events: none;
+}
+.stage3d-c { width: 100%; height: 100%; display: block; }
+
+.hero-in { z-index: 4; }
+
+/* The collage planes ride in front of the object. */
+.hero-stage { z-index: 5; pointer-events: none; }
+.hero-stage > * { pointer-events: auto; }
+
+.hero-h { color: var(--on-night); }
+.hero-h .mk-ring path { stroke: var(--gold); }
+.hero-lede { color: var(--on-night-2); }
+.hero-lede strong, .hero-lede b { color: var(--on-night); }
+
+/* Highlighter on black cannot be a wash of gold behind dark ink, so it
+   inverts: the gold becomes the text and the stroke becomes a rule under it. */
+.hero-lede .mk-hl {
+  color: var(--gold-hi);
+  font-weight: 600;
+}
+.hero-lede .mk-hl svg { opacity: 0.5; }
+
+.peel-night {
+  background: rgba(243, 231, 210, 0.08);
+  color: var(--on-night);
+  border: 1px solid var(--night-line-2);
+}
+.hero-cred .peel { box-shadow: 4px 5px 0 rgba(0, 0, 0, 0.5); }
+
+/* The field, on black. */
+.hero .hunt {
+  background: rgba(243, 231, 210, 0.06);
+  border-color: rgba(243, 231, 210, 0.55);
+  box-shadow: 5px 6px 0 rgba(235, 166, 24, 0.3);
+  backdrop-filter: blur(10px);
+}
+.hero .hunt:focus-within {
+  border-color: var(--gold);
+  box-shadow: 2px 2px 0 var(--gold);
+}
+.hero .hunt-k { color: var(--gold); }
+.hero .hunt-f input { color: var(--on-night); }
+.hero .hunt-f input::placeholder { color: rgba(243, 231, 210, 0.32); }
+.hero .hunt-go { border-color: transparent; box-shadow: 0 0 26px rgba(235, 166, 24, 0.45); }
+
+.hero .tries-k { color: var(--on-night-2); }
+.hero .tryk {
+  background: rgba(243, 231, 210, 0.07);
+  border-color: var(--night-line-2);
+  box-shadow: 2.5px 3px 0 rgba(0, 0, 0, 0.6);
+  color: var(--on-night);
+  backdrop-filter: blur(8px);
+}
+.hero .tryk i { color: var(--on-night-2); }
+.hero .tryk:hover {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--ink);
+}
+.hero .tryk:hover i { color: rgba(22, 18, 15, 0.7); }
+
+.hero .cover-alt { color: var(--on-night-2); }
+.hero .cover-alt:hover { color: var(--gold-hi); }
+
+.hero-pol {
+  background: var(--paper-hi);
+  border-color: rgba(243, 231, 210, 0.9);
+  box-shadow: 12px 20px 40px rgba(0, 0, 0, 0.7);
+}
+.hero-pol img { filter: saturate(0.92) contrast(1.04); }
+.hero-pol .pol-cap { color: var(--ink-3); }
+
+.hero-seal { filter: drop-shadow(0 10px 30px rgba(235, 166, 24, 0.4)); }
+
+.hero-scroll-r { border-color: rgba(243, 231, 210, 0.5); }
+.hero-scroll-r i { background: var(--gold); }
+.hero-scroll em { color: var(--on-night-2); }
+.hero-scroll:hover .hero-scroll-r { border-color: var(--gold); }
+
+/* A measured rule along the foot of the cover: eight ticks, drawn left to
+   right as the cover finishes arriving. It is the framework's own ruler. */
+.hero-rule {
+  position: absolute;
+  left: var(--gut);
+  right: var(--gut);
+  bottom: 0;
+  z-index: 4;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 4px;
+  height: 3px;
+}
+.hero-rule i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(to right, var(--gold), rgba(235, 166, 24, 0.12));
+}
+.hero-rule i:nth-child(even) { opacity: 0.4; }
+
+/* The cover hands over to paper with a torn, lit edge rather than a cut. */
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 140px;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(12, 9, 8, 0) 0%, rgba(12, 9, 8, 0.9) 70%, var(--night) 100%);
+}
+
+@media (max-width: 960px) {
+  /* The canvas goes behind everything and dims, because the type has to win
+     on a phone and the object is scenery there, not the subject. */
+  .stage3d { inset: 0; opacity: 0.5; }
+  .hero-glow { right: -20%; top: 30%; width: 120vw; }
+  .hero-rule { gap: 3px; }
+}
+
+/* The bar, over the dark cover. It inverts only while it is sitting on the
+   cover itself: the moment it sticks, the page behind it is paper again. */
+.nav.is-night { background: transparent; border-bottom-color: transparent; color: var(--on-night); }
+.nav.is-night .brand-1, .nav.is-night .brand-2 { color: var(--on-night); }
+.nav.is-night .brand-x { color: var(--gold); }
+.nav.is-night .brand img { filter: brightness(0) invert(1); opacity: 0.94; }
+.nav.is-night .tab { color: var(--on-night-2); }
+.nav.is-night .tab:hover, .nav.is-night .tab[aria-current="true"] { color: var(--gold-hi); }
+.nav.is-night .nav-cta { border-color: transparent; box-shadow: 0 0 22px rgba(235, 166, 24, 0.4); }
+
+/* ============================================================================
+   THE CLIENT, IN PICTURES
+   ========================================================================== */
+
+.film {
+  position: relative;
+  overflow: clip;
+  padding: clamp(90px, 13vh, 170px) 0 clamp(100px, 15vh, 190px);
+  background: linear-gradient(to bottom, var(--night) 0%, var(--night-2) 46%, var(--night) 100%);
+}
+
+/* Her sentence, set enormous and dim, pulled sideways by the scroll. It is
+   not readable at a glance and is not meant to be: it is the surface the
+   frames sit on. */
+.film-bleed {
+  position: absolute;
+  top: clamp(40px, 8vh, 110px);
+  left: 0;
+  z-index: 0;
+  display: flex;
+  gap: 0.5em;
+  white-space: nowrap;
+  font-family: var(--display);
+  font-size: clamp(90px, 17vw, 280px);
+  font-weight: 700;
+  font-style: italic;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: rgba(243, 231, 210, 0.045);
+  pointer-events: none;
+  will-change: transform;
+}
+
+.film-in {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 0.84fr) minmax(0, 1.16fr);
+  gap: clamp(28px, 5vw, 80px);
+  align-items: start;
+}
+
+.film-head { position: sticky; top: clamp(96px, 14vh, 150px); }
+.film-tag { color: var(--gold); }
+
+.film-h {
+  margin: 10px 0 18px;
+  font-size: clamp(38px, 5.2vw, 76px);
+  line-height: 0.92;
+  letter-spacing: -0.032em;
+  font-weight: 700;
+  font-variation-settings: "SOFT" 34, "WONK" 1;
+  color: var(--on-night);
+}
+.film-h .ln { display: block; overflow: hidden; padding-bottom: 0.08em; }
+.film-h .ln > span { display: block; }
+.film-h em { font-style: italic; color: var(--gold); font-variation-settings: "SOFT" 90, "WONK" 1; }
+
+.film-lede { color: var(--on-night-2); max-width: 38ch; margin-bottom: clamp(22px, 3vw, 34px); }
+
+.film-facts { display: grid; gap: 1px; margin: 0; background: var(--night-line); border-block: 1px solid var(--night-line); }
+.film-fact {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 14px;
+  align-items: baseline;
+  padding: 14px 2px;
+  background: var(--night-2);
+}
+.film-fact dt {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.17em;
+  text-transform: uppercase; color: var(--on-night-2);
+}
+.film-fact dd { margin: 0; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.film-fact b { font-size: clamp(22px, 2.4vw, 32px); font-weight: 600; color: var(--gold); letter-spacing: 0.01em; }
+.film-fact i { font-style: normal; font-size: 13.5px; color: var(--on-night-2); }
+
+/* The wall. Four frames on a staggered two-column grid so nothing lines up
+   with anything, which is what stops it reading as a gallery component. */
+.film-wall {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(16px, 2.6vw, 34px);
+  align-items: start;
+}
+
+.film-shot {
+  position: relative;
+  margin: 0;
+  rotate: var(--rot, 0deg);
+  will-change: transform, clip-path;
+  transition: rotate 0.5s var(--ease), scale 0.5s var(--ease);
+}
+.film-shot:hover { rotate: 0deg; scale: 1.025; z-index: 5; }
+
+.film-shot-1 { margin-top: clamp(0px, 3vw, 44px); }
+.film-shot-2 { margin-top: clamp(28px, 9vw, 130px); }
+.film-shot-3 { margin-top: clamp(-10px, -1vw, 0px); }
+.film-shot-4 { margin-top: clamp(-20px, -3vw, 0px); }
+
+/* The frame is a window; the picture inside it is oversized and drifts. */
+.film-img-w {
+  display: block;
+  overflow: hidden;
+  border: 1px solid rgba(243, 231, 210, 0.22);
+  box-shadow: 0 26px 60px rgba(0, 0, 0, 0.72);
+  background: var(--night-3);
+  aspect-ratio: 4 / 5;
+}
+.film-shot-2 .film-img-w, .film-shot-3 .film-img-w { aspect-ratio: 1 / 1; }
+
+.film-img {
+  width: 100%;
+  height: 118%;
+  object-fit: cover;
+  object-position: 50% 30%;
+  display: block;
+  filter: saturate(0.92) contrast(1.06);
+  will-change: transform;
+}
+
+.film-shot figcaption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 2px 0;
+  border-top: 1px solid var(--night-line);
+  margin-top: 11px;
+}
+.film-shot figcaption b {
+  font-family: var(--display); font-size: 16px; font-weight: 600; color: var(--on-night);
+}
+.film-shot figcaption i {
+  font-family: var(--mono); font-style: normal; font-size: 10px;
+  letter-spacing: 0.13em; text-transform: uppercase; color: var(--on-night-2);
+  text-align: right;
+}
+
+.film-sp1 { position: absolute; top: 2%; right: -3%; }
+.film-sp2 { position: absolute; bottom: 14%; left: -4%; }
+.film-arrow { position: absolute; bottom: -4%; right: 8%; rotate: 150deg; opacity: 0.5; }
+
+@media (max-width: 1000px) {
+  .film-in { grid-template-columns: minmax(0, 1fr); }
+  .film-head { position: static; }
+  .film-fact { grid-template-columns: 84px minmax(0, 1fr); }
+}
+@media (max-width: 560px) {
+  .film-wall { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+  .film-shot, .film-shot-1, .film-shot-2, .film-shot-3, .film-shot-4 { margin-top: 0; rotate: 0deg; }
+  .film-arrow { display: none; }
+}
+
+/* Captions sat on one line and broke the name in half. The name holds its
+   line; the note wraps under it when there is no room. */
+.film-shot figcaption { flex-wrap: wrap; row-gap: 2px; }
+.film-shot figcaption b { white-space: nowrap; }
+.film-shot figcaption i { flex: 1 1 auto; min-width: 0; }
+
+/* ============================================================================
+   TURNING THE COLOUR UP
+   ----------------------------------------------------------------------------
+   The palette was always right; it was being used at about a third of its
+   strength. Everything below raises the contrast between bands and lets the
+   big numerals carry their own hue, so the page changes temperature as you
+   move down it instead of staying one even cream.
+   ========================================================================== */
+
+/* The two scores, as two different objects rather than two of the same card. */
+.scores {
+  background:
+    radial-gradient(90% 60% at 12% 0%, rgba(95, 163, 125, 0.22) 0%, transparent 60%),
+    radial-gradient(80% 58% at 92% 96%, rgba(235, 166, 24, 0.26) 0%, transparent 62%),
+    var(--paper-lo);
+}
+
+.duo-card { position: relative; overflow: hidden; }
+
+/* A rule of colour down the inside edge, and a wash that says which half of
+   the composite you are reading. */
+.duo-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 7px;
+}
+.duo-q::before { background: linear-gradient(to bottom, var(--sage), var(--sky)); }
+.duo-f::before { background: linear-gradient(to bottom, var(--gold), var(--clay)); }
+
+.duo-q { background: linear-gradient(150deg, rgba(166, 210, 182, 0.4), var(--paper-hi) 58%); }
+.duo-f { background: linear-gradient(150deg, rgba(255, 207, 85, 0.44), var(--paper-hi) 58%); }
+
+/* The numeral stops being a label and becomes the thing you see first. */
+.duo-n {
+  font-size: clamp(44px, 6vw, 86px) !important;
+  line-height: 0.8;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  opacity: 1 !important;
+}
+.duo-q .duo-n { color: var(--sage-dk); }
+.duo-f .duo-n { color: var(--gold-dk); }
+
+.duo-w {
+  display: inline-block;
+  padding: 7px 15px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+}
+.duo-q .duo-w { background: var(--sage-hi); box-shadow: 3px 4px 0 var(--sage-dk); }
+.duo-f .duo-w { background: var(--gold-hi); box-shadow: 3px 4px 0 var(--gold-dk); }
+
+.duo-vs i { color: var(--clay); font-weight: 700; }
+
+/* The formula is the hinge of the whole framework, so it stops being another
+   cream card and goes dark: the one black object in a bright band. */
+.formula {
+  background: var(--night);
+  color: var(--on-night);
+  border-color: var(--night) !important;
+  box-shadow: 10px 14px 0 rgba(235, 166, 24, 0.55);
+}
+.formula .tag.bare { color: var(--gold); }
+.formula-eq { color: var(--on-night); }
+.formula-eq em { color: var(--gold-hi); font-style: italic; }
+.formula-eq sup { color: var(--rose); }
+.formula-say { color: var(--on-night-2); }
+.formula .formula-dd { opacity: 0.6; }
+.formula .formula-dd path { stroke: var(--gold); }
+
+/* The signals band carries the ladder, so it should look like a ladder. */
+.signals {
+  background:
+    linear-gradient(to bottom, var(--paper) 0%, var(--paper-hi) 50%, var(--paper) 100%);
+}
+
+/* The closing field. Gold on gold was flat; it now burns down into night the
+   way the cover came up out of it, and the page ends where it started. */
+.closer {
+  position: relative;
+  background: linear-gradient(165deg, var(--gold-hi) 0%, var(--gold) 38%, var(--clay) 100%);
+  overflow: clip;
+}
+.closer::before {
+  content: "";
+  position: absolute;
+  inset: auto -10% -45% -10%;
+  height: 70%;
+  background: radial-gradient(60% 100% at 50% 100%, rgba(12, 9, 8, 0.5) 0%, transparent 70%);
+  pointer-events: none;
+}
+.closer > .wrap { position: relative; z-index: 2; }
+
+/* Section headings, everywhere. They were set at the size of a paragraph with
+   a bigger font; they are now the loudest thing in their band. */
+.sec-head h2 {
+  font-size: clamp(32px, 4.6vw, 64px);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  font-variation-settings: "SOFT" 32, "WONK" 1;
+}
+.sec-head .tag { color: var(--clay); }
+.band-ink .sec-head .tag, .band-night .sec-head .tag { color: var(--gold); }
+.band-rose .sec-head .tag { color: var(--ink); }
+
+/* The rail band ended in a field of nothing, because the cards are short and
+   the section was sized for the pin. */
+.jobrail { padding-bottom: clamp(30px, 4vh, 56px); }
+
+/* ============================================================================
+   THE RAIL, REBUILT
+   ----------------------------------------------------------------------------
+   The cards were small, pale and all the same, sitting in a band sized for the
+   pin, so the section read as a field of cream with some footnotes in it. Each
+   card is now a tall object with its own colour and its own enormous code, and
+   the row fills the height it was already taking up.
+   ========================================================================== */
+
+.rail-cell { width: clamp(260px, 25vw, 348px); }
+
+.jobcard {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+  height: clamp(330px, 46vh, 430px);
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: var(--paper-hi);
+  box-shadow: 8px 11px 0 rgba(22, 18, 15, 0.16);
+  transition: box-shadow 0.22s var(--ease), translate 0.22s var(--ease);
+}
+.jobcard:hover { translate: -3px -4px; box-shadow: 14px 18px 0 var(--tone-dk, rgba(22, 18, 15, 0.22)); }
+
+/* The colour field, and the code cropped by it. */
+.jobcard-top {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 14px 16px 0;
+  overflow: hidden;
+  background: var(--tone, var(--paper-lo));
+  border-bottom: 2px solid var(--ink);
+}
+.jobcard-code {
+  font-family: var(--display);
+  font-size: clamp(88px, 9vw, 132px);
+  font-weight: 700;
+  line-height: 0.76;
+  letter-spacing: -0.05em;
+  color: var(--tone-dk, var(--ink));
+  opacity: 0.9;
+  margin-bottom: -0.1em;
+  user-select: none;
+}
+.jobcard-n {
+  position: absolute;
+  top: 12px;
+  right: 15px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: var(--tone-dk, var(--ink-3));
+  opacity: 0.75;
+}
+
+.jobcard-body {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 15px 17px 18px;
+}
+.jobcard-body h3 { font-size: clamp(20px, 1.9vw, 25px); line-height: 1.02; margin: 0; }
+.jobcard-body p { font-size: 13.5px; line-height: 1.44; color: var(--ink-2); margin: 0; }
+.jobcard-peel { align-self: flex-start; display: none; }
+
+.jobcard[data-tone="gold"] { --tone: var(--gold-hi); --tone-dk: var(--gold-dk); }
+.jobcard[data-tone="rose"] { --tone: var(--rose-hi); --tone-dk: var(--rose-dk); }
+.jobcard[data-tone="sage"] { --tone: var(--sage-hi); --tone-dk: var(--sage-dk); }
+.jobcard[data-tone="paper"] { --tone: var(--paper-deep); --tone-dk: var(--ink-3); }
+
+.jobcard-rule { --tone: var(--ink); --tone-dk: var(--red); background: var(--ink); border-color: var(--ink); }
+.jobcard-rule .jobcard-top { align-items: center; justify-content: space-between; }
+.jobcard-rule .jobcard-code { color: var(--red); opacity: 0.85; }
+.jobcard-rule h3 { color: var(--paper); }
+.jobcard-rule p { color: rgba(246, 236, 217, 0.76); }
+
+@media (max-width: 1000px) {
+  .jobcard { height: clamp(290px, 54vh, 360px); }
+  .jobcard-code { font-size: clamp(72px, 20vw, 110px); }
+}
+
+/* The rules band was the palest thing on the page and it is the part that
+   says the weights cannot be nudged, so it now carries the signal ladder's
+   own colours: red down the refusals, sage down the sources. */
+.rules {
+  background:
+    radial-gradient(70% 52% at 0% 0%, rgba(207, 63, 38, 0.14) 0%, transparent 58%),
+    radial-gradient(70% 56% at 100% 100%, rgba(95, 163, 125, 0.2) 0%, transparent 60%),
+    var(--paper-lo);
+}
+.refuses, .prov {
+  position: relative;
+  padding-left: clamp(16px, 2vw, 26px);
+}
+.refuses::before, .prov::before {
+  content: "";
+  position: absolute;
+  inset: 4px auto 4px 0;
+  width: 4px;
+  border-radius: 3px;
+}
+.refuses::before { background: linear-gradient(to bottom, var(--red), rgba(207, 63, 38, 0.1)); }
+.prov::before { background: linear-gradient(to bottom, var(--sage-dk), rgba(95, 163, 125, 0.12)); }
+
+.refuses h3, .prov h3 {
+  font-size: clamp(19px, 2vw, 25px);
+  letter-spacing: -0.015em;
+}
+.pv-v { color: var(--sage-dk); }
+
+/* The board. The scores are the point of it, so they are the size of it. */
+.boardsec { background: linear-gradient(to bottom, var(--paper-hi), var(--paper) 70%); }
+
+/* Inverting the seal turned it into a white disc, which is worse than leaving
+   the drawing alone: it is already cream and reads perfectly on black. */
+.nav.is-night .brand img { filter: none; opacity: 1; }
+
+/* The bar could not fit four section links, a wordmark and a call to action on
+   a phone, so it was printing them off the edge. Below this width the links
+   go; the sections are all reachable by scrolling, which is the point of a
+   single page. */
+@media (max-width: 760px) {
+  .nav .tabs { display: none; }
+  .nav-in { justify-content: space-between; }
+}
+
+/* On a phone the canvas is the backdrop for the whole cover, so the type needs
+   its own ground to sit on or the medallion reads straight through it. */
+@media (max-width: 960px) {
+  .stage3d { opacity: 0.72; }
+  .hero-copy {
+    position: relative;
+    z-index: 4;
+  }
+  .hero-copy::before {
+    content: "";
+    position: absolute;
+    inset: -24px -20px -30px -20px;
+    z-index: -1;
+    background: linear-gradient(to bottom,
+      rgba(12, 9, 8, 0) 0%,
+      rgba(12, 9, 8, 0.82) 16%,
+      rgba(12, 9, 8, 0.92) 50%,
+      rgba(12, 9, 8, 0.96) 100%);
+    pointer-events: none;
+  }
+  /* The collage planes have nowhere to go next to a single column, and the
+     object behind them is doing their job already. */
+  .hero-stage { display: none; }
+}
+
+/* The cover runs under the bar. `.main` pads itself clear of the fixed bar so
+   ordinary pages start below it, but the cover is the exception: it is a cover,
+   and a cream strip across the top of it gave the whole thing a letterbox. */
+.main > .hero:first-child {
+  margin-top: -78px;
+  padding-top: calc(clamp(96px, 12vh, 150px) + 78px);
+}
+@media (max-width: 760px) {
+  .main > .hero:first-child {
+    margin-top: -68px;
+    padding-top: calc(clamp(96px, 12vh, 150px) + 68px);
+  }
+}
+
+/* Between the pinning breakpoint and a comfortable desktop the collage still
+   has two columns but no slack, so the polaroid was hanging off the right edge
+   and getting clipped by the cover's own overflow. */
+@media (min-width: 961px) and (max-width: 1240px) {
+  .hero-pol { right: 4%; top: 2%; width: clamp(110px, 13vw, 150px); }
+  .hero-seal { left: 0; bottom: 8%; }
+  .hero-seal .mk-rosette { --size: 104px; }
+}
